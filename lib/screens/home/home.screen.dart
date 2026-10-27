@@ -27,7 +27,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../services/update_service.dart';
 
 const Color kPrimaryColor    = Color(0xFF4F46E5); 
-const Color kBackgroundColor = Color(0xFFF3F4F6); 
+const Color kBackgroundColor = Color(0xFFF7F5FF);
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
             topRight: Radius.circular(30),
           ),
           boxShadow: [
-            BoxShadow(blurRadius: 20, color: Colors.black.withOpacity(0.06), offset: const Offset(0, -5))
+            BoxShadow(blurRadius: 20, color: const Color(0xFF7662D8).withValues(alpha: 0.08), offset: const Offset(0, -5))
           ],
         ),
         child: SafeArea(
@@ -84,8 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
               iconSize: 26,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               duration: const Duration(milliseconds: 300),
-              tabBackgroundColor: kPrimaryColor.withOpacity(0.12),
-              color: Colors.grey.shade400,
+              tabBackgroundColor: const Color(0xFFF0ECFF),
+              color: const Color(0xFFB5B1C4),
               textStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: kPrimaryColor, fontSize: 13),
               tabs: const [
                 GButton(icon: Icons.dashboard_rounded, text: 'Home'),
@@ -207,12 +207,12 @@ class _HomeContentState extends State<HomeContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Layanan Mandiri', style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                      const Text('Layanan Mandiri', style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF25213A))),
                       Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: kPrimaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                            decoration: BoxDecoration(color: const Color(0xFFEDE8FF), borderRadius: BorderRadius.circular(10)),
                             child: const Text('Shift 08:00', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w600, color: kPrimaryColor)),
                           ),
                           const SizedBox(width: 8),
@@ -329,22 +329,11 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  // Gojek / Shopee style Pay/Wallet mimicking Header
+  // User header and the existing leave/date summary.
   Widget _buildGojekStyleHeader(String userName, dynamic user, ApiService apiService) {
     return Container(
-      padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 30),
-      decoration: const BoxDecoration(
-        color: kPrimaryColor,
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(36), bottomRight: Radius.circular(36)),
-        gradient: LinearGradient(
-          colors: [Color(0xFF4F46E5), Color(0xFF312E81)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(color: Color(0xFF312E81), blurRadius: 20, offset: Offset(0, 5))
-        ]
-      ),
+      padding: const EdgeInsets.only(top: 52, left: 20, right: 20, bottom: 18),
+      color: kBackgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -359,7 +348,7 @@ class _HomeContentState extends State<HomeContent> {
                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                      child: CircleAvatar(
                        radius: 22,
-                       backgroundColor: const Color(0xFFE0E7FF),
+                       backgroundColor: const Color(0xFFEDE8FF),
                        backgroundImage: (user != null && user.profilePhotoUrl != null && user.profilePhotoUrl.isNotEmpty) 
                            ? NetworkImage(user.profilePhotoUrl) 
                            : null,
@@ -372,8 +361,8 @@ class _HomeContentState extends State<HomeContent> {
                    Column(
                      crossAxisAlignment: CrossAxisAlignment.start,
                      children: [
-                       const Text('Selamat Datang,', style: TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'Poppins')),
-                       Text(userName, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, fontFamily: 'Poppins', letterSpacing: 0.5)),
+                       const Text('Selamat Datang,', style: TextStyle(color: Color(0xFF8A8797), fontSize: 12, fontFamily: 'Poppins')),
+                       Text(userName, style: const TextStyle(color: Color(0xFF25213A), fontSize: 17, fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
                      ],
                    )
                 ],
@@ -382,12 +371,16 @@ class _HomeContentState extends State<HomeContent> {
               GestureDetector(
                 onTap: () => _navigateToNotifications(apiService),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+                  padding: const EdgeInsets.all(11),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.10), blurRadius: 14, offset: const Offset(0, 5))],
+                  ),
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
+                      const Icon(Icons.notifications_none_rounded, color: kPrimaryColor, size: 25),
                       FutureBuilder<int>(
                         future: _unreadCountFuture,
                         builder: (context, snapshot) {
@@ -400,7 +393,7 @@ class _HomeContentState extends State<HomeContent> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFEF4444), 
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFF4F46E5), width: 2)
+                                  border: Border.all(color: Colors.white, width: 2)
                                 ),
                                 child: Text('${count > 9 ? '9+' : count}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold, height: 1)),
                               ),
@@ -415,7 +408,7 @@ class _HomeContentState extends State<HomeContent> {
               )
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 22),
           
           // GoPay / ShopeePay style "Sisa Cuti" Wallet Card
           if (user != null && user.employmentType == 'organik')
@@ -424,7 +417,8 @@ class _HomeContentState extends State<HomeContent> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))]
+                border: Border.all(color: const Color(0xFFEDEAF5)),
+                boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))]
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -447,7 +441,7 @@ class _HomeContentState extends State<HomeContent> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('${user.sisaCuti ?? 12}', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, color: Color(0xFF1F2937), fontSize: 32, height: 1)),
+                          Text('${user.sisaCuti ?? 12}', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, color: Color(0xFF25213A), fontSize: 32, height: 1)),
                           const Padding(
                             padding: EdgeInsets.only(bottom: 4.0, left: 6.0),
                             child: Text('Hari', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, color: Colors.grey, fontSize: 15)),
@@ -477,7 +471,8 @@ class _HomeContentState extends State<HomeContent> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))]
+                border: Border.all(color: const Color(0xFFEDEAF5)),
+                boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))]
               ),
               child: Row(
                 children: [
@@ -492,7 +487,7 @@ class _HomeContentState extends State<HomeContent> {
                     children: [
                       Text('Tanggal Hari Ini', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, color: Colors.grey.shade500, fontSize: 13)),
                       const SizedBox(height: 4),
-                      Text(_formatDate(DateTime.now()), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: Color(0xFF1F2937), fontSize: 16)),
+                      Text(_formatDate(DateTime.now()), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: Color(0xFF25213A), fontSize: 16)),
                     ],
                   )
                 ],
@@ -506,21 +501,24 @@ class _HomeContentState extends State<HomeContent> {
   Widget _buildQuickAction({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.grey.shade100, width: 2),
-              boxShadow: [BoxShadow(color: color.withOpacity(0.15), blurRadius: 15, offset: const Offset(0, 8))]
+      child: SizedBox(
+        width: 96,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFEDEAF5)),
+                boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.07), blurRadius: 14, offset: const Offset(0, 6))],
+              ),
+              child: Icon(icon, color: color, size: 27),
             ),
-            child: Icon(icon, color: color, size: 32),
-          ),
-          const SizedBox(height: 12),
-          Text(label, style: const TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF374151))),
-        ],
+            const SizedBox(height: 9),
+            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Poppins', fontSize: 12, height: 1.25, fontWeight: FontWeight.w600, color: Color(0xFF4A4658))),
+          ],
+        ),
       ),
     );
   }
@@ -528,37 +526,38 @@ class _HomeContentState extends State<HomeContent> {
   Widget _buildLiveClockCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: const Color(0xFF1F2937).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))]
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFEDEAF5)),
+        boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 7))]
       ),
       child: Stack(
         children: [
           Positioned(
-            right: -30, top: -20,
-            child: Icon(Icons.access_time_filled_rounded, size: 140, color: Colors.white.withOpacity(0.04)),
+            right: -18, top: -24,
+            child: Icon(Icons.access_time_filled_rounded, size: 120, color: const Color(0xFF7662D8).withValues(alpha: 0.045)),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: const Color(0xFFEDE8FF), borderRadius: BorderRadius.circular(10)),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.sync_rounded, color: Colors.greenAccent, size: 14),
+                    Icon(Icons.sync_rounded, color: Color(0xFF22A879), size: 14),
                     SizedBox(width: 6),
-                    Text('Waktu Server AKTIF', style: TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text('Waktu Server AKTIF', style: TextStyle(fontFamily: 'Poppins', color: kPrimaryColor, fontSize: 11, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              Text(_timeString, style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800, height: 1, letterSpacing: 2)),
+              Text(_timeString, style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF25213A), fontSize: 48, fontWeight: FontWeight.w800, height: 1, letterSpacing: 1)),
               const SizedBox(height: 10),
-              Text(_formatDate(DateTime.now()), style: TextStyle(fontFamily: 'Poppins', color: Colors.white.withOpacity(0.6), fontSize: 15)),
+              Text(_formatDate(DateTime.now()), style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF8A8797), fontSize: 14)),
             ],
           )
         ],

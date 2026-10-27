@@ -11,7 +11,7 @@
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="true"
         android:label="absensi_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
