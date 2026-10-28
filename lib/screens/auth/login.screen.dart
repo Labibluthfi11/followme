@@ -233,10 +233,10 @@ class _LoginScreenState extends State<LoginScreen>
       decoration: InputDecoration(
         hintText: label,
         hintStyle: const TextStyle(
-          color: Color(0xFF9CA3AF),
+          color: Color(0xFF8A939B),
           fontFamily: 'Poppins',
         ),
-        prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+        prefixIcon: Icon(icon, color: const Color(0xFF279DE0)),
         suffixIcon: isPassword
             ? IconButton(
                 tooltip: isPasswordVisible
@@ -244,35 +244,35 @@ class _LoginScreenState extends State<LoginScreen>
                     : 'Lihat password',
                 icon: Icon(
                   isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: const Color(0xFF64748B),
+                  color: const Color(0xFF8A939B),
                 ),
                 onPressed: onVisibilityToggle,
               )
             : null,
         filled: true,
-        fillColor: const Color(0xFFF9FAFB),
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 17,
+          horizontal: 14,
+          vertical: 13,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE9EDF2)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE9EDF2)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFF279DE0), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFEF4444)),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
         ),
         errorStyle: const TextStyle(fontFamily: 'Poppins'),
@@ -320,14 +320,14 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E2C).withValues(alpha: 0.7),
+                          color: const Color(0xFFFFFEFD),
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
+                          border: Border.all(color: const Color(0xFFE9EDF2)),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
+                              color: const Color(
+                                0xFF7C3A2D,
+                              ).withValues(alpha: 0.12),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -345,7 +345,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     ? 'Verifikasi OTP'
                                     : 'Password Baru',
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: Color(0xFF263238),
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
@@ -359,8 +359,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     ? 'Masukkan 6 digit kode OTP.'
                                     : 'Buat sandi baru yang aman.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                style: const TextStyle(
+                                  color: Color(0xFF8A939B),
                                   fontSize: 13,
                                   fontFamily: 'Poppins',
                                 ),
@@ -370,17 +370,21 @@ class _LoginScreenState extends State<LoginScreen>
                               if (step == 1)
                                 TextFormField(
                                   controller: emailController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(
+                                    color: Color(0xFF263238),
+                                  ),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.1),
+                                    fillColor: const Color(0xFFF8FAFC),
                                     hintText: 'Email',
-                                    hintStyle: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                    hintStyle: const TextStyle(
+                                      color: Color(0xFF8A939B),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide.none,
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE9EDF2),
+                                      ),
                                     ),
                                   ),
                                   validator: (v) =>
@@ -393,7 +397,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 TextFormField(
                                   controller: otpController,
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: Color(0xFF263238),
                                     letterSpacing: 4,
                                   ),
                                   textAlign: TextAlign.center,
@@ -401,14 +405,16 @@ class _LoginScreenState extends State<LoginScreen>
                                   maxLength: 6,
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.1),
+                                    fillColor: const Color(0xFFF8FAFC),
                                     hintText: '000000',
-                                    hintStyle: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                    hintStyle: const TextStyle(
+                                      color: Color(0xFF8A939B),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide.none,
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE9EDF2),
+                                      ),
                                     ),
                                     counterText: "",
                                   ),
@@ -421,24 +427,28 @@ class _LoginScreenState extends State<LoginScreen>
                                 TextFormField(
                                   controller: newPasswordController,
                                   obscureText: !showNewPassword,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(
+                                    color: Color(0xFF263238),
+                                  ),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.1),
+                                    fillColor: const Color(0xFFF8FAFC),
                                     hintText: 'Password Baru',
-                                    hintStyle: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                    hintStyle: const TextStyle(
+                                      color: Color(0xFF8A939B),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide.none,
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE9EDF2),
+                                      ),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         showNewPassword
                                             ? Icons.visibility
                                             : Icons.visibility_off,
-                                        color: Colors.white54,
+                                        color: const Color(0xFF8A939B),
                                       ),
                                       onPressed: () => setDialogState(
                                         () =>
@@ -454,24 +464,28 @@ class _LoginScreenState extends State<LoginScreen>
                                 TextFormField(
                                   controller: confirmPasswordController,
                                   obscureText: !showConfirmPassword,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(
+                                    color: Color(0xFF263238),
+                                  ),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.1),
+                                    fillColor: const Color(0xFFF8FAFC),
                                     hintText: 'Konfirmasi Password',
-                                    hintStyle: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                    hintStyle: const TextStyle(
+                                      color: Color(0xFF8A939B),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide.none,
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFE9EDF2),
+                                      ),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         showConfirmPassword
                                             ? Icons.visibility
                                             : Icons.visibility_off,
-                                        color: Colors.white54,
+                                        color: const Color(0xFF8A939B),
                                       ),
                                       onPressed: () => setDialogState(
                                         () => showConfirmPassword =
@@ -492,16 +506,17 @@ class _LoginScreenState extends State<LoginScreen>
                                 height: 50,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF6366F1),
+                                    backgroundColor: const Color(0xFF279DE0),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
-                                    elevation: 5,
+                                    elevation: 0,
                                   ),
                                   onPressed: isLoading
                                       ? null
                                       : () async {
-                                          if (!formKey.currentState!.validate()) {
+                                          if (!formKey.currentState!
+                                              .validate()) {
                                             return;
                                           }
                                           setDialogState(
@@ -514,7 +529,9 @@ class _LoginScreenState extends State<LoginScreen>
                                               email: emailController.text
                                                   .trim(),
                                             );
-                                            if (!mounted || !context.mounted) return;
+                                            if (!mounted || !context.mounted) {
+                                              return;
+                                            }
                                             if (result['success'] == true) {
                                               setDialogState(() {
                                                 step = 2;
@@ -528,7 +545,9 @@ class _LoginScreenState extends State<LoginScreen>
                                                   .trim(),
                                               otp: otpController.text.trim(),
                                             );
-                                            if (!mounted || !context.mounted) return;
+                                            if (!mounted || !context.mounted) {
+                                              return;
+                                            }
                                             if (result['success'] == true) {
                                               setDialogState(() {
                                                 step = 3;
@@ -550,7 +569,9 @@ class _LoginScreenState extends State<LoginScreen>
                                                       confirmPasswordController
                                                           .text,
                                                 );
-                                            if (!mounted || !context.mounted) return;
+                                            if (!mounted || !context.mounted) {
+                                              return;
+                                            }
                                             if (result['success'] == true) {
                                               Navigator.of(context).pop();
                                               _showCustomAlert(
@@ -607,9 +628,9 @@ class _LoginScreenState extends State<LoginScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: const [
-                  Color(0xFF1E3A8A),
-                  Color(0xFF2563EB),
-                  Color(0xFF3B82F6),
+                  Color(0xFFF2F4F7),
+                  Color(0xFFEAF4FA),
+                  Color(0xFFF2F4F7),
                 ],
                 begin: _topAlignment.value,
                 end: _bottomAlignment.value,
@@ -628,8 +649,8 @@ class _LoginScreenState extends State<LoginScreen>
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 28,
+                        horizontal: 14,
+                        vertical: 14,
                       ),
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 440),
@@ -637,106 +658,56 @@ class _LoginScreenState extends State<LoginScreen>
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: BorderRadius.circular(26),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF0F172A).withValues(alpha: 0.2),
-                                blurRadius: 32,
-                                offset: const Offset(0, 18),
+                                color: const Color(
+                                  0xFF279DE0,
+                                ).withValues(alpha: 0.13),
+                                blurRadius: 28,
+                                offset: const Offset(0, 12),
                               ),
                             ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              SizedBox(
-                                height: 150,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Positioned(
-                                      top: -94,
-                                      left: -24,
-                                      child: Container(
-                                        width: 250,
-                                        height: 190,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFFFFD238),
-                                          borderRadius: BorderRadius.all(
-                                            Radius.elliptical(150, 100),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 18,
-                                      right: 42,
-                                      child: Container(
-                                        width: 42,
-                                        height: 42,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFF2563EB),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 76,
-                                      height: 76,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.9),
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(
-                                              0xFF1E3A8A,
-                                            ).withValues(alpha: 0.12),
-                                            blurRadius: 18,
-                                            offset: const Offset(0, 8),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Icon(
-                                        Icons.lock_person_rounded,
-                                        color: Color(0xFF172554),
-                                        size: 40,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              const SizedBox(
+                                height: 188,
+                                child: _LoginHeroIllustration(),
                               ),
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(
-                                  26,
-                                  4,
-                                  26,
-                                  28,
+                                  22,
+                                  0,
+                                  22,
+                                  18,
                                 ),
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
                                     const Text(
-                                      'Selamat Datang',
+                                      'Selamat Datang Kembali!',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: Color(0xFF172554),
-                                        fontSize: 27,
+                                        color: Color(0xFF24212A),
+                                        fontSize: 21,
                                         fontWeight: FontWeight.w800,
                                         fontFamily: 'Poppins',
                                       ),
                                     ),
                                     const SizedBox(height: 5),
                                     const Text(
-                                      'Masuk menggunakan akun yang diberikan HRD',
+                                      'Silakan masuk ke akun Anda',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: Color(0xFF9CA3AF),
+                                        color: Color(0xFF817A7D),
                                         fontSize: 12,
                                         fontFamily: 'Poppins',
                                       ),
                                     ),
-                                    const SizedBox(height: 28),
+                                    const SizedBox(height: 18),
                                     Form(
                                       key: _formKey,
                                       child: Column(
@@ -757,7 +728,7 @@ class _LoginScreenState extends State<LoginScreen>
                                               return null;
                                             },
                                           ),
-                                          const SizedBox(height: 14),
+                                          const SizedBox(height: 8),
                                           _buildLoginTextField(
                                             controller: _passwordController,
                                             label: 'Password',
@@ -787,7 +758,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         onPressed: _showForgotPasswordPopup,
                                         style: TextButton.styleFrom(
                                           foregroundColor: const Color(
-                                            0xFF2563EB,
+                                            0xFF279DE0,
                                           ),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 4,
@@ -803,25 +774,25 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 2),
                                     Consumer<AuthProvider>(
                                       builder: (context, authProvider, child) {
                                         return SizedBox(
-                                          height: 52,
+                                          height: 48,
                                           child: ElevatedButton(
                                             onPressed: authProvider.isLoading
                                                 ? null
                                                 : _login,
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: const Color(
-                                                0xFF2563EB,
+                                                0xFF279DE0,
                                               ),
                                               disabledBackgroundColor:
-                                                  const Color(0xFF93C5FD),
+                                                  const Color(0xFF9DD4F2),
                                               elevation: 0,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
-                                                    BorderRadius.circular(16),
+                                                    BorderRadius.circular(14),
                                               ),
                                             ),
                                             child: authProvider.isLoading
@@ -846,7 +817,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         );
                                       },
                                     ),
-                                    const SizedBox(height: 18),
+                                    const SizedBox(height: 12),
                                     const Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
@@ -854,7 +825,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         Icon(
                                           Icons.info_outline,
                                           size: 15,
-                                          color: Color(0xFF9CA3AF),
+                                          color: Color(0xFF8A939B),
                                         ),
                                         SizedBox(width: 6),
                                         Flexible(
@@ -862,7 +833,7 @@ class _LoginScreenState extends State<LoginScreen>
                                             'Belum punya akun? Hubungi HRD.',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              color: Color(0xFF9CA3AF),
+                                              color: Color(0xFF8A939B),
                                               fontSize: 11,
                                               fontFamily: 'Poppins',
                                             ),
@@ -887,6 +858,127 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
   }
+}
+
+class _LoginHeroIllustration extends StatelessWidget {
+  const _LoginHeroIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _LoginHeroPainter(),
+      child: const SizedBox.expand(),
+    );
+  }
+}
+
+class _LoginHeroPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = math.min(size.width / 320, size.height / 188);
+    canvas
+      ..save()
+      ..translate(
+        (size.width - 320 * scale) / 2,
+        (size.height - 188 * scale) / 2,
+      )
+      ..scale(scale);
+
+    final paint = Paint()..style = PaintingStyle.fill;
+    final strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    paint.color = const Color(0xFFE8F5FD);
+    canvas.drawOval(const Rect.fromLTWH(-30, -100, 230, 190), paint);
+    paint.color = const Color(0xFF8CCDF0);
+    canvas.drawCircle(const Offset(64, 77), 6, paint);
+    canvas.drawCircle(const Offset(93, 52), 4, paint);
+    paint.color = const Color(0xFFB38CEB);
+    canvas.drawCircle(const Offset(253, 48), 9, paint);
+    canvas.drawCircle(const Offset(276, 92), 4, paint);
+    paint.color = const Color(0xFF279DE0);
+    canvas.drawCircle(const Offset(221, 78), 5, paint);
+    paint.color = const Color(0xFF8FD6C5);
+    canvas.drawCircle(const Offset(46, 112), 5, paint);
+
+    paint.color = const Color(0xFF20212B);
+    canvas.drawCircle(const Offset(166, 35), 13, paint);
+    canvas.drawCircle(const Offset(169, 23), 8, paint);
+
+    paint.color = const Color(0xFFEEB18B);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(141, 91, 18, 24),
+        const Radius.circular(8),
+      ),
+      paint,
+    );
+
+    strokePaint
+      ..color = const Color(0xFFEEB18B)
+      ..strokeWidth = 12;
+    canvas.drawLine(const Offset(119, 124), const Offset(95, 105), strokePaint);
+    canvas.drawLine(const Offset(95, 105), const Offset(78, 78), strokePaint);
+    canvas.drawLine(
+      const Offset(174, 123),
+      const Offset(194, 108),
+      strokePaint,
+    );
+
+    paint.color = const Color(0xFFEEB18B);
+    canvas.drawCircle(const Offset(77, 73), 8, paint);
+    strokePaint
+      ..color = const Color(0xFFEEB18B)
+      ..strokeWidth = 4;
+    canvas.drawLine(const Offset(72, 67), const Offset(69, 58), strokePaint);
+    canvas.drawLine(const Offset(77, 66), const Offset(77, 56), strokePaint);
+    canvas.drawLine(const Offset(82, 68), const Offset(86, 60), strokePaint);
+
+    paint.color = const Color(0xFFFFA21A);
+    final shirt = Path()
+      ..moveTo(125, 108)
+      ..quadraticBezierTo(150, 98, 175, 108)
+      ..lineTo(195, 176)
+      ..lineTo(102, 176)
+      ..close();
+    canvas.drawPath(shirt, paint);
+
+    paint.color = const Color(0xFFEEB18B);
+    canvas.drawOval(const Rect.fromLTWH(126, 34, 48, 61), paint);
+
+    paint.color = const Color(0xFF20212B);
+    final hair = Path()
+      ..moveTo(126, 63)
+      ..quadraticBezierTo(124, 36, 143, 28)
+      ..quadraticBezierTo(165, 18, 178, 39)
+      ..quadraticBezierTo(181, 48, 172, 58)
+      ..lineTo(166, 49)
+      ..quadraticBezierTo(155, 55, 144, 48)
+      ..quadraticBezierTo(137, 58, 126, 63)
+      ..close();
+    canvas.drawPath(hair, paint);
+
+    paint.color = const Color(0xFF20212B);
+    canvas.drawCircle(const Offset(140, 66), 2, paint);
+    canvas.drawCircle(const Offset(160, 66), 2, paint);
+    strokePaint
+      ..color = const Color(0xFFB76D5C)
+      ..strokeWidth = 1.5;
+    canvas.drawArc(
+      const Rect.fromLTWH(143, 69, 14, 10),
+      0.2,
+      2.7,
+      false,
+      strokePaint,
+    );
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _LoginHeroPainter oldDelegate) => false;
 }
 
 class _ModernLoading extends StatefulWidget {

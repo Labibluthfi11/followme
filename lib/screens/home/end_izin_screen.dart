@@ -17,8 +17,10 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
   File? _dokumenKembali;
   Future<void> _takePicture() async {
     final File? image = await Navigator.push<File>(
-      context, 
-      MaterialPageRoute(builder: (_) => const CustomCameraScreen(useBackCamera: true))
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CustomCameraScreen(useBackCamera: true),
+      ),
     );
     if (image != null && mounted) {
       setState(() => _dokumenKembali = image);
@@ -27,7 +29,11 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
 
   void _submitEndIzin() async {
     if (_dokumenKembali == null || _keteranganController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wajib mengisi keterangan & foto bukti penyelesaian!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Wajib mengisi keterangan & foto bukti penyelesaian!'),
+        ),
+      );
       return;
     }
 
@@ -49,17 +55,28 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
       if (!mounted) return;
       if (isSuccess) {
         if (res['is_pelanggaran'] == true) {
-           _tampilkanDialogPelanggaran();
+          _tampilkanDialogPelanggaran();
         } else {
-           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Izin berhasil diselesaikan.'), backgroundColor: Colors.green));
-           Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Izin berhasil diselesaikan.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Gagal menyelesaikan izin.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message'] ?? 'Gagal menyelesaikan izin.'),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       provider.setLoading(false);
@@ -72,25 +89,43 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          icon: const Icon(Icons.warning_rounded, color: Colors.redAccent, size: 64),
-          title: const Text('Izin Diselesaikan', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          icon: const Icon(
+            Icons.warning_rounded,
+            color: Colors.redAccent,
+            size: 64,
+          ),
+          title: const Text(
+            'Izin Diselesaikan',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: const Text(
             'Izin Keluar diselesaikan, namun lewat batas maksimal 2 jam. Ini tercatat sebagai Pelanggaran.\n\nKeputusan mengenai sanksi atau tindakan selanjutnya akan ditentukan secara manual oleh admin dan akan diinformasikan melalui notifikasi terpisah.',
-             textAlign: TextAlign.center,
+            textAlign: TextAlign.center,
           ),
           actions: [
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 onPressed: () {
-                  Navigator.of(context).pop(); 
-                  Navigator.of(context).pop(); 
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
                 },
-                child: const Text('Mengerti', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Mengerti',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-            )
+            ),
           ],
         );
       },
@@ -100,9 +135,12 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], 
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Selesaikan Izin', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Selesaikan Izin',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -119,8 +157,15 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
                 TextFormField(
                   controller: _keteranganController,
                   maxLines: 4,
-                  style: const TextStyle(color: Colors.black87, fontSize: 15, fontFamily: 'Poppins'),
-                  decoration: _inputDecoration('Detail penyelesaian tugas/urusan...', Icons.edit_note_rounded),
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                    fontFamily: 'Poppins',
+                  ),
+                  decoration: _inputDecoration(
+                    'Detail penyelesaian tugas/urusan...',
+                    Icons.edit_note_rounded,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -131,22 +176,43 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
                     height: 180,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.indigo.shade50,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.indigo.shade200, width: 2, style: BorderStyle.solid),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: _dokumenKembali == null
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.camera_alt_rounded, size: 48, color: Colors.indigo.shade400),
+                              Icon(
+                                Icons.camera_alt_rounded,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                               const SizedBox(height: 8),
-                              Text('Tap untuk mengambil foto bukti', style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.w500)),
+                              Text(
+                                'Tap untuk mengambil foto bukti',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ],
                           )
                         : ClipRRect(
                             borderRadius: BorderRadius.circular(14),
-                            child: Image.file(_dokumenKembali!, fit: BoxFit.cover, width: double.infinity),
+                            child: Image.file(
+                              _dokumenKembali!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
                           ),
                   ),
                 ),
@@ -157,46 +223,88 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
                   height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo.shade600,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 4,
-                      shadowColor: Colors.indigo.shade200,
+                      shadowColor: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.25),
                     ),
                     onPressed: provider.isLoading ? null : _submitEndIzin,
                     child: provider.isLoading
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.check_circle_rounded, size: 20),
                               SizedBox(width: 10),
-                              Text('Selesaikan Izin Sekarang', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                              Text(
+                                'Selesaikan Izin Sekarang',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
                             ],
                           ),
                   ),
-                )
+                ),
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
 
   Widget _buildLabel(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
-        child: Text(text, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.grey.shade700, fontFamily: 'Poppins')),
-      );
+    padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+        color: Colors.grey.shade700,
+        fontFamily: 'Poppins',
+      ),
+    ),
+  );
 
-  InputDecoration _inputDecoration(String hint, IconData prefixIcon) => InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontFamily: 'Poppins', fontSize: 14),
-        filled: true,
-        fillColor: Colors.white,
-        prefixIcon: Icon(prefixIcon, color: Colors.indigo.shade300),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.indigo.shade500, width: 2)),
-      );
+  InputDecoration _inputDecoration(
+    String hint,
+    IconData prefixIcon,
+  ) => InputDecoration(
+    hintText: hint,
+    hintStyle: TextStyle(
+      color: Colors.grey.shade400,
+      fontFamily: 'Poppins',
+      fontSize: 14,
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    prefixIcon: Icon(prefixIcon, color: Theme.of(context).colorScheme.primary),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(
+        color: Theme.of(context).colorScheme.primary,
+        width: 1.5,
+      ),
+    ),
+  );
 }

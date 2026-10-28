@@ -8,8 +8,8 @@ import '../../providers/absensi_provider.dart';
 import '../../models/absensi_model.dart';
 import 'custom_camera_screen.dart';
 
-const Color kPrimaryColor = Color(0xFF4F46E5); // Deep Indigo
-const Color kBackgroundColor = Color(0xFFF3F4F6); // Soft gray
+const Color kPrimaryColor = Color(0xFF279DE0);
+const Color kBackgroundColor = Color(0xFFF2F4F7);
 const Color kWarningColor = Color(0xFFF59E0B);
 
 // ======================================================================
@@ -21,15 +21,25 @@ class _ModernLoading extends StatefulWidget {
   @override
   State<_ModernLoading> createState() => _ModernLoadingState();
 }
-class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProviderStateMixin {
+
+class _ModernLoadingState extends State<_ModernLoading>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
   }
+
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -48,7 +58,14 @@ class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProvide
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Opacity(
                   opacity: alpha,
-                  child: Container(width: 8, height: 8, decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle)),
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: widget.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                 ),
               ),
             );
@@ -60,7 +77,7 @@ class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProvide
 }
 
 class AbsensiTelatFormScreen extends StatefulWidget {
-  final Absensi? absensiHariIni; 
+  final Absensi? absensiHariIni;
 
   const AbsensiTelatFormScreen({super.key, this.absensiHariIni});
 
@@ -82,20 +99,38 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
 
   void _showSnackBar(String message, {required bool isSuccess}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(
-        children: [
-          Icon(isSuccess ? Icons.check_circle_rounded : Icons.error_rounded, color: Colors.white, size: 24),
-          const SizedBox(width: 12),
-          Expanded(child: Text(message, style: const TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white))),
-        ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle_rounded : Icons.error_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isSuccess
+            ? const Color(0xFF10B981)
+            : const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.all(20),
+        elevation: 8,
       ),
-      backgroundColor: isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.all(20),
-      elevation: 8,
-    ));
+    );
   }
 
   Future<void> _pickFile() async {
@@ -111,7 +146,13 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
   int _hitungTelatMenit(String? checkInAt) {
     if (checkInAt == null) return 0;
     final checkIn = DateTime.parse(checkInAt).toLocal();
-    final standardTime = DateTime(checkIn.year, checkIn.month, checkIn.day, 8, 0);
+    final standardTime = DateTime(
+      checkIn.year,
+      checkIn.month,
+      checkIn.day,
+      8,
+      0,
+    );
     if (checkIn.isAfter(standardTime)) {
       return checkIn.difference(standardTime).inMinutes;
     }
@@ -132,8 +173,8 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
       return;
     }
     if (_fileBukti == null) {
-       setState(() => _isLoading = false);
-       _showSnackBar('Foto bukti wajib diisi bos!', isSuccess: false);
+      setState(() => _isLoading = false);
+      _showSnackBar('Foto bukti wajib diisi bos!', isSuccess: false);
       return;
     }
 
@@ -142,27 +183,38 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
 
     if (absensi == null) {
       setState(() => _isLoading = false);
-      _showSnackBar('Data absen masuk ga ketemu, yakin udah absen?', isSuccess: false);
+      _showSnackBar(
+        'Data absen masuk ga ketemu, yakin udah absen?',
+        isSuccess: false,
+      );
       return;
     }
 
     try {
       await Future.delayed(const Duration(milliseconds: 600));
       final result = await provider.pengajuanTelat(
-        fileBukti: _fileBukti!, keterangan: _keteranganController.text.trim(), absensiId: absensi.id,
+        fileBukti: _fileBukti!,
+        keterangan: _keteranganController.text.trim(),
+        absensiId: absensi.id,
       );
 
       if (!mounted) return;
 
       if (result['success'] == true) {
-        _showSnackBar(result['message'] ?? 'Alasan telat berhasil dikirim!', isSuccess: true);
+        _showSnackBar(
+          result['message'] ?? 'Alasan telat berhasil dikirim!',
+          isSuccess: true,
+        );
         Navigator.of(context).pop(true);
       } else {
         // Cek apakah ini error jaringan "bapuk"
         if (result['isNetworkError'] == true) {
           _showBapukDialog(result['message']);
         } else {
-          _showSnackBar(result['message'] ?? 'Gagal kirim bro.', isSuccess: false);
+          _showSnackBar(
+            result['message'] ?? 'Gagal kirim bro.',
+            isSuccess: false,
+          );
         }
       }
     } catch (e) {
@@ -181,30 +233,68 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
           backgroundColor: Colors.transparent,
           child: Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle),
-                  child: Icon(Icons.signal_wifi_connected_no_internet_4_rounded, color: Colors.red.shade500, size: 60),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.signal_wifi_connected_no_internet_4_rounded,
+                    color: Colors.red.shade500,
+                    size: 60,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Waduh, Koneksi Putus!', style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)), textAlign: TextAlign.center),
+                const Text(
+                  'Waduh, Koneksi Putus!',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
-                Text(message ?? 'Internet lu bapuk banget boy asli.', style: const TextStyle(fontFamily: 'Poppins', color: Colors.grey, fontSize: 14), textAlign: TextAlign.center),
+                Text(
+                  message ?? 'Internet lu bapuk banget boy asli.',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF4444), padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0
+                      backgroundColor: const Color(0xFFEF4444),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
                     ),
-                    child: const Text('Coba Lagi Nanti', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                    child: const Text(
+                      'Coba Lagi Nanti',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -221,16 +311,29 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
     final absensi = widget.absensiHariIni ?? provider.currentDayAbsensi;
     final lateMinutes = _hitungTelatMenit(absensi?.checkInAt);
     final checkInTime = absensi?.checkInAt != null
-        ? DateFormat('HH:mm').format(DateTime.parse(absensi!.checkInAt!).toLocal())
+        ? DateFormat(
+            'HH:mm',
+          ).format(DateTime.parse(absensi!.checkInAt!).toLocal())
         : '--:--';
     final tanggal = absensi?.checkInAt != null
-        ? DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.parse(absensi!.checkInAt!).toLocal())
+        ? DateFormat(
+            'EEEE, d MMMM yyyy',
+            'id_ID',
+          ).format(DateTime.parse(absensi!.checkInAt!).toLocal())
         : DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
 
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text('Pengajuan Telat', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, color: Color(0xFF1F2937), fontSize: 18)),
+        title: const Text(
+          'Pengajuan Telat',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1F2937),
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -244,34 +347,77 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // INFO CARD
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [lateMinutes > 0 ? kWarningColor : kPrimaryColor, lateMinutes > 0 ? const Color(0xFFD97706) : const Color(0xFF4338CA)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  gradient: LinearGradient(
+                    colors: [
+                      lateMinutes > 0 ? kWarningColor : kPrimaryColor,
+                      lateMinutes > 0
+                          ? const Color(0xFFD97706)
+                          : const Color(0xFF4338CA),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(32),
-                  boxShadow: [BoxShadow(color: (lateMinutes > 0 ? kWarningColor : kPrimaryColor).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 10))],
+                  boxShadow: [
+                    BoxShadow(
+                      color: (lateMinutes > 0 ? kWarningColor : kPrimaryColor)
+                          .withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Informasi Absen', style: TextStyle(fontFamily: 'Poppins', color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Informasi Absen',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text(tanggal, style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      tanggal,
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
-                        _buildInfoChip(Icons.login_rounded, 'Masuk', checkInTime, Colors.white),
+                        _buildInfoChip(
+                          Icons.login_rounded,
+                          'Masuk',
+                          checkInTime,
+                          Colors.white,
+                        ),
                         const SizedBox(width: 12),
-                        _buildInfoChip(Icons.schedule_rounded, 'Aturan', '08:00', Colors.white70),
+                        _buildInfoChip(
+                          Icons.schedule_rounded,
+                          'Aturan',
+                          '08:00',
+                          Colors.white70,
+                        ),
                         const SizedBox(width: 12),
                         _buildInfoChip(
                           Icons.timer_off_rounded,
                           'Telat',
                           lateMinutes > 0 ? '$lateMinutes mnt' : 'Aman',
-                          lateMinutes > 0 ? Colors.red.shade100 : Colors.green.shade300,
+                          lateMinutes > 0
+                              ? Colors.red.shade100
+                              : Colors.green.shade300,
                         ),
                       ],
                     ),
@@ -283,46 +429,101 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
               if (lateMinutes == 0)
                 Container(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.green.shade200, width: 2)),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.green.shade200, width: 2),
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Colors.green.shade500, size: 28),
+                      Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.green.shade500,
+                        size: 28,
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: Text('Jam masuk Anda aman, tidak perlu isi form alasan keterlambatan hari ini.', style: TextStyle(fontFamily: 'Poppins', color: Colors.green.shade800, fontSize: 13, fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Jam masuk Anda aman, tidak perlu isi form alasan keterlambatan hari ini.',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: Colors.green.shade800,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
 
               if (lateMinutes > 0) ...[
-                const Text('Alasan Keterlambatan', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                const Text(
+                  'Alasan Keterlambatan',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
                 const SizedBox(height: 12),
-                
+
                 Container(
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200, width: 2)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200, width: 2),
+                  ),
                   child: TextFormField(
                     controller: _keteranganController,
                     maxLines: 4,
-                    style: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: Color(0xFF1F2937)),
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14,
+                      color: Color(0xFF1F2937),
+                    ),
                     decoration: InputDecoration(
-                      hintText: 'Contoh: Ban bocor di jalan tol, hujan deras, jalan dialihkan...',
-                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                      hintText:
+                          'Contoh: Ban bocor di jalan tol, hujan deras, jalan dialihkan...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 13,
+                      ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.all(16),
                     ),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Keterangan gaboleh kosong';
-                      if (v.trim().length < 10) return 'Tulis detail dong, minimal 10 huruf bro';
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Keterangan gaboleh kosong';
+                      }
+                      if (v.trim().length < 10) {
+                        return 'Tulis detail dong, minimal 10 huruf bro';
+                      }
                       return null;
                     },
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                const Text('Foto Bukti Nyata', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                const Text(
+                  'Foto Bukti Nyata',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Sertakan foto biar atasan gampang ACC', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Colors.grey.shade500)),
+                Text(
+                  'Sertakan foto biar atasan gampang ACC',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
                 const SizedBox(height: 12),
 
                 GestureDetector(
@@ -334,7 +535,9 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _fileBukti != null ? kPrimaryColor : Colors.grey.shade200,
+                        color: _fileBukti != null
+                            ? kPrimaryColor
+                            : Colors.grey.shade200,
                         width: 2,
                       ),
                     ),
@@ -346,13 +549,24 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                               children: [
                                 Image.file(_fileBukti!, fit: BoxFit.cover),
                                 Positioned(
-                                  top: 12, right: 12,
+                                  top: 12,
+                                  right: 12,
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _fileBukti = null),
+                                    onTap: () =>
+                                        setState(() => _fileBukti = null),
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
-                                      child: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -364,11 +578,26 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
-                                child: const Icon(Icons.camera_alt_rounded, size: 32, color: kPrimaryColor)
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 32,
+                                  color: kPrimaryColor,
+                                ),
                               ),
                               const SizedBox(height: 12),
-                              Text('Tap untuk buka kamera', style: TextStyle(fontFamily: 'Poppins', color: Colors.grey.shade600, fontSize: 14, fontWeight: FontWeight.w600)),
+                              Text(
+                                'Tap untuk buka kamera',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  color: Colors.grey.shade600,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ],
                           ),
                   ),
@@ -381,18 +610,35 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                   height: 56,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: kWarningColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
+                    boxShadow: [
+                      BoxShadow(
+                        color: kWarningColor.withValues(alpha: 0.4),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kWarningColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 0,
                     ),
                     child: _isLoading
                         ? const _ModernLoading(color: Colors.white)
-                        : const Text('AJUKAN ALASAN TELAT', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                        : const Text(
+                            'AJUKAN ALASAN TELAT',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -404,11 +650,19 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label, String value, Color valueColor) {
+  Widget _buildInfoChip(
+    IconData icon,
+    String label,
+    String value,
+    Color valueColor,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -416,11 +670,27 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
               children: [
                 Icon(icon, size: 14, color: Colors.white70),
                 const SizedBox(width: 6),
-                Text(label, style: const TextStyle(fontFamily: 'Poppins', color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(value, style: TextStyle(fontFamily: 'Poppins', color: valueColor, fontWeight: FontWeight.w800, fontSize: 14)),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                color: valueColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+              ),
+            ),
           ],
         ),
       ),

@@ -10,22 +10,77 @@ import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:absensi_app/services/image_compress_service.dart';
 import 'package:intl/intl.dart';
 
-const Color kPrimaryColor = Color(0xFF4F46E5); // Deep Indigo
-const Color kBackgroundColor = Color(0xFFF3F4F6); // Soft gray
+const Color kPrimaryColor = Color(0xFF279DE0);
+const Color kBackgroundColor = Color(0xFFF2F4F7);
 const Color kCardColor = Colors.white;
 
 const Map<String, Map<String, dynamic>> _cutiConfig = {
-  'cuti_tahunan':   {'label': 'Cuti Tahunan',             'maxDays': 12,  'potongJatah': true,  'gratisHari': 0},
-  'cuti_melahirkan':{'label': 'Cuti Melahirkan',           'maxDays': 90,  'potongJatah': false, 'gratisHari': 0},
-  'cuti_keguguran': {'label': 'Cuti Keguguran',            'maxDays': 45,  'potongJatah': false, 'gratisHari': 0},
-  'cuti_haji':      {'label': 'Cuti Ibadah Haji',          'maxDays': 60,  'potongJatah': true,  'gratisHari': 14},
-  'cuti_umroh':     {'label': 'Cuti Ibadah Umroh',         'maxDays': 60,  'potongJatah': true,  'gratisHari': 12},
-  'cuti_menikah':   {'label': 'Cuti Menikah',              'maxDays': 3,   'potongJatah': false, 'gratisHari': 0},
-  'cuti_khitanan':  {'label': 'Cuti Khitanan Anak',        'maxDays': 2,   'potongJatah': false, 'gratisHari': 0},
-  'cuti_baptis':    {'label': 'Cuti Baptis Anak',          'maxDays': 2,   'potongJatah': false, 'gratisHari': 0},
-  'cuti_meninggal': {'label': 'Cuti Meninggal Keluarga',   'maxDays': 2,   'potongJatah': false, 'gratisHari': 0},
-  'change_off':     {'label': 'Change Off',                'maxDays': 1,   'potongJatah': false, 'gratisHari': 0},
-  'unpaid_leave':   {'label': 'Unpaid Leave',              'maxDays': 30,  'potongJatah': false, 'gratisHari': 0},
+  'cuti_tahunan': {
+    'label': 'Cuti Tahunan',
+    'maxDays': 12,
+    'potongJatah': true,
+    'gratisHari': 0,
+  },
+  'cuti_melahirkan': {
+    'label': 'Cuti Melahirkan',
+    'maxDays': 90,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'cuti_keguguran': {
+    'label': 'Cuti Keguguran',
+    'maxDays': 45,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'cuti_haji': {
+    'label': 'Cuti Ibadah Haji',
+    'maxDays': 60,
+    'potongJatah': true,
+    'gratisHari': 14,
+  },
+  'cuti_umroh': {
+    'label': 'Cuti Ibadah Umroh',
+    'maxDays': 60,
+    'potongJatah': true,
+    'gratisHari': 12,
+  },
+  'cuti_menikah': {
+    'label': 'Cuti Menikah',
+    'maxDays': 3,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'cuti_khitanan': {
+    'label': 'Cuti Khitanan Anak',
+    'maxDays': 2,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'cuti_baptis': {
+    'label': 'Cuti Baptis Anak',
+    'maxDays': 2,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'cuti_meninggal': {
+    'label': 'Cuti Meninggal Keluarga',
+    'maxDays': 2,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'change_off': {
+    'label': 'Change Off',
+    'maxDays': 1,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
+  'unpaid_leave': {
+    'label': 'Unpaid Leave',
+    'maxDays': 30,
+    'potongJatah': false,
+    'gratisHari': 0,
+  },
 };
 
 // ----------------------------------------------------------------------
@@ -37,15 +92,25 @@ class _ModernLoading extends StatefulWidget {
   @override
   State<_ModernLoading> createState() => _ModernLoadingState();
 }
-class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProviderStateMixin {
+
+class _ModernLoadingState extends State<_ModernLoading>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
   }
+
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -64,7 +129,14 @@ class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProvide
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Opacity(
                   opacity: alpha,
-                  child: Container(width: 8, height: 8, decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle)),
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: widget.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                 ),
               ),
             );
@@ -78,8 +150,14 @@ class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProvide
 class SakitFormScreen extends StatefulWidget {
   final int? resubmitId;
   final Absensi? existingAbsensi;
+  final String? initialTipePengajuan;
 
-  const SakitFormScreen({super.key, this.resubmitId, this.existingAbsensi});
+  const SakitFormScreen({
+    super.key,
+    this.resubmitId,
+    this.existingAbsensi,
+    this.initialTipePengajuan,
+  });
 
   @override
   State<SakitFormScreen> createState() => _SakitFormScreenState();
@@ -88,7 +166,8 @@ class SakitFormScreen extends StatefulWidget {
 class _SakitFormScreenState extends State<SakitFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _catatanController = TextEditingController();
-  final TextEditingController _catatanPanggilanController = TextEditingController();
+  final TextEditingController _catatanPanggilanController =
+      TextEditingController();
 
   File? _pickedFile;
   bool _isSubmitting = false;
@@ -103,11 +182,15 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialTipePengajuan != null) {
+      _tipePengajuan = widget.initialTipePengajuan!;
+    }
     if (widget.existingAbsensi != null) {
       _tipePengajuan = (widget.existingAbsensi!.tipe ?? 'sakit').toLowerCase();
       _catatanController.text = widget.existingAbsensi!.keterangan ?? '';
       if (_tipePengajuan == 'izin') {
-        _catatanPanggilanController.text = widget.existingAbsensi!.catatanAdmin ?? '';
+        _catatanPanggilanController.text =
+            widget.existingAbsensi!.catatanAdmin ?? '';
       }
       if (widget.existingAbsensi!.checkInAt != null) {
         _startDate = DateTime.tryParse(widget.existingAbsensi!.checkInAt!);
@@ -137,10 +220,14 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
     }
     return count;
   }
-  int get _maxHariJenisCuti => _cutiConfig[_jenisCuti]?['maxDays'] as int? ?? 30;
-  bool get _potongJatahTahunan => _cutiConfig[_jenisCuti]?['potongJatah'] as bool? ?? false;
+
+  int get _maxHariJenisCuti =>
+      _cutiConfig[_jenisCuti]?['maxDays'] as int? ?? 30;
+  bool get _potongJatahTahunan =>
+      _cutiConfig[_jenisCuti]?['potongJatah'] as bool? ?? false;
   int get _gratisHari => _cutiConfig[_jenisCuti]?['gratisHari'] as int? ?? 0;
-  String _formatDate(DateTime? date) => date == null ? 'Pilih tanggal' : DateFormat('dd MMM yyyy').format(date);
+  String _formatDate(DateTime? date) =>
+      date == null ? 'Pilih tanggal' : DateFormat('dd MMM yyyy').format(date);
 
   bool _isWorkingDay(DateTime day) {
     // 0 = Monday, 6 = Sunday. In Dart: 1 = Monday, 7 = Sunday.
@@ -152,10 +239,17 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _startDate ?? DateTime.now(),
-      firstDate: isResubmit ? DateTime.now().subtract(const Duration(days: 365)) : DateTime.now(),
+      firstDate: isResubmit
+          ? DateTime.now().subtract(const Duration(days: 365))
+          : DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       selectableDayPredicate: _isWorkingDay,
-      builder: (ctx, child) => Theme(data: ThemeData.light().copyWith(colorScheme: const ColorScheme.light(primary: kPrimaryColor)), child: child!),
+      builder: (ctx, child) => Theme(
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(primary: kPrimaryColor),
+        ),
+        child: child!,
+      ),
     );
     if (picked != null) {
       setState(() {
@@ -171,7 +265,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       _showSnackBar('Pilih tanggal mulai terlebih dahulu.', isSuccess: false);
       return;
     }
-    
+
     // Calculate max end date considering only working days
     DateTime maxEndDate = _startDate!;
     int daysAdded = 0;
@@ -188,32 +282,50 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       firstDate: _startDate!,
       lastDate: maxEndDate,
       selectableDayPredicate: _isWorkingDay,
-      builder: (ctx, child) => Theme(data: ThemeData.light().copyWith(colorScheme: const ColorScheme.light(primary: kPrimaryColor)), child: child!),
+      builder: (ctx, child) => Theme(
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(primary: kPrimaryColor),
+        ),
+        child: child!,
+      ),
     );
     if (picked != null) setState(() => _endDate = picked);
   }
 
-
   Future<void> _takePicture() async {
     Navigator.pop(context);
     try {
-      final XFile? img = await _picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+      final XFile? img = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
       if (img != null) {
-        final compressed = await ImageCompressService.compressImage(File(img.path));
+        final compressed = await ImageCompressService.compressImage(
+          File(img.path),
+        );
         if (mounted) setState(() => _pickedFile = compressed);
       }
-    } catch (e) { _showSnackBar('Gagal mengambil foto.', isSuccess: false); }
+    } catch (e) {
+      _showSnackBar('Gagal mengambil foto.', isSuccess: false);
+    }
   }
 
   Future<void> _pickFromGallery() async {
     Navigator.pop(context);
     try {
-      final XFile? img = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      final XFile? img = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
       if (img != null) {
-        final compressed = await ImageCompressService.compressImage(File(img.path));
+        final compressed = await ImageCompressService.compressImage(
+          File(img.path),
+        );
         if (mounted) setState(() => _pickedFile = compressed);
       }
-    } catch (e) { _showSnackBar('Gagal memilih gambar.', isSuccess: false); }
+    } catch (e) {
+      _showSnackBar('Gagal memilih gambar.', isSuccess: false);
+    }
   }
 
   void _showPickerOptions() {
@@ -223,13 +335,31 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       builder: (ctx) => Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 50, height: 5, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             const SizedBox(height: 24),
-            const Text('Unggah Bukti Dokumen', style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+            const Text(
+              'Unggah Bukti Dokumen',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+            ),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -239,12 +369,27 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.blue.shade100)),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.blue.shade100),
+                      ),
                       child: const Column(
                         children: [
-                          Icon(Icons.camera_alt_rounded, color: Colors.blue, size: 32),
+                          Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.blue,
+                            size: 32,
+                          ),
                           SizedBox(height: 12),
-                          Text('Kamera', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: Colors.blue))
+                          Text(
+                            'Kamera',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -257,12 +402,27 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.purple.shade100)),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.purple.shade100),
+                      ),
                       child: const Column(
                         children: [
-                          Icon(Icons.photo_library_rounded, color: Colors.purple, size: 32),
+                          Icon(
+                            Icons.photo_library_rounded,
+                            color: Colors.purple,
+                            size: 32,
+                          ),
                           SizedBox(height: 12),
-                          Text('Galeri', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: Colors.purple))
+                          Text(
+                            'Galeri',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w700,
+                              color: Colors.purple,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -279,20 +439,38 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
 
   void _showSnackBar(String message, {required bool isSuccess}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(
-        children: [
-          Icon(isSuccess ? Icons.check_circle_rounded : Icons.error_rounded, color: Colors.white, size: 24),
-          const SizedBox(width: 12),
-          Expanded(child: Text(message, style: const TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white))),
-        ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle_rounded : Icons.error_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isSuccess
+            ? const Color(0xFF10B981)
+            : const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.all(20),
+        elevation: 8,
       ),
-      backgroundColor: isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.all(20),
-      elevation: 8,
-    ));
+    );
   }
 
   Future<void> _submitForm() async {
@@ -305,11 +483,19 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
     // Start loading IMMEDIATELY
     setState(() => _isSubmitting = true);
 
-    final userType = Provider.of<AuthProvider>(context, listen: false).user?.employmentType.toLowerCase() ?? 'freelance';
+    final userType =
+        Provider.of<AuthProvider>(
+          context,
+          listen: false,
+        ).user?.employmentType.toLowerCase() ??
+        'freelance';
 
     if (_tipePengajuan == 'cuti' && userType != 'organik') {
       setState(() => _isSubmitting = false);
-      _showSnackBar('Fitur Cuti hanya tersedia untuk karyawan Organik.', isSuccess: false);
+      _showSnackBar(
+        'Fitur Cuti hanya tersedia untuk karyawan Organik.',
+        isSuccess: false,
+      );
       return;
     }
 
@@ -326,19 +512,24 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         return;
       }
       if (_potongJatahTahunan) {
-  final sisaCuti = Provider.of<AuthProvider>(context, listen: false).user?.sisaCuti ?? 0;
-  final hariYangPotong = (_jumlahHariDipilih - _gratisHari).clamp(0, _jumlahHariDipilih);
-  if (hariYangPotong > sisaCuti) {
-    setState(() => _isSubmitting = false);
-    _showSnackBar(
-      _gratisHari > 0
-        ? 'Sisa cuti tidak cukup. $_gratisHari hari gratis, $hariYangPotong hari potong cuti. Sisa cuti: $sisaCuti hari.'
-        : 'Sisa cuti tidak cukup (Sisa: $sisaCuti, Diajukan: $_jumlahHariDipilih)',
-      isSuccess: false
-    );
-    return;
-  }
-}
+        final sisaCuti =
+            Provider.of<AuthProvider>(context, listen: false).user?.sisaCuti ??
+            0;
+        final hariYangPotong = (_jumlahHariDipilih - _gratisHari).clamp(
+          0,
+          _jumlahHariDipilih,
+        );
+        if (hariYangPotong > sisaCuti) {
+          setState(() => _isSubmitting = false);
+          _showSnackBar(
+            _gratisHari > 0
+                ? 'Sisa cuti tidak cukup. $_gratisHari hari gratis, $hariYangPotong hari potong cuti. Sisa cuti: $sisaCuti hari.'
+                : 'Sisa cuti tidak cukup (Sisa: $sisaCuti, Diajukan: $_jumlahHariDipilih)',
+            isSuccess: false,
+          );
+          return;
+        }
+      }
     }
 
     if (!isResubmit && _pickedFile == null) {
@@ -369,23 +560,23 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         );
       } else if (_tipePengajuan == 'sakit') {
         result = await provider.absenSakit(
-          fileBukti: _pickedFile!, 
+          fileBukti: _pickedFile!,
           catatan: _catatanController.text,
           startDate: _startDate,
           endDate: _endDate,
         );
       } else if (_tipePengajuan == 'cuti') {
         result = await provider.absenIzin(
-          fileBukti: _pickedFile!, 
-          catatan: _catatanController.text, 
-          catatanPanggilan: _jenisCuti, 
-          startDate: _startDate, 
+          fileBukti: _pickedFile!,
+          catatan: _catatanController.text,
+          catatanPanggilan: _jenisCuti,
+          startDate: _startDate,
           endDate: _endDate,
         );
       } else {
         result = await provider.absenIzin(
-          fileBukti: _pickedFile!, 
-          catatan: _catatanController.text, 
+          fileBukti: _pickedFile!,
+          catatan: _catatanController.text,
           catatanPanggilan: _catatanPanggilanController.text,
           startDate: _startDate,
           endDate: _endDate,
@@ -398,8 +589,14 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
             context: context,
             barrierDismissible: false,
             builder: (_) => AlertDialog(
-              title: const Text('Berhasil', style: TextStyle(fontFamily: 'Poppins')),
-              content: Text(result['message'] ?? 'Data terkirim.', style: const TextStyle(fontFamily: 'Poppins')),
+              title: const Text(
+                'Berhasil',
+                style: TextStyle(fontFamily: 'Poppins'),
+              ),
+              content: Text(
+                result['message'] ?? 'Data terkirim.',
+                style: const TextStyle(fontFamily: 'Poppins'),
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -409,10 +606,17 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                     } else {
                       _catatanController.clear();
                       _catatanPanggilanController.clear();
-                      setState(() { _pickedFile = null; _startDate = null; _endDate = null; });
+                      setState(() {
+                        _pickedFile = null;
+                        _startDate = null;
+                        _endDate = null;
+                      });
                     }
                   },
-                  child: const Text('OK', style: TextStyle(fontFamily: 'Poppins')),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(fontFamily: 'Poppins'),
+                  ),
                 ),
               ],
             ),
@@ -420,9 +624,12 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         } else {
           // Cek apakah ini error jaringan "bapuk"
           if (result['isNetworkError'] == true) {
-             _showBapukDialog(result['message']);
+            _showBapukDialog(result['message']);
           } else {
-             _showSnackBar(result['message'] ?? 'Terjadi Kesalahan.', isSuccess: false);
+            _showSnackBar(
+              result['message'] ?? 'Terjadi Kesalahan.',
+              isSuccess: false,
+            );
           }
         }
       }
@@ -442,30 +649,68 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
           backgroundColor: Colors.transparent,
           child: Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(color: Colors.red.shade50, shape: BoxShape.circle),
-                  child: Icon(Icons.signal_wifi_connected_no_internet_4_rounded, color: Colors.red.shade500, size: 60),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.signal_wifi_connected_no_internet_4_rounded,
+                    color: Colors.red.shade500,
+                    size: 60,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Waduh, Koneksi Putus!', style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)), textAlign: TextAlign.center),
+                const Text(
+                  'Waduh, Koneksi Putus!',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
-                Text(message ?? 'Internet lu bapuk banget boy asli.', style: const TextStyle(fontFamily: 'Poppins', color: Colors.grey, fontSize: 14), textAlign: TextAlign.center),
+                Text(
+                  message ?? 'Internet lu bapuk banget boy asli.',
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF4444), padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0
+                      backgroundColor: const Color(0xFFEF4444),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
                     ),
-                    child: const Text('Coba Lagi Nanti', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                    child: const Text(
+                      'Coba Lagi Nanti',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -480,245 +725,535 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
   Widget build(BuildContext context) {
     final isResubmit = widget.resubmitId != null;
     final existing = widget.existingAbsensi;
-    final userType = Provider.of<AuthProvider>(context).user?.employmentType.toLowerCase() ?? 'freelance';
+    final userType =
+        Provider.of<AuthProvider>(context).user?.employmentType.toLowerCase() ??
+        'freelance';
     final sisaCuti = Provider.of<AuthProvider>(context).user?.sisaCuti ?? 12;
 
-    if (userType == 'organik' && _tipePengajuan == 'izin') _tipePengajuan = 'sakit';
-    if (userType != 'organik' && _tipePengajuan == 'cuti') _tipePengajuan = 'sakit';
+    if (userType == 'organik' && _tipePengajuan == 'izin') {
+      _tipePengajuan = 'sakit';
+    }
+    if (userType != 'organik' && _tipePengajuan == 'cuti') {
+      _tipePengajuan = 'sakit';
+    }
 
     return PopScope(
       canPop: !_isSubmitting,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sedang mengunggah pengajuan, harap tunggu...')),
+          const SnackBar(
+            content: Text('Sedang mengunggah pengajuan, harap tunggu...'),
+          ),
         );
       },
       child: Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        title: Text(isResubmit ? 'Re-Submit Pengajuan' : 'Form Pengajuan', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1F2937),
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              
-              const Text('Kategori Pengajuan', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(child: _buildChoiceCard('Sakit', 'sakit', const Color(0xFFEF4444), Icons.local_hospital_rounded)),
-                  if (userType != 'organik') ...[
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildChoiceCard('Izin', 'izin', const Color(0xFF8B5CF6), Icons.event_note_rounded)),
-                  ],
-                  if (userType == 'organik') ...[
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildChoiceCard('Cuti', 'cuti', const Color(0xFF10B981), Icons.beach_access_rounded)),
-                  ],
-                ],
-              ),
-              const SizedBox(height: 32),
-              
-              const Text('Rentang Waktu', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: _buildDatePicker(label: 'Mulai', date: _startDate, onTap: _pickStartDate)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildDatePicker(label: 'Selesai', date: _endDate, onTap: _pickEndDate)),
-                ],
-              ),
-              
-              if (_startDate != null && _endDate != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: (_tipePengajuan == 'cuti' && _jumlahHariDipilih > _maxHariJenisCuti) ? Colors.red.shade50 : Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12)
+        backgroundColor: kBackgroundColor,
+        appBar: AppBar(
+          title: Text(
+            isResubmit ? 'Re-Submit Pengajuan' : 'Form Pengajuan',
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1F2937),
+          elevation: 0,
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Kategori Pengajuan',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
-                  child: Row(
-                    children: [
-                      Icon((_tipePengajuan == 'cuti' && _jumlahHariDipilih > _maxHariJenisCuti) ? Icons.error_rounded : Icons.event_available_rounded, size: 18, color: (_tipePengajuan == 'cuti' && _jumlahHariDipilih > _maxHariJenisCuti) ? Colors.red : Colors.blue.shade700),
-                      const SizedBox(width: 8),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildChoiceCard(
+                        'Sakit',
+                        'sakit',
+                        const Color(0xFFEF4444),
+                        Icons.local_hospital_rounded,
+                      ),
+                    ),
+                    if (userType != 'organik') ...[
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: Text((_tipePengajuan == 'cuti' && _jumlahHariDipilih > _maxHariJenisCuti) ? 'Total $_jumlahHariDipilih Hari (Melebihi Batas!)' : 'Total: $_jumlahHariDipilih Hari', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 12, color: (_tipePengajuan == 'cuti' && _jumlahHariDipilih > _maxHariJenisCuti) ? Colors.red.shade700 : Colors.blue.shade700)),
-                      )
+                        child: _buildChoiceCard(
+                          'Izin',
+                          'izin',
+                          const Color(0xFF8B5CF6),
+                          Icons.event_note_rounded,
+                        ),
+                      ),
                     ],
+                    if (userType == 'organik') ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildChoiceCard(
+                          'Cuti',
+                          'cuti',
+                          const Color(0xFF10B981),
+                          Icons.beach_access_rounded,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                const Text(
+                  'Rentang Waktu',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
                   ),
-                )
-              ],
-
-              const SizedBox(height: 32),
-
-              if (_tipePengajuan == 'cuti') ...[
-                const Text('Rincian Cuti', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                ),
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200, width: 2)),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: _jenisCuti,
-                      icon: const Icon(Icons.expand_more_rounded, color: kPrimaryColor),
-                      style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF1F2937), fontSize: 14, fontWeight: FontWeight.w600),
-                      items: _cutiConfig.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value['label'] as String))).toList(),
-                      onChanged: (val) {
-                        setState(() { _jenisCuti = val!; _startDate = null; _endDate = null; });
-                      },
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDatePicker(
+                        label: 'Mulai',
+                        date: _startDate,
+                        onTap: _pickStartDate,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildDatePicker(
+                        label: 'Selesai',
+                        date: _endDate,
+                        onTap: _pickEndDate,
+                      ),
+                    ),
+                  ],
+                ),
+
+                if (_startDate != null && _endDate != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color:
+                          (_tipePengajuan == 'cuti' &&
+                              _jumlahHariDipilih > _maxHariJenisCuti)
+                          ? Colors.red.shade50
+                          : Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          (_tipePengajuan == 'cuti' &&
+                                  _jumlahHariDipilih > _maxHariJenisCuti)
+                              ? Icons.error_rounded
+                              : Icons.event_available_rounded,
+                          size: 18,
+                          color:
+                              (_tipePengajuan == 'cuti' &&
+                                  _jumlahHariDipilih > _maxHariJenisCuti)
+                              ? Colors.red
+                              : Colors.blue.shade700,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            (_tipePengajuan == 'cuti' &&
+                                    _jumlahHariDipilih > _maxHariJenisCuti)
+                                ? 'Total $_jumlahHariDipilih Hari (Melebihi Batas!)'
+                                : 'Total: $_jumlahHariDipilih Hari',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color:
+                                  (_tipePengajuan == 'cuti' &&
+                                      _jumlahHariDipilih > _maxHariJenisCuti)
+                                  ? Colors.red.shade700
+                                  : Colors.blue.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 32),
+
+                if (_tipePengajuan == 'cuti') ...[
+                  const Text(
+                    'Rincian Cuti',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade200, width: 2),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _jenisCuti,
+                        icon: const Icon(
+                          Icons.expand_more_rounded,
+                          color: kPrimaryColor,
+                        ),
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Color(0xFF1F2937),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        items: _cutiConfig.entries
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e.key,
+                                child: Text(e.value['label'] as String),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _jenisCuti = val!;
+                            _startDate = null;
+                            _endDate = null;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _potongJatahTahunan
+                          ? Colors.orange.shade50
+                          : Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _potongJatahTahunan
+                              ? Icons.warning_rounded
+                              : Icons.check_circle_rounded,
+                          color: _potongJatahTahunan
+                              ? Colors.orange.shade600
+                              : Colors.green.shade600,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _potongJatahTahunan
+                                    ? 'Memotong jatah cuti'
+                                    : 'Tidak memotong cuti',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.bold,
+                                  color: _potongJatahTahunan
+                                      ? Colors.orange.shade800
+                                      : Colors.green.shade800,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                _gratisHari > 0
+                                    ? '$_gratisHari hari pertama gratis, sisanya potong cuti tahunan. Maks. $_maxHariJenisCuti hari.'
+                                    : 'Maks. pengajuan $_maxHariJenisCuti hari.',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  color: _potongJatahTahunan
+                                      ? Colors.orange.shade700
+                                      : Colors.green.shade700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              if (_potongJatahTahunan) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade200,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    'Sisa Cuti: $sisaCuti Hari',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                      color: Colors.orange.shade900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+
+                const Text(
+                  'Keterangan',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildModernTextField(
+                  controller: _catatanController,
+                  hintText: 'Tuliskan rincian alasan dengan jelas...',
+                  icon: Icons.notes_rounded,
+                  maxLines: 4,
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? 'Detail pengajuan tidak boleh kosong!'
+                      : null,
+                ),
+
+                if (_tipePengajuan == 'izin') ...[
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Pihak Bersangkutan',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildModernTextField(
+                    controller: _catatanPanggilanController,
+                    hintText: 'Contoh: Panggilan Sekolah / Dinas terkait',
+                    icon: Icons.school_rounded,
+                    validator: (v) =>
+                        (_tipePengajuan == 'izin' && (v == null || v.isEmpty))
+                        ? 'Wajib diisi untuk Izin'
+                        : null,
+                  ),
+                ],
+                const SizedBox(height: 32),
+
+                const Text(
+                  'Bukti Pendukung',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: _showPickerOptions,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 24,
+                      horizontal: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: _pickedFile != null
+                            ? kPrimaryColor
+                            : Colors.grey.shade300,
+                        width: 2,
+                        style: BorderStyle.solid,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _pickedFile != null
+                              ? Icons.check_circle_rounded
+                              : Icons.cloud_upload_rounded,
+                          size: 40,
+                          color: _pickedFile != null
+                              ? kPrimaryColor
+                              : Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _pickedFile != null
+                              ? 'Dokumen Terlampir'
+                              : 'Tekan untuk mengunggah Surat/Foto',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: _pickedFile != null
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: _pickedFile != null
+                                ? kPrimaryColor
+                                : Colors.grey.shade500,
+                          ),
+                        ),
+                        if (_pickedFile != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              _pickedFile!.path.split('/').last,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
 
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: _potongJatahTahunan ? Colors.orange.shade50 : Colors.green.shade50, borderRadius: BorderRadius.circular(16)),
-                  child: Row(
-                    children: [
-                      Icon(_potongJatahTahunan ? Icons.warning_rounded : Icons.check_circle_rounded, color: _potongJatahTahunan ? Colors.orange.shade600 : Colors.green.shade600, size: 28),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(_potongJatahTahunan ? 'Memotong jatah cuti' : 'Tidak memotong cuti', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, color: _potongJatahTahunan ? Colors.orange.shade800 : Colors.green.shade800, fontSize: 13)),
-                            Text(
-                              _gratisHari > 0
-                                ? '$_gratisHari hari pertama gratis, sisanya potong cuti tahunan. Maks. $_maxHariJenisCuti hari.'
-                                : 'Maks. pengajuan $_maxHariJenisCuti hari.',
-                              style: TextStyle(fontFamily: 'Poppins', color: _potongJatahTahunan ? Colors.orange.shade700 : Colors.green.shade700, fontSize: 12),
-                            ),
-                            const SizedBox(height: 2),
-                            if (_potongJatahTahunan) ...[
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: Colors.orange.shade200, borderRadius: BorderRadius.circular(10)),
-                                child: Text('Sisa Cuti: $sisaCuti Hari', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 11, color: Colors.orange.shade900)),
-                              )
-                            ]
-                          ],
-                        ),
-                      )
-                    ],
+                if (isResubmit &&
+                    existing != null &&
+                    existing.fileBuktiUrl != null &&
+                    _pickedFile == null) ...[
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Dokumen Sebelumnya:',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
-
-              const Text('Keterangan', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-              const SizedBox(height: 12),
-              _buildModernTextField(
-                controller: _catatanController,
-                hintText: 'Tuliskan rincian alasan dengan jelas...',
-                icon: Icons.notes_rounded,
-                maxLines: 4,
-                validator: (v) => (v == null || v.isEmpty) ? 'Detail pengajuan tidak boleh kosong!' : null,
-              ),
-
-              if (_tipePengajuan == 'izin') ...[
-                const SizedBox(height: 20),
-                const Text('Pihak Bersangkutan', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-                const SizedBox(height: 12),
-                _buildModernTextField(
-                  controller: _catatanPanggilanController,
-                  hintText: 'Contoh: Panggilan Sekolah / Dinas terkait',
-                  icon: Icons.school_rounded,
-                  validator: (v) => (_tipePengajuan == 'izin' && (v == null || v.isEmpty)) ? 'Wajib diisi untuk Izin' : null,
-                ),
-              ],
-              const SizedBox(height: 32),
-
-              const Text('Bukti Pendukung', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _showPickerOptions,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: _pickedFile != null ? kPrimaryColor : Colors.grey.shade300, width: 2, style: BorderStyle.solid),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(_pickedFile != null ? Icons.check_circle_rounded : Icons.cloud_upload_rounded, size: 40, color: _pickedFile != null ? kPrimaryColor : Colors.grey.shade400),
-                      const SizedBox(height: 12),
-                      Text(
-                        _pickedFile != null ? 'Dokumen Terlampir' : 'Tekan untuk mengunggah Surat/Foto',
-                        style: TextStyle(fontFamily: 'Poppins', fontWeight: _pickedFile != null ? FontWeight.bold : FontWeight.normal, color: _pickedFile != null ? kPrimaryColor : Colors.grey.shade500),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 140,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        existing.fileBuktiUrl!,
+                        fit: BoxFit.cover,
                       ),
-                      if (_pickedFile != null)
-                        Padding(padding: const EdgeInsets.only(top: 6), child: Text(_pickedFile!.path.split('/').last, style: const TextStyle(fontSize: 11, color: Colors.grey), overflow: TextOverflow.ellipsis)),
+                    ),
+                  ),
+                ],
+
+                if (_pickedFile != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: kPrimaryColor.withValues(alpha: 0.3),
+                        width: 3,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(_pickedFile!, fit: BoxFit.cover),
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 40),
+
+                Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: kPrimaryColor.withValues(alpha: 0.4),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
                     ],
                   ),
-                ),
-              ),
-
-              if (isResubmit && existing != null && existing.fileBuktiUrl != null && _pickedFile == null) ...[
-                const SizedBox(height: 16),
-                const Text('Dokumen Sebelumnya:', style: TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
-                const SizedBox(height: 8),
-                Container(
-                  height: 140, width: double.infinity,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-                  child: ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.network(existing.fileBuktiUrl!, fit: BoxFit.cover)),
-                ),
-              ],
-
-              if (_pickedFile != null) ...[
-                const SizedBox(height: 16),
-                Container(
-                  height: 180, width: double.infinity,
-                  decoration: BoxDecoration(border: Border.all(color: kPrimaryColor.withValues(alpha: 0.3), width: 3), borderRadius: BorderRadius.circular(16)),
-                  child: ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.file(_pickedFile!, fit: BoxFit.cover)),
-                )
-              ],
-
-              const SizedBox(height: 40),
-
-              Container(
-                width: double.infinity,
-                height: 56,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: kPrimaryColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
-                ),
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isSubmitting
+                        ? const _ModernLoading()
+                        : Text(
+                            isResubmit ? 'Kirim Ulang' : 'Kirim Pengajuan',
+                            style: const TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                   ),
-                  child: _isSubmitting
-                      ? const _ModernLoading()
-                      : Text(isResubmit ? 'Kirim Ulang' : 'Kirim Pengajuan', style: const TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
-  Widget _buildChoiceCard(String label, String value, Color color, IconData icon) {
+  Widget _buildChoiceCard(
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     final bool isSelected = _tipePengajuan == value;
     return GestureDetector(
       onTap: () {
@@ -734,56 +1269,130 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? color : Colors.grey.shade200, width: 2),
-          boxShadow: isSelected ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))] : [],
+          border: Border.all(
+            color: isSelected ? color : Colors.grey.shade200,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? Colors.white : Colors.grey.shade400, size: 24),
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : Colors.grey.shade400,
+              size: 24,
+            ),
             const SizedBox(height: 8),
-            Text(label, style: TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.grey.shade600))
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.grey.shade600,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDatePicker({required String label, required DateTime? date, required VoidCallback onTap}) {
+  Widget _buildDatePicker({
+    required String label,
+    required DateTime? date,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: date != null ? kPrimaryColor : Colors.grey.shade200, width: 2)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: date != null ? kPrimaryColor : Colors.grey.shade200,
+            width: 2,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade500)),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade500,
+              ),
+            ),
             const SizedBox(height: 4),
             Row(
               children: [
-                Expanded(child: Text(_formatDate(date), style: TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.bold, color: date != null ? const Color(0xFF1F2937) : Colors.grey.shade400))),
-                Icon(Icons.calendar_month_rounded, size: 16, color: date != null ? kPrimaryColor : Colors.grey.shade400)
+                Expanded(
+                  child: Text(
+                    _formatDate(date),
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: date != null
+                          ? const Color(0xFF1F2937)
+                          : Colors.grey.shade400,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.calendar_month_rounded,
+                  size: 16,
+                  color: date != null ? kPrimaryColor : Colors.grey.shade400,
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildModernTextField({required TextEditingController controller, required String hintText, required IconData icon, int maxLines = 1, String? Function(String?)? validator}) {
+  Widget _buildModernTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200, width: 2)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 2),
+      ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
-        style: const TextStyle(fontFamily: 'Poppins', fontSize: 14, color: Color(0xFF1F2937)),
+        style: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          color: Color(0xFF1F2937),
+        ),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),
-          prefixIcon: maxLines == 1 ? Icon(icon, color: Colors.grey.shade400, size: 20) : null,
+          prefixIcon: maxLines == 1
+              ? Icon(icon, color: Colors.grey.shade400, size: 20)
+              : null,
         ),
         validator: validator,
       ),

@@ -22,15 +22,15 @@ class ApiService {
 
   ApiService() {
     _dio = Dio(
-  BaseOptions(
-    baseUrl: ApiConstants.baseUrl,
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 60),
-    sendTimeout: const Duration(seconds: 60),
-    headers: {'Accept': 'application/json'},
-  ),
-);
-    
+      BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 60),
+        sendTimeout: const Duration(seconds: 60),
+        headers: {'Accept': 'application/json'},
+      ),
+    );
+
     _dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();
@@ -40,22 +40,26 @@ class ApiService {
       },
     );
 
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await _storage.read(key: _authTokenKey);
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) {
-        if (e.response?.statusCode == 401) {
-          debugPrint('Unauthorized request. Token might be expired or invalid. Attempting to clear token.');
-          _deleteToken();
-        }
-        return handler.next(e);
-      },
-    ));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await _storage.read(key: _authTokenKey);
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) {
+          if (e.response?.statusCode == 401) {
+            debugPrint(
+              'Unauthorized request. Token might be expired or invalid. Attempting to clear token.',
+            );
+            _deleteToken();
+          }
+          return handler.next(e);
+        },
+      ),
+    );
   }
 
   // =========================================================================
@@ -90,11 +94,22 @@ class ApiService {
         await _saveToken(response.data['access_token']);
         final dynamic userData = response.data['user'];
         if (userData != null && userData is Map<String, dynamic>) {
-          return {'success': true, 'user': User.fromJson(userData), 'access_token': response.data['access_token']};
+          return {
+            'success': true,
+            'user': User.fromJson(userData),
+            'access_token': response.data['access_token'],
+          };
         }
-        return {'success': true, 'message': 'Registration successful, but user data not found or invalid.'};
+        return {
+          'success': true,
+          'message':
+              'Registration successful, but user data not found or invalid.',
+        };
       } else {
-        return {'success': false, 'message': response.data['message'] ?? 'Registration failed.'};
+        return {
+          'success': false,
+          'message': response.data['message'] ?? 'Registration failed.',
+        };
       }
     } on DioException catch (e) {
       return _handleDioError(e, 'Registration failed');
@@ -110,20 +125,27 @@ class ApiService {
     try {
       final response = await _dio.post(
         'login',
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
       if (response.statusCode == 200) {
         await _saveToken(response.data['access_token']);
         final dynamic userData = response.data['user'];
         if (userData != null && userData is Map<String, dynamic>) {
-          return {'success': true, 'user': User.fromJson(userData), 'access_token': response.data['access_token']};
+          return {
+            'success': true,
+            'user': User.fromJson(userData),
+            'access_token': response.data['access_token'],
+          };
         }
-        return {'success': true, 'message': 'Login successful, but user data not found or invalid.'};
+        return {
+          'success': true,
+          'message': 'Login successful, but user data not found or invalid.',
+        };
       } else {
-        return {'success': false, 'message': response.data['message'] ?? 'Login failed.'};
+        return {
+          'success': false,
+          'message': response.data['message'] ?? 'Login failed.',
+        };
       }
     } on DioException catch (e) {
       return _handleDioError(e, 'Login failed');
@@ -144,89 +166,88 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> sendOtp({
-  required String email,
-}) async {
-  try {
-    final response = await _dio.post(
-      'forgot-password/send-otp',
-      data: {'email': email},
-    );
-    if (response.statusCode == 200) {
+  Future<Map<String, dynamic>> sendOtp({required String email}) async {
+    try {
+      final response = await _dio.post(
+        'forgot-password/send-otp',
+        data: {'email': email},
+      );
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ?? 'OTP telah dikirim ke email Anda.',
+        };
+      }
       return {
-        'success': true,
-        'message': response.data['message'] ?? 'OTP telah dikirim ke email Anda.',
+        'success': false,
+        'message': response.data['message'] ?? 'Gagal mengirim OTP.',
       };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Gagal mengirim OTP');
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
     }
-    return {
-      'success': false,
-      'message': response.data['message'] ?? 'Gagal mengirim OTP.',
-    };
-  } on DioException catch (e) {
-    return _handleDioError(e, 'Gagal mengirim OTP');
-  } catch (e) {
-    return {'success': false, 'message': e.toString()};
   }
-}
 
-Future<Map<String, dynamic>> verifyOtp({
-  required String email,
-  required String otp,
-}) async {
-  try {
-    final response = await _dio.post(
-      'forgot-password/verify-otp',
-      data: {'email': email, 'otp': otp},
-    );
-    if (response.statusCode == 200) {
+  Future<Map<String, dynamic>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final response = await _dio.post(
+        'forgot-password/verify-otp',
+        data: {'email': email, 'otp': otp},
+      );
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'OTP valid.',
+        };
+      }
       return {
-        'success': true,
-        'message': response.data['message'] ?? 'OTP valid.',
+        'success': false,
+        'message': response.data['message'] ?? 'OTP tidak valid.',
       };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Gagal verifikasi OTP');
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
     }
-    return {
-      'success': false,
-      'message': response.data['message'] ?? 'OTP tidak valid.',
-    };
-  } on DioException catch (e) {
-    return _handleDioError(e, 'Gagal verifikasi OTP');
-  } catch (e) {
-    return {'success': false, 'message': e.toString()};
   }
-}
 
-Future<Map<String, dynamic>> resetPassword({
-  required String email,
-  required String otp,
-  required String password,
-  required String passwordConfirmation,
-}) async {
-  try {
-    final response = await _dio.post(
-      'forgot-password/reset-password',
-      data: {
-        'email': email,
-        'otp': otp,
-        'password': password,
-        'password_confirmation': passwordConfirmation,
-      },
-    );
-    if (response.statusCode == 200) {
+  Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _dio.post(
+        'forgot-password/reset-password',
+        data: {
+          'email': email,
+          'otp': otp,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Password berhasil direset.',
+        };
+      }
       return {
-        'success': true,
-        'message': response.data['message'] ?? 'Password berhasil direset.',
+        'success': false,
+        'message': response.data['message'] ?? 'Gagal reset password.',
       };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Gagal reset password');
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
     }
-    return {
-      'success': false,
-      'message': response.data['message'] ?? 'Gagal reset password.',
-    };
-  } on DioException catch (e) {
-    return _handleDioError(e, 'Gagal reset password');
-  } catch (e) {
-    return {'success': false, 'message': e.toString()};
   }
-}
 
   Future<User?> getAuthenticatedUser() async {
     try {
@@ -240,7 +261,9 @@ Future<Map<String, dynamic>> resetPassword({
         if (userData is Map<String, dynamic>) {
           return User.fromJson(userData);
         } else {
-          debugPrint('Error: response.data is not a Map<String, dynamic> in getAuthenticatedUser. Type: ${response.data.runtimeType}, Data: ${response.data}');
+          debugPrint(
+            'Error: response.data is not a Map<String, dynamic> in getAuthenticatedUser. Type: ${response.data.runtimeType}, Data: ${response.data}',
+          );
           return null;
         }
       }
@@ -276,21 +299,22 @@ Future<Map<String, dynamic>> resetPassword({
         'id_karyawan': idKaryawan,
         'departemen': departemen,
         'employment_type': employmentType,
-        
       });
 
       if (profilePhoto != null) {
         String fileName = profilePhoto.path.split('/').last;
         String? mimeType = lookupMimeType(profilePhoto.path);
 
-        formData.files.add(MapEntry(
-          'profile_photo',
-          await MultipartFile.fromFile(
-            profilePhoto.path,
-            filename: fileName,
-            contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        formData.files.add(
+          MapEntry(
+            'profile_photo',
+            await MultipartFile.fromFile(
+              profilePhoto.path,
+              filename: fileName,
+              contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+            ),
           ),
-        ));
+        );
       }
 
       final response = await _dio.post(
@@ -302,11 +326,23 @@ Future<Map<String, dynamic>> resetPassword({
       if (response.statusCode == 200 && response.data != null) {
         final dynamic userData = response.data['user'] ?? response.data['data'];
         if (userData != null && userData is Map<String, dynamic>) {
-          return {'success': true, 'message': response.data['message'], 'user': User.fromJson(userData)};
+          return {
+            'success': true,
+            'message': response.data['message'],
+            'user': User.fromJson(userData),
+          };
         }
-        return {'success': true, 'message': response.data['message'] ?? 'Profile updated successfully, but user data not returned.'};
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ??
+              'Profile updated successfully, but user data not returned.',
+        };
       }
-      return {'success': false, 'message': response.data['message'] ?? 'Failed to update profile.'};
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Failed to update profile.',
+      };
     } on DioException catch (e) {
       return _handleDioError(e, 'Gagal mengupdate profil');
     } catch (e) {
@@ -337,12 +373,16 @@ Future<Map<String, dynamic>> resetPassword({
       });
 
       final response = await _dio.post(
-        'absensi/masuk', 
+        'absensi/masuk',
         data: formData,
         onSendProgress: onProgress,
       );
       if (response.data != null && response.data['data'] != null) {
-        return {'success': true, 'message': response.data['message'], 'data': Absensi.fromJson(response.data['data'])};
+        return {
+          'success': true,
+          'message': response.data['message'],
+          'data': Absensi.fromJson(response.data['data']),
+        };
       }
       return {'success': false, 'message': 'Data absensi tidak ditemukan.'};
     } on DioException catch (e) {
@@ -375,19 +415,28 @@ Future<Map<String, dynamic>> resetPassword({
       });
 
       if (fileBukti != null) {
-        formData.files.add(MapEntry(
-          'file_bukti',
-          await MultipartFile.fromFile(fileBukti.path, filename: fileBukti.path.split('/').last)
-        ));
+        formData.files.add(
+          MapEntry(
+            'file_bukti',
+            await MultipartFile.fromFile(
+              fileBukti.path,
+              filename: fileBukti.path.split('/').last,
+            ),
+          ),
+        );
       }
 
       final response = await _dio.post(
-        'absensi/pulang', 
+        'absensi/pulang',
         data: formData,
         onSendProgress: onProgress,
       );
       if (response.data != null && response.data['data'] != null) {
-        return {'success': true, 'message': response.data['message'], 'data': Absensi.fromJson(response.data['data'])};
+        return {
+          'success': true,
+          'message': response.data['message'],
+          'data': Absensi.fromJson(response.data['data']),
+        };
       }
       return {'success': false, 'message': 'Data absensi tidak ditemukan.'};
     } on DioException catch (e) {
@@ -424,57 +473,89 @@ Future<Map<String, dynamic>> resetPassword({
 
       if (hasilKerjaFiles.isNotEmpty) {
         String hFileName2 = hasilKerjaFiles[0].path.split('/').last;
-        formData.files.add(MapEntry(
-          'foto_2',
-          await MultipartFile.fromFile(hasilKerjaFiles[0].path, filename: hFileName2)
-        ));
+        formData.files.add(
+          MapEntry(
+            'foto_2',
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[0].path,
+              filename: hFileName2,
+            ),
+          ),
+        );
       }
 
       if (hasilKerjaFiles.length > 1) {
         String hFileName3 = hasilKerjaFiles[1].path.split('/').last;
-        formData.files.add(MapEntry(
-          'foto_3',
-          await MultipartFile.fromFile(hasilKerjaFiles[1].path, filename: hFileName3)
-        ));
+        formData.files.add(
+          MapEntry(
+            'foto_3',
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[1].path,
+              filename: hFileName3,
+            ),
+          ),
+        );
       }
 
       if (hasilKerjaFiles.length > 2) {
         String hFileName4 = hasilKerjaFiles[2].path.split('/').last;
-        formData.files.add(MapEntry(
-          'foto_4',
-          await MultipartFile.fromFile(hasilKerjaFiles[2].path, filename: hFileName4)
-        ));
+        formData.files.add(
+          MapEntry(
+            'foto_4',
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[2].path,
+              filename: hFileName4,
+            ),
+          ),
+        );
       }
 
       if (hasilKerjaFiles.length > 3) {
         String hFileName5 = hasilKerjaFiles[3].path.split('/').last;
-        formData.files.add(MapEntry(
-          'foto_5',
-          await MultipartFile.fromFile(hasilKerjaFiles[3].path, filename: hFileName5)
-        ));
+        formData.files.add(
+          MapEntry(
+            'foto_5',
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[3].path,
+              filename: hFileName5,
+            ),
+          ),
+        );
       }
 
       if (hasilKerjaFiles.length > 4) {
         String hFileName6 = hasilKerjaFiles[4].path.split('/').last;
-        formData.files.add(MapEntry(
-          'foto_6',
-          await MultipartFile.fromFile(hasilKerjaFiles[4].path, filename: hFileName6)
-        ));
+        formData.files.add(
+          MapEntry(
+            'foto_6',
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[4].path,
+              filename: hFileName6,
+            ),
+          ),
+        );
       }
 
       final response = await _dio.post(
-  'absensi/lembur',
-  data: formData,
-  onSendProgress: onProgress,
-  options: Options(
-    sendTimeout: const Duration(seconds: 120),
-    receiveTimeout: const Duration(seconds: 120),
-  ),
-);
+        'absensi/lembur',
+        data: formData,
+        onSendProgress: onProgress,
+        options: Options(
+          sendTimeout: const Duration(seconds: 120),
+          receiveTimeout: const Duration(seconds: 120),
+        ),
+      );
       if (response.data != null && response.data['data'] != null) {
-        return {'success': true, 'message': response.data['message'], 'data': Absensi.fromJson(response.data['data'])};
+        return {
+          'success': true,
+          'message': response.data['message'],
+          'data': Absensi.fromJson(response.data['data']),
+        };
       }
-      return {'success': false, 'message': 'Data absensi lembur tidak ditemukan.'};
+      return {
+        'success': false,
+        'message': 'Data absensi lembur tidak ditemukan.',
+      };
     } on DioException catch (e) {
       return _handleDioError(e, 'Absen lembur gagal');
     } catch (e) {
@@ -505,10 +586,15 @@ Future<Map<String, dynamic>> resetPassword({
       for (int i = 0; i < hasilKerjaFiles.length && i < 5; i++) {
         String fieldName = i == 0 ? 'foto_bukti' : 'foto_${i + 1}';
         String fName = hasilKerjaFiles[i].path.split('/').last;
-        formData.files.add(MapEntry(
-          fieldName,
-          await MultipartFile.fromFile(hasilKerjaFiles[i].path, filename: fName),
-        ));
+        formData.files.add(
+          MapEntry(
+            fieldName,
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[i].path,
+              filename: fName,
+            ),
+          ),
+        );
       }
 
       final response = await _dio.post(
@@ -549,10 +635,12 @@ Future<Map<String, dynamic>> resetPassword({
 
       if (fotoBukti != null) {
         String fileName = fotoBukti.path.split('/').last;
-        formData.files.add(MapEntry(
+        formData.files.add(
+          MapEntry(
             'foto_bukti',
-            await MultipartFile.fromFile(fotoBukti.path, filename: fileName)
-        ));
+            await MultipartFile.fromFile(fotoBukti.path, filename: fileName),
+          ),
+        );
       }
 
       final response = await _dio.post(
@@ -568,7 +656,7 @@ Future<Map<String, dynamic>> resetPassword({
         return {
           'success': true,
           'message': response.data['message'],
-          'data': response.data['data']
+          'data': response.data['data'],
         };
       }
       return {'success': false, 'message': 'Data tidak ditemukan.'};
@@ -582,7 +670,9 @@ Future<Map<String, dynamic>> resetPassword({
   Future<List<dynamic>> getLemburTerjadwal() async {
     try {
       final response = await _dio.get('absensi/scheduled-lembur');
-      if (response.statusCode == 200 && response.data != null && response.data['data'] is List) {
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['data'] is List) {
         return response.data['data'];
       }
       return [];
@@ -592,22 +682,25 @@ Future<Map<String, dynamic>> resetPassword({
     }
   }
 
-  
-  Future<List<Absensi>> getHistoryAbsensi({String? searchDate, int? month, int? year}) async {
+  Future<List<Absensi>> getHistoryAbsensi({
+    String? searchDate,
+    int? month,
+    int? year,
+  }) async {
     try {
-      
       Map<String, dynamic> queryParameters = {};
       if (searchDate != null) queryParameters['search_date'] = searchDate;
       if (month != null) queryParameters['month'] = month;
       if (year != null) queryParameters['year'] = year;
 
-      
       final response = await _dio.get(
         'absensi/me',
-        queryParameters: queryParameters, 
+        queryParameters: queryParameters,
       );
 
-      if (response.statusCode == 200 && response.data != null && response.data['data'] is List) {
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['data'] is List) {
         return (response.data['data'] as List)
             .map((e) => Absensi.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -632,21 +725,30 @@ Future<Map<String, dynamic>> resetPassword({
     try {
       String fileName = fileBukti.path.split('/').last;
       FormData formData = FormData.fromMap({
-        'file_bukti': await MultipartFile.fromFile(fileBukti.path, filename: fileName),
+        'file_bukti': await MultipartFile.fromFile(
+          fileBukti.path,
+          filename: fileName,
+        ),
         'keterangan_izin_sakit': catatan,
         'keterangan': catatan,
         'status': 'sakit',
-        if (startDate != null) 'start_date': DateFormat('yyyy-MM-dd').format(startDate),
-        if (endDate != null) 'end_date': DateFormat('yyyy-MM-dd').format(endDate),
+        if (startDate != null)
+          'start_date': DateFormat('yyyy-MM-dd').format(startDate),
+        if (endDate != null)
+          'end_date': DateFormat('yyyy-MM-dd').format(endDate),
       });
 
       final response = await _dio.post(
-        'absensi/sakit', 
+        'absensi/sakit',
         data: formData,
         onSendProgress: onProgress,
       );
       if (response.data != null) {
-        return {'success': true, 'message': response.data['message'] ?? 'Pengajuan izin sakit berhasil.'};
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ?? 'Pengajuan izin sakit berhasil.',
+        };
       }
       return {'success': false, 'message': 'Data absensi tidak ditemukan.'};
     } on DioException catch (e) {
@@ -667,22 +769,30 @@ Future<Map<String, dynamic>> resetPassword({
     try {
       String fileName = fileBukti.path.split('/').last;
       FormData formData = FormData.fromMap({
-        'file_bukti': await MultipartFile.fromFile(fileBukti.path, filename: fileName),
-        'keterangan_izin_sakit': catatan,      // ✅ fix
-        'catatan_admin': catatanPanggilan,      // ✅ fix
-        'status': 'izin',                       // ✅ tambah status
-        'submission_type': catatanPanggilan,    // ✅ simpan jenis cuti
-        if (startDate != null) 'start_date': DateFormat('yyyy-MM-dd').format(startDate),
-        if (endDate != null) 'end_date': DateFormat('yyyy-MM-dd').format(endDate),
+        'file_bukti': await MultipartFile.fromFile(
+          fileBukti.path,
+          filename: fileName,
+        ),
+        'keterangan_izin_sakit': catatan, // ✅ fix
+        'catatan_admin': catatanPanggilan, // ✅ fix
+        'status': 'izin', // ✅ tambah status
+        'submission_type': catatanPanggilan, // ✅ simpan jenis cuti
+        if (startDate != null)
+          'start_date': DateFormat('yyyy-MM-dd').format(startDate),
+        if (endDate != null)
+          'end_date': DateFormat('yyyy-MM-dd').format(endDate),
       });
 
       final response = await _dio.post(
-        'absensi/izin', 
+        'absensi/izin',
         data: formData,
         onSendProgress: onProgress,
       );
       if (response.data != null) {
-        return {'success': true, 'message': response.data['message'] ?? 'Pengajuan izin berhasil.'};
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Pengajuan izin berhasil.',
+        };
       }
       return {'success': false, 'message': 'Data absensi tidak ditemukan.'};
     } on DioException catch (e) {
@@ -693,33 +803,36 @@ Future<Map<String, dynamic>> resetPassword({
   }
 
   Future<Map<String, dynamic>> pengajuanTelat({
-  required File fileBukti,
-  required String keterangan,
-  required int absensiId,
-}) async {
-  try {
-    String fileName = fileBukti.path.split('/').last;
-    FormData formData = FormData.fromMap({
-      'file_bukti': await MultipartFile.fromFile(fileBukti.path, filename: fileName),
-      'keterangan': keterangan,
-      'absensi_id': absensiId,
-    });
+    required File fileBukti,
+    required String keterangan,
+    required int absensiId,
+  }) async {
+    try {
+      String fileName = fileBukti.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'file_bukti': await MultipartFile.fromFile(
+          fileBukti.path,
+          filename: fileName,
+        ),
+        'keterangan': keterangan,
+        'absensi_id': absensiId,
+      });
 
-    final response = await _dio.post('absensi/telat', data: formData);
-    if (response.data != null) {
-      return {
-        'success': true,
-        'message': response.data['message'] ?? 'Pengajuan telat berhasil.',
-        'late_minutes': response.data['late_minutes'],
-      };
+      final response = await _dio.post('absensi/telat', data: formData);
+      if (response.data != null) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Pengajuan telat berhasil.',
+          'late_minutes': response.data['late_minutes'],
+        };
+      }
+      return {'success': false, 'message': 'Data tidak ditemukan.'};
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Gagal mengajukan keterangan telat');
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
     }
-    return {'success': false, 'message': 'Data tidak ditemukan.'};
-  } on DioException catch (e) {
-    return _handleDioError(e, 'Gagal mengajukan keterangan telat');
-  } catch (e) {
-    return {'success': false, 'message': e.toString()};
   }
-}
 
   // =========================================================================
   // NEW METHODS: RESUBMIT
@@ -735,18 +848,30 @@ Future<Map<String, dynamic>> resetPassword({
     try {
       String fileName = fileBukti.path.split('/').last;
       FormData formData = FormData.fromMap({
-        'file_bukti': await MultipartFile.fromFile(fileBukti.path, filename: fileName),
+        'file_bukti': await MultipartFile.fromFile(
+          fileBukti.path,
+          filename: fileName,
+        ),
         'keterangan_izin_sakit': catatan,
         'keterangan': catatan,
         'status': 'pending',
-        
-        if (startDate != null) 'start_date': DateFormat('yyyy-MM-dd').format(startDate),
-        if (endDate != null) 'end_date': DateFormat('yyyy-MM-dd').format(endDate),
+
+        if (startDate != null)
+          'start_date': DateFormat('yyyy-MM-dd').format(startDate),
+        if (endDate != null)
+          'end_date': DateFormat('yyyy-MM-dd').format(endDate),
       });
 
-      final response = await _dio.post('absensi/sakit/$absensiId/resubmit', data: formData);
+      final response = await _dio.post(
+        'absensi/sakit/$absensiId/resubmit',
+        data: formData,
+      );
       if (response.data != null) {
-        return {'success': true, 'message': response.data['message'] ?? 'Resubmit izin sakit berhasil.'};
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ?? 'Resubmit izin sakit berhasil.',
+        };
       }
       return {'success': false, 'message': 'Data absensi tidak ditemukan.'};
     } on DioException catch (e) {
@@ -767,21 +892,30 @@ Future<Map<String, dynamic>> resetPassword({
     try {
       String fileName = fileBukti.path.split('/').last;
       FormData formData = FormData.fromMap({
-        'file_bukti': await MultipartFile.fromFile(fileBukti.path, filename: fileName),
+        'file_bukti': await MultipartFile.fromFile(
+          fileBukti.path,
+          filename: fileName,
+        ),
         'catatan': catatan,
         'catatan_panggilan': catatanPanggilan,
         'tipe': 'izin',
         'status': 'pending',
-        
-        if (startDate != null) 'start_date': DateFormat('yyyy-MM-dd').format(startDate),
-        if (endDate != null) 'end_date': DateFormat('yyyy-MM-dd').format(endDate),
+
+        if (startDate != null)
+          'start_date': DateFormat('yyyy-MM-dd').format(startDate),
+        if (endDate != null)
+          'end_date': DateFormat('yyyy-MM-dd').format(endDate),
       });
 
-      
-
-      final response = await _dio.post('absensi/izin/$absensiId/resubmit', data: formData);
+      final response = await _dio.post(
+        'absensi/izin/$absensiId/resubmit',
+        data: formData,
+      );
       if (response.data != null) {
-        return {'success': true, 'message': response.data['message'] ?? 'Resubmit izin berhasil.'};
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Resubmit izin berhasil.',
+        };
       }
       return {'success': false, 'message': 'Data absensi tidak ditemukan.'};
     } on DioException catch (e) {
@@ -812,23 +946,30 @@ Future<Map<String, dynamic>> resetPassword({
         'keterangan': keterangan,
         'keterangan_goals': goals,
         'status': 'pending',
-        
       });
 
       // Upload multiple files
       for (int i = 0; i < hasilKerjaFiles.length && i < 5; i++) {
-        String fieldName = i == 0 ? 'foto' : 'foto_${i + 1}'; // Backend usually uses 'foto' for the first one in lembur resubmit or 'foto_bukti'
+        String fieldName = i == 0
+            ? 'foto'
+            : 'foto_${i + 1}'; // Backend usually uses 'foto' for the first one in lembur resubmit or 'foto_bukti'
         // If it follows submitLembur logic:
         // i == 0 ? 'foto_bukti' : 'foto_${i+1}'
         // But the previous resubmitLembur used 'foto'. I'll stick to 'foto' for the first one but add others.
         String fName = hasilKerjaFiles[i].path.split('/').last;
-        formData.files.add(MapEntry(
-          fieldName,
-          await MultipartFile.fromFile(hasilKerjaFiles[i].path, filename: fName),
-        ));
+        formData.files.add(
+          MapEntry(
+            fieldName,
+            await MultipartFile.fromFile(
+              hasilKerjaFiles[i].path,
+              filename: fName,
+            ),
+          ),
+        );
       }
 
-      final response = await _dio.post('absensi/lembur/$absensiId/resubmit', 
+      final response = await _dio.post(
+        'absensi/lembur/$absensiId/resubmit',
         data: formData,
         options: Options(
           sendTimeout: const Duration(seconds: 120),
@@ -839,7 +980,7 @@ Future<Map<String, dynamic>> resetPassword({
         return {
           'success': true,
           'message': response.data['message'] ?? 'Resubmit lembur berhasil.',
-          'data': response.data['data']
+          'data': response.data['data'],
         };
       }
       return {'success': false, 'message': 'Data tidak ditemukan.'};
@@ -849,7 +990,6 @@ Future<Map<String, dynamic>> resetPassword({
       return {'success': false, 'message': e.toString()};
     }
   }
-
 
   // =========================================================================
   // SECTION IZIN KELUAR
@@ -866,11 +1006,18 @@ Future<Map<String, dynamic>> resetPassword({
         'tipe_izin': tipeIzin,
         'alasan_keluar': alasanKeluar,
         if (tipeDurasi != null) 'tipe_durasi': tipeDurasi,
-        'foto_surat': await MultipartFile.fromFile(fotoSurat.path, filename: fotoSurat.path.split('/').last),
+        'foto_surat': await MultipartFile.fromFile(
+          fotoSurat.path,
+          filename: fotoSurat.path.split('/').last,
+        ),
       });
 
       final response = await _dio.post('izin-keluar/start', data: formData);
-      return {'success': true, 'message': response.data['message'] ?? 'Berhasil memulai izin', 'statusCode': response.statusCode};
+      return {
+        'success': true,
+        'message': response.data['message'] ?? 'Berhasil memulai izin',
+        'statusCode': response.statusCode,
+      };
     } on DioException catch (e) {
       return _handleDioError(e, 'Gagal memulai izin keluar');
     } catch (e) {
@@ -885,15 +1032,18 @@ Future<Map<String, dynamic>> resetPassword({
     try {
       var formData = FormData.fromMap({
         'keterangan_kembali': keteranganKembali,
-        'dokumen_kembali': await MultipartFile.fromFile(dokumenKembali.path, filename: dokumenKembali.path.split('/').last),
+        'dokumen_kembali': await MultipartFile.fromFile(
+          dokumenKembali.path,
+          filename: dokumenKembali.path.split('/').last,
+        ),
       });
 
       final response = await _dio.post('izin-keluar/end', data: formData);
       return {
-        'success': true, 
-        'message': response.data['message'] ?? 'Berhasil menyelesaikan izin', 
-        'statusCode': response.statusCode, 
-        'is_pelanggaran': response.data['is_pelanggaran'] == true
+        'success': true,
+        'message': response.data['message'] ?? 'Berhasil menyelesaikan izin',
+        'statusCode': response.statusCode,
+        'is_pelanggaran': response.data['is_pelanggaran'] == true,
       };
     } on DioException catch (e) {
       return _handleDioError(e, 'Gagal menyelesaikan izin keluar');
@@ -909,7 +1059,9 @@ Future<Map<String, dynamic>> resetPassword({
   Future<int> fetchUnreadCount() async {
     try {
       final response = await _dio.get('notifications');
-      if (response.statusCode == 200 && response.data != null && response.data['data'] is List) {
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['data'] is List) {
         final List notifs = response.data['data'];
         final unread = notifs.where((n) {
           final isRead = n['is_read'];
@@ -930,7 +1082,9 @@ Future<Map<String, dynamic>> resetPassword({
   Future<List<NotificationModel>> fetchNotifications() async {
     try {
       final response = await _dio.get('notifications');
-      if (response.statusCode == 200 && response.data != null && response.data['data'] is List) {
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['data'] is List) {
         return (response.data['data'] as List)
             .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -945,13 +1099,23 @@ Future<Map<String, dynamic>> resetPassword({
     }
   }
 
-  Future<Map<String, dynamic>> markNotificationAsRead(int notificationId) async {
+  Future<Map<String, dynamic>> markNotificationAsRead(
+    int notificationId,
+  ) async {
     try {
       final response = await _dio.put('notifications/$notificationId/read');
       if (response.statusCode == 200) {
-        return {'success': true, 'message': response.data['message'] ?? 'Notifikasi berhasil ditandai dibaca.'};
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ??
+              'Notifikasi berhasil ditandai dibaca.',
+        };
       }
-      return {'success': false, 'message': response.data['message'] ?? 'Gagal menandai notifikasi.'};
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Gagal menandai notifikasi.',
+      };
     } on DioException catch (e) {
       return _handleDioError(e, 'Gagal menandai notifikasi dibaca');
     } catch (e) {
@@ -988,10 +1152,13 @@ Future<Map<String, dynamic>> resetPassword({
     }
 
     if (e.response != null) {
-      if (e.response!.data != null && e.response!.data is Map<String, dynamic>) {
-        if (e.response!.data.containsKey('message') && e.response!.data['message'] != null) {
+      if (e.response!.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        if (e.response!.data.containsKey('message') &&
+            e.response!.data['message'] != null) {
           message = e.response!.data['message'];
-        } else if (e.response!.data.containsKey('errors') && e.response!.data['errors'] != null) {
+        } else if (e.response!.data.containsKey('errors') &&
+            e.response!.data['errors'] != null) {
           Map<String, dynamic> errors = e.response!.data['errors'];
           if (errors.values.isNotEmpty && errors.values.first.isNotEmpty) {
             message = errors.values.first[0].toString();
@@ -1009,12 +1176,11 @@ Future<Map<String, dynamic>> resetPassword({
     }
 
     return {
-      'success': false, 
-      'message': message, 
+      'success': false,
+      'message': message,
       'statusCode': e.response?.statusCode,
       'isNetworkError': isNetworkError,
-      'data': e.response?.data
+      'data': e.response?.data,
     };
   }
-
 }

@@ -17,11 +17,13 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
   String? _selectedDurasi;
   final TextEditingController _alasanController = TextEditingController();
   File? _fotoSurat;
-  
+
   Future<void> _takePicture() async {
     final File? image = await Navigator.push<File>(
-      context, 
-      MaterialPageRoute(builder: (_) => const CustomCameraScreen(useBackCamera: true))
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CustomCameraScreen(useBackCamera: true),
+      ),
     );
     if (image != null && mounted) {
       setState(() {
@@ -31,8 +33,14 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
   }
 
   void _submitData() async {
-    if (_selectedTipeIzin == null || _alasanController.text.isEmpty || _fotoSurat == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lengkapi form & upload foto terlebih dahulu!')));
+    if (_selectedTipeIzin == null ||
+        _alasanController.text.isEmpty ||
+        _fotoSurat == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lengkapi form & upload foto terlebih dahulu!'),
+        ),
+      );
       return;
     }
 
@@ -55,16 +63,27 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
 
       if (!mounted) return;
       if (isSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Izin keluar berhasil diajukan!'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Izin keluar berhasil diajukan!'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context);
       } else if (res['statusCode'] == 403) {
-        _showLimitDialog(res['message'] ?? 'Anda tidak diizinkan melakukan ini.');
+        _showLimitDialog(
+          res['message'] ?? 'Anda tidak diizinkan melakukan ini.',
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Gagal mengajukan izin.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Gagal mengajukan izin.')),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       provider.setLoading(false);
@@ -77,7 +96,9 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -93,12 +114,33 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                     color: Colors.red.shade50,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.warning_amber_rounded, color: Colors.red.shade600, size: 48),
+                  child: Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.red.shade600,
+                    size: 48,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Yah, Izin Ditolak!', style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87), textAlign: TextAlign.center),
+                const Text(
+                  'Yah, Izin Ditolak!',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
-                Text(message, style: const TextStyle(fontFamily: 'Poppins', color: Colors.black54, fontSize: 14), textAlign: TextAlign.center),
+                Text(
+                  message,
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Colors.black54,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
@@ -108,10 +150,15 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                       backgroundColor: Colors.red.shade600,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('OK, Mengerti', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'OK, Mengerti',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
@@ -125,11 +172,14 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
   @override
   Widget build(BuildContext context) {
     bool isTugasKantor = _selectedTipeIzin == 'tugas_kantor';
-    
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Mulai Izin Keluar', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Mulai Izin Keluar',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -144,14 +194,37 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
               children: [
                 _buildLabel('Tipe Izin Outing'),
                 DropdownButtonFormField<String>(
-                  decoration: _inputDecoration('Pilihan Izin Keluar', Icons.assignment_rounded),
+                  decoration: _inputDecoration(
+                    'Pilihan Izin Keluar',
+                    Icons.assignment_rounded,
+                  ),
                   dropdownColor: Colors.white,
-                  style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.indigo),
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Poppins',
+                  ),
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   initialValue: _selectedTipeIzin,
                   items: const [
-                    DropdownMenuItem(value: 'mendesak', child: Text('Mendesak (Max 2 Jam)', style: TextStyle(color: Colors.black87))),
-                    DropdownMenuItem(value: 'tugas_kantor', child: Text('Keperluan Tugas Kantor', style: TextStyle(color: Colors.black87))),
+                    DropdownMenuItem(
+                      value: 'mendesak',
+                      child: Text(
+                        'Mendesak (Max 2 Jam)',
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'tugas_kantor',
+                      child: Text(
+                        'Keperluan Tugas Kantor',
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    ),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -165,14 +238,37 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                 if (isTugasKantor) ...[
                   _buildLabel('Durasi Waktu'),
                   DropdownButtonFormField<String>(
-                    decoration: _inputDecoration('Pilih Durasi Tugas', Icons.timer_rounded),
+                    decoration: _inputDecoration(
+                      'Pilih Durasi Tugas',
+                      Icons.timer_rounded,
+                    ),
                     dropdownColor: Colors.white,
-                    style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.indigo),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Poppins',
+                    ),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     initialValue: _selectedDurasi,
                     items: const [
-                      DropdownMenuItem(value: 'setengah_hari', child: Text('Setengah Hari', style: TextStyle(color: Colors.black87))),
-                      DropdownMenuItem(value: 'satu_hari_full', child: Text('Satu Hari Penuh', style: TextStyle(color: Colors.black87))),
+                      DropdownMenuItem(
+                        value: 'setengah_hari',
+                        child: Text(
+                          'Setengah Hari',
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: 'satu_hari_full',
+                        child: Text(
+                          'Satu Hari Penuh',
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                      ),
                     ],
                     onChanged: (val) => setState(() => _selectedDurasi = val),
                   ),
@@ -183,8 +279,15 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                 TextFormField(
                   controller: _alasanController,
                   maxLines: 4,
-                  style: const TextStyle(color: Colors.black87, fontSize: 15, fontFamily: 'Poppins'),
-                  decoration: _inputDecoration('Tulis alasan dengan detail...', Icons.edit_note_rounded),
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                    fontFamily: 'Poppins',
+                  ),
+                  decoration: _inputDecoration(
+                    'Tulis alasan dengan detail...',
+                    Icons.edit_note_rounded,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -195,22 +298,43 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                     height: 180,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.indigo.shade50,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.indigo.shade200, width: 2, style: BorderStyle.solid),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: _fotoSurat == null
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.camera_alt_rounded, size: 48, color: Colors.indigo.shade400),
+                              Icon(
+                                Icons.camera_alt_rounded,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                               const SizedBox(height: 8),
-                              Text('Tap untuk mengambil foto dokumen', style: TextStyle(color: Colors.indigo.shade600, fontWeight: FontWeight.w500)),
+                              Text(
+                                'Tap untuk mengambil foto dokumen',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ],
                           )
                         : ClipRRect(
                             borderRadius: BorderRadius.circular(14),
-                            child: Image.file(_fotoSurat!, fit: BoxFit.cover, width: double.infinity),
+                            child: Image.file(
+                              _fotoSurat!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
                           ),
                   ),
                 ),
@@ -221,46 +345,88 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                   height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo.shade600,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 4,
-                      shadowColor: Colors.indigo.shade200,
+                      shadowColor: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.25),
                     ),
                     onPressed: provider.isLoading ? null : _submitData,
                     child: provider.isLoading
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.send_rounded, size: 20),
                               SizedBox(width: 10),
-                              Text('Mulai Izin Sekarang', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                              Text(
+                                'Mulai Izin Sekarang',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
                             ],
                           ),
                   ),
-                )
+                ),
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
 
   Widget _buildLabel(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
-        child: Text(text, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.grey.shade700, fontFamily: 'Poppins')),
-      );
+    padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+        color: Colors.grey.shade700,
+        fontFamily: 'Poppins',
+      ),
+    ),
+  );
 
-  InputDecoration _inputDecoration(String hint, IconData prefixIcon) => InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontFamily: 'Poppins', fontSize: 14),
-        filled: true,
-        fillColor: Colors.white,
-        prefixIcon: Icon(prefixIcon, color: Colors.indigo.shade300),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.indigo.shade500, width: 2)),
-      );
+  InputDecoration _inputDecoration(
+    String hint,
+    IconData prefixIcon,
+  ) => InputDecoration(
+    hintText: hint,
+    hintStyle: TextStyle(
+      color: Colors.grey.shade400,
+      fontFamily: 'Poppins',
+      fontSize: 14,
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    prefixIcon: Icon(prefixIcon, color: Theme.of(context).colorScheme.primary),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(
+        color: Theme.of(context).colorScheme.primary,
+        width: 1.5,
+      ),
+    ),
+  );
 }

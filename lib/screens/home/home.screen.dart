@@ -24,8 +24,8 @@ import '../../providers/izin_keluar_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/update_service.dart';
 
-const Color kPrimaryColor    = Color(0xFF4F46E5); 
-const Color kBackgroundColor = Color(0xFFF7F5FF);
+const Color kPrimaryColor = Color(0xFF279DE0);
+const Color kBackgroundColor = Color(0xFFF2F4F7);
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -58,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) Navigator.of(context).pushReplacementNamed('/login');
       });
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: kPrimaryColor)));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: kPrimaryColor)),
+      );
     }
 
     return Scaffold(
@@ -72,21 +74,30 @@ class _HomeScreenState extends State<HomeScreen> {
             topRight: Radius.circular(30),
           ),
           boxShadow: [
-            BoxShadow(blurRadius: 20, color: const Color(0xFF7662D8).withValues(alpha: 0.08), offset: const Offset(0, -5))
+            BoxShadow(
+              blurRadius: 20,
+              color: const Color(0xFF263238).withValues(alpha: 0.07),
+              offset: const Offset(0, -4),
+            ),
           ],
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
             child: GNav(
               gap: 8,
               activeColor: kPrimaryColor,
               iconSize: 26,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               duration: const Duration(milliseconds: 300),
-              tabBackgroundColor: const Color(0xFFF0ECFF),
+              tabBackgroundColor: const Color(0xFFE8F5FD),
               color: const Color(0xFFB5B1C4),
-              textStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: kPrimaryColor, fontSize: 13),
+              textStyle: const TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w700,
+                color: kPrimaryColor,
+                fontSize: 13,
+              ),
               tabs: const [
                 GButton(icon: Icons.dashboard_rounded, text: 'Home'),
                 GButton(icon: Icons.receipt_long_rounded, text: 'Riwayat'),
@@ -123,11 +134,16 @@ class _HomeContentState extends State<HomeContent> {
   void initState() {
     super.initState();
     _timeString = _formatTime(DateTime.now());
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => _getTime());
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (Timer t) => _getTime(),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUnreadCount();
       _refreshData();
-      UpdateService.checkForUpdate(context); // Cek update otomatis saat masuk Home
+      UpdateService.checkForUpdate(
+        context,
+      ); // Cek update otomatis saat masuk Home
     });
   }
 
@@ -145,8 +161,8 @@ class _HomeContentState extends State<HomeContent> {
   Future<void> _refreshData() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.refreshProfile(); 
-      _loadUnreadCount(); 
+      await authProvider.refreshProfile();
+      _loadUnreadCount();
     } catch (e) {
       debugPrint('Gagal memperbarui data dashboard: $e');
     }
@@ -163,17 +179,43 @@ class _HomeContentState extends State<HomeContent> {
     if (mounted) setState(() => _timeString = _formatTime(now));
   }
 
-  String _formatTime(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:${d.second.toString().padLeft(2, '0')}';
+  String _formatTime(DateTime d) =>
+      '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:${d.second.toString().padLeft(2, '0')}';
 
   String _formatDate(DateTime d) {
-    const hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-    const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    const hari = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
+    const bulan = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Ags',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
     return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
   }
 
-
   void _navigateToNotifications(ApiService apiService) async {
-    await Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage(apiService: apiService)));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NotificationsPage(apiService: apiService),
+      ),
+    );
     _loadUnreadCount();
   }
 
@@ -191,13 +233,15 @@ class _HomeContentState extends State<HomeContent> {
       color: kPrimaryColor,
       backgroundColor: Colors.white,
       child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         slivers: [
           // Premium Header
           SliverToBoxAdapter(
             child: _buildGojekStyleHeader(userName, user, apiService),
           ),
-          
+
           // Content Actions
           SliverToBoxAdapter(
             child: Padding(
@@ -209,34 +253,66 @@ class _HomeContentState extends State<HomeContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Layanan Mandiri', style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF25213A))),
+                      const Text(
+                        'Layanan Absensi',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF263238),
+                        ),
+                      ),
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: const Color(0xFFEDE8FF), borderRadius: BorderRadius.circular(10)),
-                            child: const Text('Shift 08:00', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w600, color: kPrimaryColor)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F5FD),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'Shift 08:00',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: kPrimaryColor,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           // TOMBOL TEST NOTIFIKASI
                           IconButton(
-                            icon: const Icon(Icons.bug_report_rounded, color: Colors.orange, size: 20),
+                            icon: const Icon(
+                              Icons.bug_report_rounded,
+                              color: Colors.orange,
+                              size: 20,
+                            ),
                             onPressed: () {
                               NotificationService().showTestNotification(
                                 title: 'Tes Notifikasi Berhasil! ✅',
-                                body: 'Ini adalah notifikasi percobaan dari kodingan lo Bang.',
+                                body:
+                                    'Ini adalah notifikasi percobaan dari kodingan lo Bang.',
                               );
                             },
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Tombol Izin Keluar (Hanya jika Sedang Hadir)
-                  if (absensiProvider.currentDayAbsensi != null && 
-                      (absensiProvider.currentDayAbsensi!.status.toLowerCase() == 'hadir' || absensiProvider.currentDayAbsensi!.status.toLowerCase() == 'terlambat') &&
+                  if (absensiProvider.currentDayAbsensi != null &&
+                      (absensiProvider.currentDayAbsensi!.status
+                                  .toLowerCase() ==
+                              'hadir' ||
+                          absensiProvider.currentDayAbsensi!.status
+                                  .toLowerCase() ==
+                              'terlambat') &&
                       absensiProvider.currentDayAbsensi!.checkOutAt == null)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -244,8 +320,13 @@ class _HomeContentState extends State<HomeContent> {
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          backgroundColor: izinProvider.isIzinBerjalan ? Colors.redAccent.shade700 : Colors.indigo.shade600,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          backgroundColor: izinProvider.isIzinBerjalan
+                              ? Colors.redAccent.shade700
+                              : kPrimaryColor,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -253,15 +334,34 @@ class _HomeContentState extends State<HomeContent> {
                         ),
                         onPressed: () {
                           if (izinProvider.isIzinBerjalan) {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const EndIzinScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const EndIzinScreen(),
+                              ),
+                            );
                           } else {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const StartIzinScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const StartIzinScreen(),
+                              ),
+                            );
                           }
                         },
-                        icon: Icon(izinProvider.isIzinBerjalan ? Icons.back_hand_rounded : Icons.exit_to_app_rounded),
+                        icon: Icon(
+                          izinProvider.isIzinBerjalan
+                              ? Icons.back_hand_rounded
+                              : Icons.exit_to_app_rounded,
+                        ),
                         label: Text(
-                          izinProvider.isIzinBerjalan ? "Selesaikan Izin Keluar" : "Izin Keluar",
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          izinProvider.isIzinBerjalan
+                              ? "Selesaikan Izin Keluar"
+                              : "Izin Keluar",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -273,42 +373,87 @@ class _HomeContentState extends State<HomeContent> {
                     alignment: WrapAlignment.spaceBetween,
                     children: [
                       _buildQuickAction(
-                        icon: Icons.login_rounded,
+                        icon: Icons.fingerprint_rounded,
                         label: 'Masuk',
-                        color: const Color(0xFF10B981),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsensiMasukScreen())),
+                        color: const Color(0xFF279DE0),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AbsensiMasukScreen(),
+                          ),
+                        ),
                       ),
                       _buildQuickAction(
                         icon: Icons.logout_rounded,
                         label: 'Pulang',
-                        color: const Color(0xFFEF4444),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsensiPulangScreen(lembur: false))),
+                        color: const Color(0xFF617A91),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const AbsensiPulangScreen(lembur: false),
+                          ),
+                        ),
                       ),
                       _buildQuickAction(
-                        icon: Icons.more_time_rounded,
+                        icon: Icons.schedule_rounded,
                         label: 'Lembur',
-                        color: const Color(0xFFF59E0B),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsensiLemburScreen())),
+                        color: const Color(0xFF8B78D0),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AbsensiLemburScreen(),
+                          ),
+                        ),
                       ),
                       if (user?.employmentType.toLowerCase() != 'organik')
                         _buildQuickAction(
                           icon: Icons.timer_off_rounded,
                           label: 'Telat',
                           color: const Color(0xFFF59E0B),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsensiTelatFormScreen())),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AbsensiTelatFormScreen(),
+                            ),
+                          ),
                         ),
                       _buildQuickAction(
-                        icon: Icons.masks_rounded,
-                        label: 'Pengajuan',
-                        color: const Color(0xFF8B5CF6),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SakitFormScreen())),
+                        icon: Icons.medical_services_rounded,
+                        label: 'Sakit',
+                        color: const Color(0xFFE47B79),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SakitFormScreen(
+                              initialTipePengajuan: 'sakit',
+                            ),
+                          ),
+                        ),
+                      ),
+                      _buildQuickAction(
+                        icon: Icons.assignment_turned_in_rounded,
+                        label: 'Izin',
+                        color: const Color(0xFF62B6A6),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SakitFormScreen(
+                              initialTipePengajuan: 'izin',
+                            ),
+                          ),
+                        ),
                       ),
                       _buildQuickAction(
                         icon: Icons.event_available_rounded,
                         label: 'Lembur\nTerjadwal',
                         color: const Color(0xFFF97316),
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const JadwalLemburScreen())),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const JadwalLemburScreen(),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -318,23 +463,27 @@ class _HomeContentState extends State<HomeContent> {
                   _buildLiveClockCard(),
 
                   const SizedBox(height: 24),
-                  
+
                   // Info Banner
                   const InfoBanner(),
                   const SizedBox(height: 40),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   // User header and the existing leave/date summary.
-  Widget _buildGojekStyleHeader(String userName, dynamic user, ApiService apiService) {
+  Widget _buildGojekStyleHeader(
+    String userName,
+    dynamic user,
+    ApiService apiService,
+  ) {
     return Container(
-      padding: const EdgeInsets.only(top: 52, left: 20, right: 20, bottom: 18),
+      padding: const EdgeInsets.only(top: 28, left: 20, right: 20, bottom: 18),
       color: kBackgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,28 +494,62 @@ class _HomeContentState extends State<HomeContent> {
             children: [
               Row(
                 children: [
-                   Container(
-                     padding: const EdgeInsets.all(3),
-                     decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                     child: CircleAvatar(
-                       radius: 22,
-                       backgroundColor: const Color(0xFFEDE8FF),
-                       backgroundImage: (user != null && user.profilePhotoUrl != null && user.profilePhotoUrl.isNotEmpty) 
-                           ? NetworkImage(user.profilePhotoUrl) 
-                           : null,
-                       child: (user == null || user.profilePhotoUrl == null || user.profilePhotoUrl.isEmpty)
-                           ? Text(userName.isNotEmpty ? userName[0].toUpperCase() : 'U', style: const TextStyle(color: kPrimaryColor, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Poppins'))
-                           : null,
-                     ),
-                   ),
-                   const SizedBox(width: 14),
-                   Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       const Text('Selamat Datang,', style: TextStyle(color: Color(0xFF8A8797), fontSize: 12, fontFamily: 'Poppins')),
-                       Text(userName, style: const TextStyle(color: Color(0xFF25213A), fontSize: 17, fontWeight: FontWeight.w700, fontFamily: 'Poppins')),
-                     ],
-                   )
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: const Color(0xFFE8F5FD),
+                      backgroundImage:
+                          (user != null &&
+                              user.profilePhotoUrl != null &&
+                              user.profilePhotoUrl.isNotEmpty)
+                          ? NetworkImage(user.profilePhotoUrl)
+                          : null,
+                      child:
+                          (user == null ||
+                              user.profilePhotoUrl == null ||
+                              user.profilePhotoUrl.isEmpty)
+                          ? Text(
+                              userName.isNotEmpty
+                                  ? userName[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                color: kPrimaryColor,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Selamat Datang,',
+                        style: TextStyle(
+                          color: Color(0xFF8A8797),
+                          fontSize: 12,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      Text(
+                        userName,
+                        style: const TextStyle(
+                          color: Color(0xFF25213A),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               // Notification Bell
@@ -377,41 +560,63 @@ class _HomeContentState extends State<HomeContent> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.10), blurRadius: 14, offset: const Offset(0, 5))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF263238).withValues(alpha: 0.08),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      const Icon(Icons.notifications_none_rounded, color: kPrimaryColor, size: 25),
+                      const Icon(
+                        Icons.notifications_none_rounded,
+                        color: kPrimaryColor,
+                        size: 25,
+                      ),
                       FutureBuilder<int>(
                         future: _unreadCountFuture,
                         builder: (context, snapshot) {
                           final count = snapshot.data ?? 0;
                           if (count > 0) {
                             return Positioned(
-                              right: -4, top: -4,
+                              right: -4,
+                              top: -4,
                               child: Container(
                                 padding: const EdgeInsets.all(5),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEF4444), 
+                                  color: const Color(0xFFEF4444),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2)
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
                                 ),
-                                child: Text('${count > 9 ? '9+' : count}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold, height: 1)),
+                                child: Text(
+                                  '${count > 9 ? '9+' : count}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
+                                ),
                               ),
                             );
                           }
                           return const SizedBox.shrink();
                         },
-                      )
+                      ),
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 22),
-          
+
           // GoPay / ShopeePay style "Sisa Cuti" Wallet Card
           if (user != null && user.employmentType == 'organik')
             Container(
@@ -419,8 +624,14 @@ class _HomeContentState extends State<HomeContent> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFEDEAF5)),
-                boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))]
+                border: Border.all(color: const Color(0xFFE9EDF2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF263238).withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -432,93 +643,189 @@ class _HomeContentState extends State<HomeContent> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                            child: const Icon(Icons.account_balance_wallet_rounded, color: kPrimaryColor, size: 20),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.account_balance_wallet_rounded,
+                              color: kPrimaryColor,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          Text('Sisa Cuti Tahunan', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, color: Colors.grey.shade600, fontSize: 13)),
+                          Text(
+                            'Sisa Cuti Tahunan',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('${user.sisaCuti ?? 12}', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, color: Color(0xFF25213A), fontSize: 32, height: 1)),
+                          Text(
+                            '${user.sisaCuti ?? 12}',
+                            style: const TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF25213A),
+                              fontSize: 32,
+                              height: 1,
+                            ),
+                          ),
                           const Padding(
                             padding: EdgeInsets.only(bottom: 4.0, left: 6.0),
-                            child: Text('Hari', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, color: Colors.grey, fontSize: 15)),
-                          )
+                            child: Text(
+                              'Hari',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                   // Separator
-                  Container(height: 50, width: 1.5, color: Colors.grey.shade200),
+                  Container(
+                    height: 50,
+                    width: 1.5,
+                    color: Colors.grey.shade200,
+                  ),
                   // Terpakai
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Terpakai', style: TextStyle(fontFamily: 'Poppins', color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.w500)),
+                      Text(
+                        'Terpakai',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Colors.grey.shade500,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       const SizedBox(height: 6),
-                      Text('${user.totalCutiDiambil ?? 0} Hari', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, color: kPrimaryColor, fontSize: 18)),
+                      Text(
+                        '${user.totalCutiDiambil ?? 0} Hari',
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryColor,
+                          fontSize: 18,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
             )
-          else 
+          else
             // If not organik, just show a nice date indicator
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFEDEAF5)),
-                boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))]
+                border: Border.all(color: const Color(0xFFE9EDF2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF263238).withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
-                    child: const Icon(Icons.calendar_month_rounded, color: kPrimaryColor, size: 28),
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.calendar_month_rounded,
+                      color: kPrimaryColor,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Tanggal Hari Ini', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, color: Colors.grey.shade500, fontSize: 13)),
+                      Text(
+                        'Tanggal Hari Ini',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(_formatDate(DateTime.now()), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: Color(0xFF25213A), fontSize: 16)),
+                      Text(
+                        _formatDate(DateTime.now()),
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF25213A),
+                          fontSize: 16,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
-            )
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickAction({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+  Widget _buildQuickAction({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 96,
+        width: 90,
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFEDEAF5)),
-                boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.07), blurRadius: 14, offset: const Offset(0, 6))],
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: color.withValues(alpha: 0.12)),
               ),
-              child: Icon(icon, color: color, size: 27),
+              child: Icon(icon, color: color, size: 32),
             ),
-            const SizedBox(height: 9),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Poppins', fontSize: 12, height: 1.25, fontWeight: FontWeight.w600, color: Color(0xFF4A4658))),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 11,
+                height: 1.25,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF4A4658),
+              ),
+            ),
           ],
         ),
       ),
@@ -530,38 +837,83 @@ class _HomeContentState extends State<HomeContent> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF48B8F2), Color(0xFF279DE0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEDEAF5)),
-        boxShadow: [BoxShadow(color: const Color(0xFF7662D8).withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 7))]
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF279DE0).withValues(alpha: 0.22),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Stack(
         children: [
           Positioned(
-            right: -18, top: -24,
-            child: Icon(Icons.access_time_filled_rounded, size: 120, color: const Color(0xFF7662D8).withValues(alpha: 0.045)),
+            right: -18,
+            top: -24,
+            child: Icon(
+              Icons.access_time_filled_rounded,
+              size: 120,
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(color: const Color(0xFFEDE8FF), borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.sync_rounded, color: Color(0xFF22A879), size: 14),
+                    Icon(Icons.sync_rounded, color: Colors.white, size: 14),
                     SizedBox(width: 6),
-                    Text('Waktu Server AKTIF', style: TextStyle(fontFamily: 'Poppins', color: kPrimaryColor, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Waktu Lokal',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              Text(_timeString, style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF25213A), fontSize: 48, fontWeight: FontWeight.w800, height: 1, letterSpacing: 1)),
+              Text(
+                _timeString,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Colors.white,
+                  fontSize: 48,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                  letterSpacing: 1,
+                ),
+              ),
               const SizedBox(height: 10),
-              Text(_formatDate(DateTime.now()), style: const TextStyle(fontFamily: 'Poppins', color: Color(0xFF8A8797), fontSize: 14)),
+              Text(
+                _formatDate(DateTime.now()),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14,
+                ),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -585,17 +937,41 @@ class InfoBanner extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(color: Color(0xFF0EA5E9), shape: BoxShape.circle),
-            child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 26),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0EA5E9),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.campaign_rounded,
+              color: Colors.white,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 16),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Pengumuman Penting', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0369A1))),
+                Text(
+                  'Pengumuman Penting',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0369A1),
+                  ),
+                ),
                 SizedBox(height: 6),
-                Text('Pastikan Anda berada di area kantor saat melakukan absensi masuk maupun pulang agar ditrack akurat.', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Color(0xFF075985), height: 1.5, fontWeight: FontWeight.w500)),
+                Text(
+                  'Pastikan Anda berada di area kantor saat melakukan absensi masuk maupun pulang agar ditrack akurat.',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    color: Color(0xFF075985),
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),

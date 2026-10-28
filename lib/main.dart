@@ -26,6 +26,7 @@ import 'package:absensi_app/screens/home/jadwal_lembur_screen.dart';
 import 'package:absensi_app/screens/home/absensi_lembur_screen.dart';
 import 'package:absensi_app/services/security_service.dart';
 import 'package:absensi_app/screens/security/device_not_secure_screen.dart';
+import 'package:absensi_app/core/constants/app_theme.dart';
 
 late List<CameraDescription> cameras;
 
@@ -35,7 +36,8 @@ void main() async {
   await SentryFlutter.init(
     (options) {
       // Masukkan DSN Sentry lu di sini nanti bang
-      options.dsn = 'https://ec1c6b4670ff0903c80a5308f638b0fe@o4511295361187840.ingest.us.sentry.io/4511295414468608'; 
+      options.dsn =
+          'https://ec1c6b4670ff0903c80a5308f638b0fe@o4511295361187840.ingest.us.sentry.io/4511295414468608';
       options.tracesSampleRate = 1.0;
     },
     appRunner: () async {
@@ -60,23 +62,18 @@ void main() async {
       runApp(
         MultiProvider(
           providers: [
-            Provider<ApiService>(
-              create: (_) => ApiService(),
+            Provider<ApiService>(create: (_) => ApiService()),
+            ChangeNotifierProvider(
+              create: (context) =>
+                  AuthProvider(apiService: context.read<ApiService>()),
             ),
             ChangeNotifierProvider(
-              create: (context) => AuthProvider(
-                apiService: context.read<ApiService>(),
-              ),
+              create: (context) =>
+                  AbsensiProvider(apiService: context.read<ApiService>()),
             ),
             ChangeNotifierProvider(
-              create: (context) => AbsensiProvider(
-                apiService: context.read<ApiService>(),
-              ),
-            ),
-            ChangeNotifierProvider(
-              create: (context) => IzinKeluarProvider(
-                apiService: context.read<ApiService>(),
-              ),
+              create: (context) =>
+                  IzinKeluarProvider(apiService: context.read<ApiService>()),
             ),
           ],
           child: const MyApp(),
@@ -96,37 +93,30 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Absensi App',
       debugShowCheckedModeBanner: false,
-      navigatorObservers: [
-        SentryNavigatorObserver(),
-      ],
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.deepPurple,
-        ),
-      ),
+      navigatorObservers: [SentryNavigatorObserver()],
+      theme: buildAppTheme(),
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       home: const SplashScreen(title: 'Absensi App'),
 
       // 🧭 Semua route lengkap
-     routes: {
-  '/login': (context) => const LoginScreen(),
-  '/register': (context) => const RegisterScreen(),
-  '/home': (context) => const HomeScreen(),
-  '/notifications': (context) => NotificationsPage(apiService: apiService),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/notifications': (context) =>
+            NotificationsPage(apiService: apiService),
 
-  // === Rute dari notifikasi ===
-  '/lembur_detail': (context) => const AbsensiLemburScreen(),
-  '/lembur': (context) => const AbsensiLemburScreen(),
-  '/sakit_detail': (context) => const SakitFormScreen(),
-  '/izin_detail': (context) => const SakitFormScreen(),
+        // === Rute dari notifikasi ===
+        '/lembur_detail': (context) => const AbsensiLemburScreen(),
+        '/lembur': (context) => const AbsensiLemburScreen(),
+        '/sakit_detail': (context) => const SakitFormScreen(),
+        '/izin_detail': (context) => const SakitFormScreen(),
 
-  // ✅ Tambahkan ini biar gak error lagi
-  '/absensi_detail': (context) => const AbsensiPulangScreen(),
-  '/jadwal_lembur': (context) => const JadwalLemburScreen(),
-},
-
+        // ✅ Tambahkan ini biar gak error lagi
+        '/absensi_detail': (context) => const AbsensiPulangScreen(),
+        '/jadwal_lembur': (context) => const JadwalLemburScreen(),
+      },
     );
   }
 }
