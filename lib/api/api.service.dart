@@ -3,6 +3,7 @@
 import 'package:universal_io/io.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mime/mime.dart';
@@ -22,7 +23,7 @@ class ApiService {
   ApiService() {
     _dio = Dio(
   BaseOptions(
-    baseUrl: ApiConstants.BASE_URL,
+    baseUrl: ApiConstants.baseUrl,
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 60),
     sendTimeout: const Duration(seconds: 60),
@@ -49,7 +50,7 @@ class ApiService {
       },
       onError: (DioException e, handler) {
         if (e.response?.statusCode == 401) {
-          print('Unauthorized request. Token might be expired or invalid. Attempting to clear token.');
+          debugPrint('Unauthorized request. Token might be expired or invalid. Attempting to clear token.');
           _deleteToken();
         }
         return handler.next(e);
@@ -137,7 +138,7 @@ class ApiService {
     } on DioException {
       // Ignore error
     } catch (e) {
-      print('Logout error: $e');
+      debugPrint('Logout error: $e');
     } finally {
       await _deleteToken();
     }
@@ -239,7 +240,7 @@ Future<Map<String, dynamic>> resetPassword({
         if (userData is Map<String, dynamic>) {
           return User.fromJson(userData);
         } else {
-          print('Error: response.data is not a Map<String, dynamic> in getAuthenticatedUser. Type: ${response.data.runtimeType}, Data: ${response.data}');
+          debugPrint('Error: response.data is not a Map<String, dynamic> in getAuthenticatedUser. Type: ${response.data.runtimeType}, Data: ${response.data}');
           return null;
         }
       }
@@ -251,7 +252,7 @@ Future<Map<String, dynamic>> resetPassword({
       _handleDioError(e, 'Failed to fetch authenticated user');
       return null;
     } catch (e) {
-      print('Error fetching authenticated user: $e');
+      debugPrint('Error fetching authenticated user: $e');
       return null;
     }
   }
@@ -586,7 +587,7 @@ Future<Map<String, dynamic>> resetPassword({
       }
       return [];
     } catch (e) {
-      print('Error fetching scheduled lembur: $e');
+      debugPrint('Error fetching scheduled lembur: $e');
       return [];
     }
   }
@@ -616,7 +617,7 @@ Future<Map<String, dynamic>> resetPassword({
       _handleDioError(e, 'Gagal mengambil riwayat absensi');
       return [];
     } catch (e) {
-      print('Error fetching personal attendance: $e');
+      debugPrint('Error fetching personal attendance: $e');
       return [];
     }
   }
@@ -921,7 +922,7 @@ Future<Map<String, dynamic>> resetPassword({
       _handleDioError(e, 'Gagal mengambil jumlah notifikasi belum dibaca');
       return 0;
     } catch (e) {
-      print('Error fetching unread count: $e');
+      debugPrint('Error fetching unread count: $e');
       return 0;
     }
   }
@@ -939,7 +940,7 @@ Future<Map<String, dynamic>> resetPassword({
       _handleDioError(e, 'Gagal mengambil daftar notifikasi');
       return [];
     } catch (e) {
-      print('Error fetching notifications: $e');
+      debugPrint('Error fetching notifications: $e');
       return [];
     }
   }
@@ -1001,10 +1002,10 @@ Future<Map<String, dynamic>> resetPassword({
       } else {
         message = 'Server error: ${e.response!.statusCode}';
       }
-      print('Dio error: ${e.response!.statusCode} - ${e.response!.data}');
+      debugPrint('Dio error: ${e.response!.statusCode} - ${e.response!.data}');
     } else if (!isNetworkError) {
       message = 'Network error: ${e.message}';
-      print('Dio error: ${e.message}');
+      debugPrint('Dio error: ${e.message}');
     }
 
     return {

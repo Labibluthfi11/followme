@@ -280,7 +280,7 @@ class _AbsensiLemburScreenState extends State<AbsensiLemburScreen> {
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        final Color errorColor = const Color(0xFFEF4444);
+        const Color errorColor = Color(0xFFEF4444);
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
@@ -420,13 +420,13 @@ class _AbsensiLemburScreenState extends State<AbsensiLemburScreen> {
               padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                    colors: [kLemburColor, kLemburColor.withOpacity(0.7)],
+                    colors: [kLemburColor, kLemburColor.withValues(alpha: 0.7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                      color: kLemburColor.withOpacity(0.4),
+                      color: kLemburColor.withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10))
                 ],
@@ -436,7 +436,7 @@ class _AbsensiLemburScreenState extends State<AbsensiLemburScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle),
                     child: const Icon(Icons.more_time_rounded,
                         color: Colors.white, size: 32),
@@ -474,10 +474,10 @@ class _AbsensiLemburScreenState extends State<AbsensiLemburScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(32),
                 border:
-                    Border.all(color: kLemburColor.withOpacity(0.3), width: 2),
+                    Border.all(color: kLemburColor.withValues(alpha: 0.3), width: 2),
                 boxShadow: [
                   BoxShadow(
-                      color: kLemburColor.withOpacity(0.05),
+                      color: kLemburColor.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 5))
                 ],
@@ -490,7 +490,7 @@ class _AbsensiLemburScreenState extends State<AbsensiLemburScreen> {
                       Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                              color: kLemburColor.withOpacity(0.1),
+                              color: kLemburColor.withValues(alpha: 0.1),
                               shape: BoxShape.circle),
                           child: const Icon(Icons.work_history_rounded,
                               color: kLemburColor, size: 20)),
@@ -663,7 +663,7 @@ class _AbsensiLemburScreenState extends State<AbsensiLemburScreen> {
                       ? []
                       : [
                           BoxShadow(
-                              color: kSuccessColor.withOpacity(0.4),
+                              color: kSuccessColor.withValues(alpha: 0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 5))
                         ]),

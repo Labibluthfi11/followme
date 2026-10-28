@@ -88,7 +88,7 @@ class AbsensiProvider with ChangeNotifier {
         year: effectiveYear,
       );
       
-      _myAbsensiList = absensiList ?? [];
+      _myAbsensiList = absensiList;
       
       // Update data hari ini (hanya jika tidak sedang memfilter tanggal lain)
       if (searchDate == null && month == null) {
@@ -158,7 +158,7 @@ class AbsensiProvider with ChangeNotifier {
     _totalTanpaKet = 0;
 
     for (var absensi in _myAbsensiList) {
-      final status = absensi.status.toLowerCase() ?? '';
+      final status = absensi.status.toLowerCase();
       final tipe = absensi.tipe?.toLowerCase() ?? '';
 
       if (status == 'hadir') _totalHadir++;

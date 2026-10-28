@@ -53,7 +53,7 @@ void main() async {
       try {
         cameras = await availableCameras();
       } on CameraException catch (e) {
-        print('Error initializing cameras: ${e.description}');
+        debugPrint('Error initializing cameras: ${e.description}');
         cameras = [];
       }
 

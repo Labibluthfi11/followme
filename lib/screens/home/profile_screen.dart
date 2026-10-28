@@ -37,7 +37,7 @@ class ModernTextField extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.grey.shade200, width: 1.5),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))]
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))]
             ),
             child: TextFormField(
               controller: controller,
@@ -100,7 +100,7 @@ class NonEditableField extends StatelessWidget {
 
 class _ModernLoading extends StatefulWidget {
   final Color color;
-  const _ModernLoading({this.color = Colors.white});
+  const _ModernLoading() : color = Colors.white;
   @override
   State<_ModernLoading> createState() => _ModernLoadingState();
 }
@@ -285,7 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: const Color(0xFFEF4444).withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: const Color(0xFFEF4444).withValues(alpha: 0.1), shape: BoxShape.circle),
               child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 40),
             ),
             const SizedBox(height: 20),
@@ -340,7 +340,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         future: _userProfileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: kPrimaryColor));
+            return const Center(child: CircularProgressIndicator(color: kPrimaryColor));
           }
 
           if (snapshot.hasError || !snapshot.hasData || _user == null) {
@@ -381,9 +381,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
-                            color: kPrimaryColor.withOpacity(0.1),
+                            color: kPrimaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
+                            border: Border.all(color: kPrimaryColor.withValues(alpha: 0.2)),
                           ),
                           child: Text(
                             _user!.employmentType.toUpperCase(),
@@ -407,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
                           gradient: const LinearGradient(colors: [kPrimaryColor, Color(0xFF6366F1)]),
-                          boxShadow: [BoxShadow(color: kPrimaryColor.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))]
+                          boxShadow: [BoxShadow(color: kPrimaryColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
                         ),
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveProfile,
@@ -429,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         label: const Text('Keluar Akun', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFFEF4444))),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: const Color(0xFFEF4444).withOpacity(0.3), width: 1.5),
+                          side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3), width: 1.5),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           backgroundColor: Colors.white,
                         ),
@@ -529,9 +529,9 @@ class _ProfileHeaderDelegate extends SliverPersistentHeaderDelegate {
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))]
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10))]
                       ),
                       child: CircleAvatar(
                         radius: 56,
@@ -572,7 +572,7 @@ class _ProfileHeaderDelegate extends SliverPersistentHeaderDelegate {
                 const SizedBox(height: 4),
                 Text(
                   user.idKaryawan,
-                  style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.8)),
+                  style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],
             ),

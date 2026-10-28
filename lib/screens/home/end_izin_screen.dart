@@ -6,10 +6,10 @@ import '../../api/api.service.dart';
 import 'custom_camera_screen.dart';
 
 class EndIzinScreen extends StatefulWidget {
-  const EndIzinScreen({Key? key}) : super(key: key);
+  const EndIzinScreen({super.key});
 
   @override
-  _EndIzinScreenState createState() => _EndIzinScreenState();
+  State<EndIzinScreen> createState() => _EndIzinScreenState();
 }
 
 class _EndIzinScreenState extends State<EndIzinScreen> {
@@ -41,9 +41,13 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
         dokumenKembali: _dokumenKembali!,
       );
 
-      if (res['statusCode'] == 200 || res['statusCode'] == 201) {
+      final isSuccess = res['statusCode'] == 200 || res['statusCode'] == 201;
+      if (isSuccess) {
         provider.ubahStatusIzinBerjalan(false);
-        
+      }
+
+      if (!mounted) return;
+      if (isSuccess) {
         if (res['is_pelanggaran'] == true) {
            _tampilkanDialogPelanggaran();
         } else {
@@ -54,7 +58,9 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Gagal menyelesaikan izin.')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
       provider.setLoading(false);
     }
@@ -160,9 +166,9 @@ class _EndIzinScreenState extends State<EndIzinScreen> {
                     onPressed: provider.isLoading ? null : _submitEndIzin,
                     child: provider.isLoading
                         ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Row(
+                        : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.check_circle_rounded, size: 20),
                               SizedBox(width: 10),
                               Text('Selesaikan Izin Sekarang', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),

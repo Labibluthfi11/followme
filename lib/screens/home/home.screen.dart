@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'dart:async';
-import 'dart:ui';
 
 import '../../providers/auth_provider.dart';
 import '../../api/api.service.dart';
@@ -23,7 +22,6 @@ import 'end_izin_screen.dart';
 import '../../providers/absensi_provider.dart';
 import '../../providers/izin_keluar_provider.dart';
 import '../../services/notification_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../services/update_service.dart';
 
 const Color kPrimaryColor    = Color(0xFF4F46E5); 
@@ -57,8 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     if (!authProvider.isAuthenticated) {
-      Future.microtask(() => Navigator.of(context).pushReplacementNamed('/login'));
-      return Scaffold(body: Center(child: CircularProgressIndicator(color: kPrimaryColor)));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator(color: kPrimaryColor)));
     }
 
     return Scaffold(
@@ -147,7 +147,9 @@ class _HomeContentState extends State<HomeContent> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await authProvider.refreshProfile(); 
       _loadUnreadCount(); 
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Gagal memperbarui data dashboard: $e');
+    }
   }
 
   @override
@@ -288,7 +290,7 @@ class _HomeContentState extends State<HomeContent> {
                         color: const Color(0xFFF59E0B),
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsensiLemburScreen())),
                       ),
-                      if (user?.employmentType?.toLowerCase() != 'organik')
+                      if (user?.employmentType.toLowerCase() != 'organik')
                         _buildQuickAction(
                           icon: Icons.timer_off_rounded,
                           label: 'Telat',
@@ -430,7 +432,7 @@ class _HomeContentState extends State<HomeContent> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(color: kPrimaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                             child: const Icon(Icons.account_balance_wallet_rounded, color: kPrimaryColor, size: 20),
                           ),
                           const SizedBox(width: 8),
@@ -478,7 +480,7 @@ class _HomeContentState extends State<HomeContent> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: kPrimaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
                     child: const Icon(Icons.calendar_month_rounded, color: kPrimaryColor, size: 28),
                   ),
                   const SizedBox(width: 16),
@@ -587,12 +589,12 @@ class InfoBanner extends StatelessWidget {
             child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 26),
           ),
           const SizedBox(width: 16),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Pengumuman Penting', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0369A1))),
-                const SizedBox(height: 6),
+                Text('Pengumuman Penting', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0369A1))),
+                SizedBox(height: 6),
                 Text('Pastikan Anda berada di area kantor saat melakukan absensi masuk maupun pulang agar ditrack akurat.', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Color(0xFF075985), height: 1.5, fontWeight: FontWeight.w500)),
               ],
             ),

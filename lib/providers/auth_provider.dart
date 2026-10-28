@@ -193,7 +193,7 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print('Gagal refresh profile: $e');
+      debugPrint('Gagal refresh profile: $e');
     }
   }
 
@@ -203,7 +203,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _apiService.logout(); 
     } catch (e) {
-      print('Logout error: $e');
+      debugPrint('Logout error: $e');
     } finally {
       await _storage.delete(key: _authTokenKey);
       SharedPreferences prefs = await SharedPreferences.getInstance();

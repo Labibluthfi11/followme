@@ -1,7 +1,6 @@
 // lib/pages/notifications_page.dart
 
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 // <<< Sesuaikan path import ini >>>
 import '../api/api.service.dart';
@@ -54,24 +53,24 @@ class _NotificationsPageState extends State<NotificationsPage>
   }
 
   void _navigateToTargetPage(NotificationModel notif) {
-    final type = notif.type.toLowerCase() ?? '';
+    final type = notif.type.toLowerCase();
     final targetId = notif.targetId;
 
-    print('🔍 Debug Navigation:');
-    print('   - Type: $type');
-    print('   - Target ID: $targetId');
-    print('   - Target Page: ${notif.targetPage}');
+    debugPrint('🔍 Debug Navigation:');
+    debugPrint('   - Type: $type');
+    debugPrint('   - Target ID: $targetId');
+    debugPrint('   - Target Page: ${notif.targetPage}');
 
   
 if (type.contains('scheduled_lembur')) {
-  print('✅ Navigate to: Jadwal Lembur Screen');
+  debugPrint('✅ Navigate to: Jadwal Lembur Screen');
   Navigator.pushNamed(context, '/jadwal_lembur');
   return;
 }
 
 // Reminder lembur hari ini → ke absen pulang lembur
 if (type.contains('lembur_reminder') || type == 'lembur') {
-  print('✅ Navigate to: Absensi Pulang Lembur Screen (lembur: true)');
+  debugPrint('✅ Navigate to: Absensi Pulang Lembur Screen (lembur: true)');
   Navigator.push(
     context,
     MaterialPageRoute(
@@ -94,7 +93,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
       route = notif.targetPage!;
     }
 
-    print('✅ Navigate to Named Route: $route (with targetId: $targetId)');
+    debugPrint('✅ Navigate to Named Route: $route (with targetId: $targetId)');
 
     // Gunakan try-catch untuk handle route yang tidak terdaftar
     try {
@@ -104,7 +103,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
         arguments: targetId,
       );
     } catch (e) {
-      print('⚠️ Route not found: $route - Fallback to /home');
+      debugPrint('⚠️ Route not found: $route - Fallback to /home');
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -136,7 +135,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
         }
       }
     } catch (e) {
-      print('❌ Error handling notification: $e');
+      debugPrint('❌ Error handling notification: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -225,7 +224,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                   end: Alignment.bottomRight,
                   colors: [
                     _primaryColor,
-                    _primaryColor.withOpacity(0.8),
+                    _primaryColor.withValues(alpha: 0.8),
                   ],
                 ),
                 borderRadius: const BorderRadius.vertical(
@@ -352,13 +351,13 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                               boxShadow: [
                                 BoxShadow(
                                   color: _shadowDark
-                                      .withOpacity(isRead ? 0.8 : 0.5),
+                                      .withValues(alpha: isRead ? 0.8 : 0.5),
                                   offset: const Offset(4, 4),
                                   blurRadius: 10,
                                 ),
                                 BoxShadow(
                                   color: _shadowLight
-                                      .withOpacity(isRead ? 0.5 : 1.0),
+                                      .withValues(alpha: isRead ? 0.5 : 1.0),
                                   offset: const Offset(-4, -4),
                                   blurRadius: 10,
                                 ),
@@ -367,7 +366,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                                   ? null
                                   : Border.all(
                                       color:
-                                          gradientColors[0].withOpacity(0.2),
+                                          gradientColors[0].withValues(alpha: 0.2),
                                       width: 1,
                                     ),
                             ),
@@ -418,7 +417,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                                               : [
                                                   BoxShadow(
                                                     color: gradientColors[1]
-                                                        .withOpacity(0.4),
+                                                        .withValues(alpha: 0.4),
                                                     blurRadius: 10,
                                                     offset: const Offset(0, 5),
                                                   ),

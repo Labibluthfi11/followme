@@ -2,7 +2,6 @@ import 'package:universal_io/io.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:absensi_app/providers/absensi_provider.dart';
@@ -34,7 +33,7 @@ const Map<String, Map<String, dynamic>> _cutiConfig = {
 // ----------------------------------------------------------------------
 class _ModernLoading extends StatefulWidget {
   final Color color;
-  const _ModernLoading({this.color = Colors.white});
+  const _ModernLoading() : color = Colors.white;
   @override
   State<_ModernLoading> createState() => _ModernLoadingState();
 }
@@ -333,7 +332,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
     setState(() => _isSubmitting = false);
     _showSnackBar(
       _gratisHari > 0
-        ? 'Sisa cuti tidak cukup. $_gratisHari hari gratis, ${hariYangPotong} hari potong cuti. Sisa cuti: $sisaCuti hari.'
+        ? 'Sisa cuti tidak cukup. $_gratisHari hari gratis, $hariYangPotong hari potong cuti. Sisa cuti: $sisaCuti hari.'
         : 'Sisa cuti tidak cukup (Sisa: $sisaCuti, Diajukan: $_jumlahHariDipilih)',
       isSuccess: false
     );
@@ -684,7 +683,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                 const SizedBox(height: 16),
                 Container(
                   height: 180, width: double.infinity,
-                  decoration: BoxDecoration(border: Border.all(color: kPrimaryColor.withOpacity(0.3), width: 3), borderRadius: BorderRadius.circular(16)),
+                  decoration: BoxDecoration(border: Border.all(color: kPrimaryColor.withValues(alpha: 0.3), width: 3), borderRadius: BorderRadius.circular(16)),
                   child: ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.file(_pickedFile!, fit: BoxFit.cover)),
                 )
               ],
@@ -696,7 +695,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                 height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: kPrimaryColor.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))]
+                  boxShadow: [BoxShadow(color: kPrimaryColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
                 ),
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitForm,
@@ -736,7 +735,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
           color: isSelected ? color : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? color : Colors.grey.shade200, width: 2),
-          boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))] : [],
+          boxShadow: isSelected ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))] : [],
         ),
         child: Column(
           children: [

@@ -1,7 +1,6 @@
 import 'package:universal_io/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
@@ -253,7 +252,7 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [lateMinutes > 0 ? kWarningColor : kPrimaryColor, lateMinutes > 0 ? const Color(0xFFD97706) : const Color(0xFF4338CA)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(32),
-                  boxShadow: [BoxShadow(color: (lateMinutes > 0 ? kWarningColor : kPrimaryColor).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))],
+                  boxShadow: [BoxShadow(color: (lateMinutes > 0 ? kWarningColor : kPrimaryColor).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 10))],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +351,7 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                                     onTap: () => setState(() => _fileBukti = null),
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
                                       child: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
                                     ),
                                   ),
@@ -365,7 +364,7 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(color: kPrimaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                                decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
                                 child: const Icon(Icons.camera_alt_rounded, size: 32, color: kPrimaryColor)
                               ),
                               const SizedBox(height: 12),
@@ -382,7 +381,7 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                   height: 56,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: kWarningColor.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))]
+                    boxShadow: [BoxShadow(color: kWarningColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
                   ),
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
@@ -409,7 +408,7 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

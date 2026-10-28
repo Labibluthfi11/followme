@@ -6,10 +6,10 @@ import '../../api/api.service.dart';
 import 'custom_camera_screen.dart';
 
 class StartIzinScreen extends StatefulWidget {
-  const StartIzinScreen({Key? key}) : super(key: key);
+  const StartIzinScreen({super.key});
 
   @override
-  _StartIzinScreenState createState() => _StartIzinScreenState();
+  State<StartIzinScreen> createState() => _StartIzinScreenState();
 }
 
 class _StartIzinScreenState extends State<StartIzinScreen> {
@@ -48,8 +48,13 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
         fotoSurat: _fotoSurat!,
       );
 
-      if (res['statusCode'] == 200 || res['statusCode'] == 201) {
+      final isSuccess = res['statusCode'] == 200 || res['statusCode'] == 201;
+      if (isSuccess) {
         provider.ubahStatusIzinBerjalan(true);
+      }
+
+      if (!mounted) return;
+      if (isSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Izin keluar berhasil diajukan!'), backgroundColor: Colors.green));
         Navigator.pop(context);
       } else if (res['statusCode'] == 403) {
@@ -58,7 +63,9 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Gagal mengajukan izin.')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
       provider.setLoading(false);
     }
@@ -141,7 +148,7 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                   dropdownColor: Colors.white,
                   style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
                   icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.indigo),
-                  value: _selectedTipeIzin,
+                  initialValue: _selectedTipeIzin,
                   items: const [
                     DropdownMenuItem(value: 'mendesak', child: Text('Mendesak (Max 2 Jam)', style: TextStyle(color: Colors.black87))),
                     DropdownMenuItem(value: 'tugas_kantor', child: Text('Keperluan Tugas Kantor', style: TextStyle(color: Colors.black87))),
@@ -162,7 +169,7 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                     dropdownColor: Colors.white,
                     style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
                     icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.indigo),
-                    value: _selectedDurasi,
+                    initialValue: _selectedDurasi,
                     items: const [
                       DropdownMenuItem(value: 'setengah_hari', child: Text('Setengah Hari', style: TextStyle(color: Colors.black87))),
                       DropdownMenuItem(value: 'satu_hari_full', child: Text('Satu Hari Penuh', style: TextStyle(color: Colors.black87))),
@@ -223,9 +230,9 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
                     onPressed: provider.isLoading ? null : _submitData,
                     child: provider.isLoading
                         ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Row(
+                        : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.send_rounded, size: 20),
                               SizedBox(width: 10),
                               Text('Mulai Izin Sekarang', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),

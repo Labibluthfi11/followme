@@ -126,7 +126,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final absensiProvider = Provider.of<AbsensiProvider>(context);
-    final userType = Provider.of<AuthProvider>(context, listen: false).user?.employmentType?.toLowerCase() ?? 'freelance';
+    final userType = Provider.of<AuthProvider>(context, listen: false).user?.employmentType.toLowerCase() ?? 'freelance';
     final stats = _calculateAttendanceStats(absensiProvider.myAbsensiList, userType);
     final filteredList = _filteredList;
 
@@ -213,7 +213,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 4))],
           ),
           child: TextField(
             controller: _searchController,
@@ -241,7 +241,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 4))],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 4))],
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
@@ -267,7 +267,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 decoration: BoxDecoration(
                   color: kPrimaryColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: kPrimaryColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                  boxShadow: [BoxShadow(color: kPrimaryColor.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
                 ),
                 child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 24),
               ),
@@ -304,15 +304,15 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-        border: Border.all(color: color.withOpacity(0.2), width: 1)
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1)
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 16),
@@ -331,7 +331,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         const Text('Data Absensi', style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(color: kPrimaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
           child: Text('$totalRecords Catatan', style: const TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w700, color: kPrimaryColor)),
         ),
       ],
@@ -376,7 +376,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
         border: Border.all(color: Colors.grey.shade100, width: 2)
       ),
       child: Column(
@@ -384,7 +384,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           // Top Header (Date & Status)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(color: displayedStatusColor.withOpacity(0.05), borderRadius: const BorderRadius.vertical(top: Radius.circular(22))),
+            decoration: BoxDecoration(color: displayedStatusColor.withValues(alpha: 0.05), borderRadius: const BorderRadius.vertical(top: Radius.circular(22))),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -407,7 +407,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 if (isLeaveRecord) ...[
                   Row(
                     children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: kPrimaryColor.withOpacity(0.1), shape: BoxShape.circle), child: const Icon(Icons.info_outline_rounded, color: kPrimaryColor, size: 18)),
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: kPrimaryColor.withValues(alpha: 0.1), shape: BoxShape.circle), child: const Icon(Icons.info_outline_rounded, color: kPrimaryColor, size: 18)),
                       const SizedBox(width: 12),
                       Expanded(child: Text(keterangan ?? 'Tanpa keterangan khusus.', style: TextStyle(fontFamily: 'Poppins', fontSize: 14, color: Colors.grey.shade700, fontStyle: FontStyle.italic))),
                     ],
@@ -518,7 +518,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 12),

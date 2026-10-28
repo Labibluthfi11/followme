@@ -175,7 +175,7 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: kLemburColor, width: 2),
                 boxShadow: [
-                  BoxShadow(color: kLemburColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
+                  BoxShadow(color: kLemburColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))
                 ],
               ),
               child: Column(
@@ -200,7 +200,7 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_month_rounded,
+                          const Icon(Icons.calendar_month_rounded,
                               color: kPrimaryColor),
                           const SizedBox(width: 12),
                           Expanded(
@@ -235,7 +235,7 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: kLemburColor, width: 2),
                 boxShadow: [
-                  BoxShadow(color: kLemburColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
+                  BoxShadow(color: kLemburColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))
                 ],
               ),
               child: Column(
@@ -291,7 +291,7 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: kLemburColor, width: 2),
                 boxShadow: [
-                  BoxShadow(color: kLemburColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
+                  BoxShadow(color: kLemburColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))
                 ],
               ),
               child: Column(

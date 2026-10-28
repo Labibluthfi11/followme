@@ -134,7 +134,12 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
     }
 
     try {
-      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 15));
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
       if (mounted) {
         setState(() {
           _currentPosition = position;
@@ -298,7 +303,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
               color: Colors.white, 
               borderRadius: BorderRadius.circular(32),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))
+                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10))
               ],
             ),
             child: Column(
@@ -321,7 +326,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.of(context).pop(); // Close dialog
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => AbsensiLemburScreen()));
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AbsensiLemburScreen()));
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF59E0B), // kLemburColor
@@ -480,7 +485,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(32),
-                boxShadow: [BoxShadow(color: const Color(0xFF4F46E5).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))],
+                boxShadow: [BoxShadow(color: const Color(0xFF4F46E5).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 10))],
               ),
               child: Column(
                 children: [
@@ -556,7 +561,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                     height: 56,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: isButtonDisabled ? [] : [BoxShadow(color: buttonColor.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))]
+                      boxShadow: isButtonDisabled ? [] : [BoxShadow(color: buttonColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
                     ),
                     child: ElevatedButton(
                       onPressed: isButtonDisabled ? null : _handleAbsensiAction,

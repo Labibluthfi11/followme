@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'custom_camera_screen.dart';
 import 'package:universal_io/io.dart'; 
 import 'dart:async'; 
@@ -147,7 +145,12 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
     }
 
     try {
-      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 15));
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
       if (mounted) {
         setState(() {
           _currentPosition = position;
@@ -348,7 +351,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(32),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, spreadRadius: 5)]
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, spreadRadius: 5)]
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -459,7 +462,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
   Widget build(BuildContext context) {
     final absensiProvider = Provider.of<AbsensiProvider>(context);
     final bool locationReady = _locationStatus.contains('Jitu') && _currentPosition != null;
-    final Color headerColor = kErrorColor;
+    const Color headerColor = kErrorColor;
     
     final bool canSubmit = _isPhotoTaken && locationReady;
     final bool isButtonDisabled = absensiProvider.isLoading || !canSubmit;
@@ -490,9 +493,9 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [headerColor, headerColor.withOpacity(0.7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: LinearGradient(colors: [headerColor, headerColor.withValues(alpha: 0.7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(32),
-                boxShadow: [BoxShadow(color: headerColor.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))],
+                boxShadow: [BoxShadow(color: headerColor.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 10))],
               ),
               child: Column(
                 children: [
@@ -563,7 +566,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  Container(
+                  SizedBox(
                     height: 56,
                     child: ElevatedButton(
                       onPressed: absensiProvider.isLoading || !locationReady ? null : (_isPhotoTaken ? _retakePicture : _takePhoto),
@@ -614,7 +617,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                       ),
                       Switch(
                         value: _isPulangSakit,
-                        activeColor: Colors.red.shade500,
+                        activeThumbColor: Colors.red.shade500,
                         onChanged: (val) => setState(() => _isPulangSakit = val),
                       ),
                     ],
@@ -679,7 +682,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
               height: 56,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: isButtonDisabled ? [] : [BoxShadow(color: kSuccessColor.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))]
+                boxShadow: isButtonDisabled ? [] : [BoxShadow(color: kSuccessColor.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))]
               ),
               child: ElevatedButton(
                 onPressed: isButtonDisabled ? null : _submitAbsen,

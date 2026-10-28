@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:universal_io/io.dart';
 import 'dart:ui';
@@ -317,7 +316,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
           border: Border.all(color: Colors.amberAccent, width: 2.5),
           borderRadius: BorderRadius.circular(35),
           boxShadow: [
-            BoxShadow(color: Colors.amberAccent.withOpacity(0.3), blurRadius: 8, spreadRadius: 2)
+            BoxShadow(color: Colors.amberAccent.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)
           ]
         ),
         child: const Center(
@@ -368,7 +367,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.25),
+                        color: Colors.white.withValues(alpha: 0.25),
                         width: 2,
                       ),
                     ),
@@ -393,9 +392,9 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.15)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
               ),
               child: const Text(
                 'Posisikan wajah di dalam area',
@@ -433,13 +432,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
               height: 86,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   width: 4,
                 ),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))
                 ]
               ),
               child: Center(
@@ -481,10 +480,10 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withOpacity(0.4),
+                Colors.black.withValues(alpha: 0.4),
                 Colors.transparent,
                 Colors.transparent,
-                Colors.black.withOpacity(0.85),
+                Colors.black.withValues(alpha: 0.85),
               ],
               stops: const [0.0, 0.2, 0.5, 1.0],
             ),
@@ -535,9 +534,9 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 18),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                               ),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -563,7 +562,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: kSuccessColor.withOpacity(0.4),
+                                    color: kSuccessColor.withValues(alpha: 0.4),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   )
@@ -609,12 +608,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.15),
-              border: Border.all(color: Colors.white.withOpacity(0.25)),
+              color: Colors.white.withValues(alpha: 0.15),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
             ),
             child: Icon(
               icon,
-              color: onTap == null ? Colors.white.withOpacity(0.4) : iconColor,
+              color: onTap == null ? Colors.white.withValues(alpha: 0.4) : iconColor,
               size: size * 0.45,
             ),
           ),
@@ -642,12 +641,12 @@ class FocusBracketPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.8)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final double len = 35.0; 
+    const double len = 35.0;
     
     // Top-left
     canvas.drawPath(

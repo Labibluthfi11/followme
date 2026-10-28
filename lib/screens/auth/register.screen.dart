@@ -116,9 +116,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: TextFormField(
             controller: controller,
@@ -127,11 +127,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             style: const TextStyle(color: Colors.white, fontFamily: 'Poppins'),
             decoration: InputDecoration(
               hintText: label,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontFamily: 'Poppins'),
-              prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.8)),
+              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontFamily: 'Poppins'),
+              prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.8)),
               suffixIcon: isPassword
                   ? IconButton(
-                      icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white.withOpacity(0.8)),
+                      icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white.withValues(alpha: 0.8)),
                       onPressed: onVisibilityToggle,
                     )
                   : null,
@@ -160,20 +160,20 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: DropdownButtonFormField<String>(
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.8)),
+              prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.8)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
             dropdownColor: const Color(0xFF1E1B4B),
-            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white.withOpacity(0.8)),
+            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white.withValues(alpha: 0.8)),
             style: const TextStyle(color: Colors.white, fontFamily: 'Poppins', fontSize: 15),
-            value: value,
+            initialValue: value,
             items: items,
             onChanged: onChanged,
           ),
@@ -220,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             padding: const EdgeInsets.all(15),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                             ),
                             child: Image.asset(
                               "assets/images/logo.png",
@@ -246,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           'Join us to manage your absensi',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 14,
                             fontFamily: 'Poppins',
                           ),
@@ -358,7 +358,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF8B5CF6).withOpacity(0.4),
+                                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
                                     blurRadius: 15,
                                     offset: const Offset(0, 5),
                                   )
@@ -391,7 +391,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           children: [
                             Text(
                               "Already have an account? ",
-                              style: TextStyle(color: Colors.white.withOpacity(0.6), fontFamily: 'Poppins'),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontFamily: 'Poppins'),
                             ),
                             GestureDetector(
                               onTap: () => Navigator.of(context).pushReplacementNamed('/login'),
@@ -422,7 +422,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
 class _ModernLoading extends StatefulWidget {
   final Color color;
-  const _ModernLoading({this.color = Colors.white});
+  const _ModernLoading() : color = Colors.white;
   @override
   State<_ModernLoading> createState() => _ModernLoadingState();
 }

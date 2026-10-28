@@ -63,6 +63,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         
         // TUNGGU SAMPE PROSES BACA MEMORI KELAR
         await authProvider.initializationFuture; 
+        if (!mounted) return;
 
         if (authProvider.isAuthenticated) {
           Navigator.of(context).pushReplacementNamed('/home');
@@ -104,7 +105,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       height: 250,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                       ),
                     ),
                   ),
@@ -117,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       height: 300,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.03),
+                        color: Colors.white.withValues(alpha: 0.03),
                       ),
                     ),
                   ),
@@ -129,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       decoration: BoxDecoration(
                         gradient: RadialGradient(
                           colors: [
-                            Colors.white.withOpacity(0.15),
+                            Colors.white.withValues(alpha: 0.15),
                             Colors.transparent,
                           ],
                           radius: 0.6,
@@ -168,12 +169,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   borderRadius: BorderRadius.circular(35), // Rounded squircle super-app style
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.15),
+                                      color: Colors.black.withValues(alpha: 0.15),
                                       blurRadius: 30,
                                       offset: const Offset(0, 15),
                                     ),
                                     BoxShadow(
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                       blurRadius: 0,
                                       spreadRadius: 2,
                                     ),
@@ -240,7 +241,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             Text(
                               'Powered by Advanced Technology',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha: 0.4),
                                 fontSize: 11,
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
@@ -303,11 +304,11 @@ class _PremiumLoadingDotsState extends State<_PremiumLoadingDots> with SingleTic
                     width: 7, 
                     height: 7, 
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9), 
+                      color: Colors.white.withValues(alpha: 0.9),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           blurRadius: 6 * curve,
                           spreadRadius: 1 * curve,
                         )

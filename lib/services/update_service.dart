@@ -22,6 +22,7 @@ class UpdateService {
         String currentVersion = packageInfo.version;
 
         if (_isNewerVersion(latestVersion, currentVersion)) {
+          if (!context.mounted) return;
           _showUpdateDialog(context, latestVersion, downloadUrl);
         }
       }
@@ -266,7 +267,7 @@ class _UpdateDialogContentState extends State<_UpdateDialogContent> {
                 child: LinearProgressIndicator(
                   value: _progress / 100,
                   minHeight: 12,
-                  backgroundColor: Colors.indigo.withOpacity(0.1),
+                  backgroundColor: Colors.indigo.withValues(alpha: 0.1),
                   color: Colors.indigo,
                 ),
               ),

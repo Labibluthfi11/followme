@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF1E1E2C),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen>
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -180,18 +180,18 @@ class _LoginScreenState extends State<LoginScreen>
           password: _passwordController.text,
         );
         if (authProvider.isAuthenticated) {
-          if (!mounted) return;
+          if (!mounted || !context.mounted) return;
           _showCustomAlert('Login Berhasil! Selamat Datang.', isSuccess: true);
           Navigator.of(context).pushReplacementNamed('/home');
         } else {
-          if (!mounted) return;
+          if (!mounted || !context.mounted) return;
           _showCustomAlert(
             'salah email kalo engga password yaa anak baik coba periksa lagi lebih teliti gitu',
           );
         }
       } catch (e) {
-        if (!mounted) return;
-        print('Login error: $e');
+        if (!mounted || !context.mounted) return;
+        debugPrint('Login error: $e');
         if (e is AppException) {
           if (e.isNetworkError) {
             _showFunnyNetworkErrorDialog();
@@ -320,14 +320,14 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E2C).withOpacity(0.7),
+                          color: const Color(0xFF1E1E2C).withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -360,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     : 'Buat sandi baru yang aman.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                   fontSize: 13,
                                   fontFamily: 'Poppins',
                                 ),
@@ -373,10 +373,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withOpacity(0.1),
+                                    fillColor: Colors.white.withValues(alpha: 0.1),
                                     hintText: 'Email',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: 0.5),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -401,10 +401,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   maxLength: 6,
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withOpacity(0.1),
+                                    fillColor: Colors.white.withValues(alpha: 0.1),
                                     hintText: '000000',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withValues(alpha: 0.3),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -424,10 +424,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withOpacity(0.1),
+                                    fillColor: Colors.white.withValues(alpha: 0.1),
                                     hintText: 'Password Baru',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: 0.5),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -457,10 +457,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: Colors.white.withOpacity(0.1),
+                                    fillColor: Colors.white.withValues(alpha: 0.1),
                                     hintText: 'Konfirmasi Password',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: 0.5),
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -501,8 +501,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   onPressed: isLoading
                                       ? null
                                       : () async {
-                                          if (!formKey.currentState!.validate())
+                                          if (!formKey.currentState!.validate()) {
                                             return;
+                                          }
                                           setDialogState(
                                             () => isLoading = true,
                                           );
@@ -513,6 +514,7 @@ class _LoginScreenState extends State<LoginScreen>
                                               email: emailController.text
                                                   .trim(),
                                             );
+                                            if (!mounted || !context.mounted) return;
                                             if (result['success'] == true) {
                                               setDialogState(() {
                                                 step = 2;
@@ -526,6 +528,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                   .trim(),
                                               otp: otpController.text.trim(),
                                             );
+                                            if (!mounted || !context.mounted) return;
                                             if (result['success'] == true) {
                                               setDialogState(() {
                                                 step = 3;
@@ -547,6 +550,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                       confirmPasswordController
                                                           .text,
                                                 );
+                                            if (!mounted || !context.mounted) return;
                                             if (result['success'] == true) {
                                               Navigator.of(context).pop();
                                               _showCustomAlert(
@@ -744,10 +748,12 @@ class _LoginScreenState extends State<LoginScreen>
                                             keyboardType:
                                                 TextInputType.emailAddress,
                                             validator: (val) {
-                                              if (val == null || val.isEmpty)
+                                              if (val == null || val.isEmpty) {
                                                 return 'Email wajib diisi';
-                                              if (!val.contains('@'))
+                                              }
+                                              if (!val.contains('@')) {
                                                 return 'Format email tidak valid';
+                                              }
                                               return null;
                                             },
                                           ),
@@ -766,8 +772,9 @@ class _LoginScreenState extends State<LoginScreen>
                                               });
                                             },
                                             validator: (val) {
-                                              if (val == null || val.isEmpty)
+                                              if (val == null || val.isEmpty) {
                                                 return 'Password wajib diisi';
+                                              }
                                               return null;
                                             },
                                           ),
@@ -884,7 +891,7 @@ class _LoginScreenState extends State<LoginScreen>
 
 class _ModernLoading extends StatefulWidget {
   final Color color;
-  const _ModernLoading({this.color = Colors.white});
+  const _ModernLoading() : color = Colors.white;
   @override
   State<_ModernLoading> createState() => _ModernLoadingState();
 }
