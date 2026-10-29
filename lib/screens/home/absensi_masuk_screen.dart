@@ -11,8 +11,8 @@ import '../../providers/absensi_provider.dart';
 import 'package:intl/intl.dart';
 import '../../services/security_service.dart';
 
-const Color kPrimaryColor = Color(0xFF279DE0);
-const Color kBackgroundColor = Color(0xFFF2F4F7);
+const Color kPrimaryColor = Color(0xFF172B3A);
+const Color kBackgroundColor = Color(0xFFF5F4F0);
 const Color kSuccessColor = Color(0xFF10B981);
 const Color kErrorColor = Color(0xFFEF4444);
 
@@ -737,14 +737,14 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF48B8F2), Color(0xFF279DE0)],
+                    colors: [Color(0xFF34515F), Color(0xFF172B3A)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF279DE0).withValues(alpha: 0.25),
+                      color: const Color(0xFF172B3A).withValues(alpha: 0.25),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),

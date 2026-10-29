@@ -10,8 +10,8 @@ import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:absensi_app/services/image_compress_service.dart';
 import 'package:intl/intl.dart';
 
-const Color kPrimaryColor = Color(0xFF279DE0);
-const Color kBackgroundColor = Color(0xFFF2F4F7);
+const Color kPrimaryColor = Color(0xFF172B3A);
+const Color kBackgroundColor = Color(0xFFF5F4F0);
 const Color kCardColor = Colors.white;
 
 const Map<String, Map<String, dynamic>> _cutiConfig = {

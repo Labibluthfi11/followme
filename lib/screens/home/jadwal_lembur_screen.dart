@@ -44,7 +44,9 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
-        source: ImageSource.gallery, imageQuality: 70);
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
 
     if (pickedFile != null) {
       if (mounted) {
@@ -89,9 +91,13 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
           builder: (BuildContext context) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              title: const Icon(Icons.check_circle_rounded,
-                  color: Colors.green, size: 60),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.green,
+                size: 60,
+              ),
               content: const Text(
                 'Pengajuan lembur terjadwal berhasil disimpan!',
                 textAlign: TextAlign.center,
@@ -103,11 +109,14 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                     Navigator.of(context).pop(); // pop dialog
                     Navigator.of(context).pop(); // pop screen
                   },
-                  child: const Text('OK',
-                      style: TextStyle(
-                          color: kPrimaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins')),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      color: kPrimaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
                 ),
               ],
             );
@@ -117,8 +126,10 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.red,
-            content: Text(result['message'] ?? 'Gagal mengajukan lembur',
-                style: const TextStyle(fontFamily: 'Poppins')),
+            content: Text(
+              result['message'] ?? 'Gagal mengajukan lembur',
+              style: const TextStyle(fontFamily: 'Poppins'),
+            ),
           ),
         );
       }
@@ -127,8 +138,10 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red,
-          content: Text('Terjadi kesalahan: $e',
-              style: const TextStyle(fontFamily: 'Poppins')),
+          content: Text(
+            'Terjadi kesalahan: $e',
+            style: const TextStyle(fontFamily: 'Poppins'),
+          ),
         ),
       );
     } finally {
@@ -148,16 +161,22 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool canSubmit = _selectedDate != null &&
-        _keteranganController.text.trim().isNotEmpty;
+    final bool canSubmit =
+        _selectedDate != null && _keteranganController.text.trim().isNotEmpty;
 
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text('Lembur Terjadwal',
-            style: TextStyle(fontFamily: 'Poppins', color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: kPrimaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Lembur Terjadwal',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            color: Color(0xFF172B3A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: kBackgroundColor,
+        iconTheme: const IconThemeData(color: Color(0xFF172B3A)),
         elevation: 0,
         centerTitle: true,
       ),
@@ -173,26 +192,35 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: kLemburColor, width: 2),
+                border: Border.all(color: const Color(0xFFE7E6DF)),
                 boxShadow: [
-                  BoxShadow(color: kLemburColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))
+                  BoxShadow(
+                    color: kLemburColor.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Pilih Tanggal Lembur',
-                      style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937))),
+                  const Text(
+                    'Pilih Tanggal Lembur',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   GestureDetector(
                     onTap: _pilihTanggal,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 16),
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12),
@@ -200,14 +228,18 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_month_rounded,
-                              color: kPrimaryColor),
+                          const Icon(
+                            Icons.calendar_month_rounded,
+                            color: kPrimaryColor,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               _selectedDate != null
-                                  ? DateFormat('EEEE, dd MMMM yyyy', 'id_ID')
-                                      .format(_selectedDate!)
+                                  ? DateFormat(
+                                      'EEEE, dd MMMM yyyy',
+                                      'id_ID',
+                                    ).format(_selectedDate!)
                                   : 'Belum dipilih',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
@@ -221,7 +253,7 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -233,49 +265,67 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: kLemburColor, width: 2),
+                border: Border.all(color: const Color(0xFFE7E6DF)),
                 boxShadow: [
-                  BoxShadow(color: kLemburColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))
+                  BoxShadow(
+                    color: kLemburColor.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Keterangan Lembur',
-                      style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937))),
+                  const Text(
+                    'Keterangan Lembur',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _keteranganController,
                     maxLines: 4,
                     onChanged: (v) => setState(() {}), // re-evaluate canSubmit
                     style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14,
-                        color: Color(0xFF1F2937)),
+                      fontFamily: 'Poppins',
+                      fontSize: 14,
+                      color: Color(0xFF1F2937),
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Jelaskan kegiatan lembur yang akan dilakukan',
                       hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 13,
-                          fontFamily: 'Poppins'),
+                        color: Colors.grey.shade400,
+                        fontSize: 13,
+                        fontFamily: 'Poppins',
+                      ),
                       filled: true,
                       fillColor: Colors.grey.shade50,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                              color: Colors.grey.shade300, width: 1)),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                      ),
                       enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                              color: Colors.grey.shade300, width: 1)),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                      ),
                       focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: kLemburColor, width: 1.5)),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: kPrimaryColor,
+                          width: 1.5,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -289,62 +339,84 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: kLemburColor, width: 2),
+                border: Border.all(color: const Color(0xFFE7E6DF)),
                 boxShadow: [
-                  BoxShadow(color: kLemburColor.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))
+                  BoxShadow(
+                    color: kLemburColor.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Bukti Dokumen (Opsional)',
-                      style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937))),
+                  const Text(
+                    'Bukti Dokumen (Opsional)',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   GestureDetector(
                     onTap: _fotoBukti == null ? _pickImage : null,
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                          vertical: 24, horizontal: 16),
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: _fotoBukti == null
                             ? Colors.grey.shade50
                             : Colors.green.shade50,
                         border: Border.all(
-                            color: _fotoBukti == null
-                                ? Colors.grey.shade300
-                                : Colors.green.shade300,
-                            width: 2,
-                            style: BorderStyle.solid),
+                          color: _fotoBukti == null
+                              ? Colors.grey.shade300
+                              : Colors.green.shade300,
+                          width: 2,
+                          style: BorderStyle.solid,
+                        ),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: _fotoBukti == null
                           ? Column(
                               children: [
-                                Icon(Icons.upload_file,
-                                    size: 40, color: Colors.grey.shade400),
+                                Icon(
+                                  Icons.upload_file,
+                                  size: 40,
+                                  color: Colors.grey.shade400,
+                                ),
                                 const SizedBox(height: 12),
-                                Text('Upload Bukti Dokumen (Opsional)',
-                                    style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.grey.shade500)),
+                                Text(
+                                  'Upload Bukti Dokumen (Opsional)',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text('JPG, PNG, atau PDF • Maks 2MB',
-                                    style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 12,
-                                        color: Colors.grey.shade400)),
+                                Text(
+                                  'JPG, PNG, atau PDF • Maks 2MB',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                ),
                               ],
                             )
                           : Row(
                               children: [
-                                const Icon(Icons.insert_drive_file,
-                                    color: Colors.green, size: 30),
+                                const Icon(
+                                  Icons.insert_drive_file,
+                                  color: Colors.green,
+                                  size: 30,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
@@ -352,16 +424,19 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                        fontFamily: 'Poppins',
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.w600),
+                                      fontFamily: 'Poppins',
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                                 IconButton(
                                   onPressed: _removeImage,
-                                  icon: const Icon(Icons.close,
-                                      color: Colors.red),
-                                )
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Colors.red,
+                                  ),
+                                ),
                               ],
                             ),
                     ),
@@ -378,10 +453,11 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
               child: ElevatedButton(
                 onPressed: (!canSubmit || _isLoading) ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kLemburColor,
+                  backgroundColor: kPrimaryColor,
                   disabledBackgroundColor: Colors.grey.shade300,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 0,
                 ),
                 child: _isLoading
@@ -389,16 +465,19 @@ class _JadwalLemburScreenState extends State<JadwalLemburScreen> {
                         height: 24,
                         width: 24,
                         child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : const Text(
                         'AJUKAN LEMBUR TERJADWAL',
                         style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5),
+                          fontFamily: 'Poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
                       ),
               ),
             ),

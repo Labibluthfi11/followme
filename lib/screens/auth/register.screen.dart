@@ -11,12 +11,14 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _passwordConfirmationController = TextEditingController();
+  final TextEditingController _passwordConfirmationController =
+      TextEditingController();
   final TextEditingController _idKaryawanController = TextEditingController();
   final TextEditingController _departemenController = TextEditingController();
 
@@ -32,9 +34,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _bgAnimController = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat(reverse: true);
-    _topAlignment = Tween<Alignment>(begin: Alignment.topRight, end: Alignment.topLeft).animate(_bgAnimController);
-    _bottomAlignment = Tween<Alignment>(begin: Alignment.bottomLeft, end: Alignment.bottomRight).animate(_bgAnimController);
+    _bgAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
+    _topAlignment = Tween<Alignment>(
+      begin: Alignment.topRight,
+      end: Alignment.topLeft,
+    ).animate(_bgAnimController);
+    _bottomAlignment = Tween<Alignment>(
+      begin: Alignment.bottomLeft,
+      end: Alignment.bottomRight,
+    ).animate(_bgAnimController);
   }
 
   @override
@@ -54,12 +65,25 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       SnackBar(
         content: Row(
           children: [
-            Icon(isSuccess ? Icons.check_circle_outline : Icons.error_outline, color: Colors.white),
+            Icon(
+              isSuccess ? Icons.check_circle_outline : Icons.error_outline,
+              color: Colors.white,
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Text(message, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Poppins'))),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ),
           ],
         ),
-        backgroundColor: isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+        backgroundColor: isSuccess
+            ? const Color(0xFF10B981)
+            : const Color(0xFFEF4444),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.all(20),
@@ -87,15 +111,22 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
         if (authProvider.isAuthenticated) {
           if (!mounted) return;
-          _showCustomAlert('Registrasi Berhasil! Selamat datang.', isSuccess: true);
+          _showCustomAlert(
+            'Registrasi Berhasil! Selamat datang.',
+            isSuccess: true,
+          );
           Navigator.of(context).pushReplacementNamed('/home');
         } else {
           if (!mounted) return;
-          _showCustomAlert(authProvider.errorMessage ?? 'Registrasi gagal. Coba lagi.');
+          _showCustomAlert(
+            authProvider.errorMessage ?? 'Registrasi gagal. Coba lagi.',
+          );
         }
       } catch (e) {
         if (!mounted) return;
-        _showCustomAlert(authProvider.errorMessage ?? 'Terjadi kesalahan sistem.');
+        _showCustomAlert(
+          authProvider.errorMessage ?? 'Terjadi kesalahan sistem.',
+        );
       }
     }
   }
@@ -116,28 +147,42 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            border: Border.all(color: const Color(0xFFE7E6DF)),
           ),
           child: TextFormField(
             controller: controller,
             obscureText: isPassword && !isPasswordVisible,
             keyboardType: keyboardType,
-            style: const TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+            style: const TextStyle(
+              color: Color(0xFF172B3A),
+              fontFamily: 'Poppins',
+            ),
             decoration: InputDecoration(
               hintText: label,
-              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontFamily: 'Poppins'),
-              prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.8)),
+              hintStyle: const TextStyle(
+                color: Color(0xFF70808C),
+                fontFamily: 'Poppins',
+              ),
+              prefixIcon: Icon(icon, color: const Color(0xFF172B3A)),
               suffixIcon: isPassword
                   ? IconButton(
-                      icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white.withValues(alpha: 0.8)),
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: const Color(0xFF70808C),
+                      ),
                       onPressed: onVisibilityToggle,
                     )
                   : null,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-              errorStyle: const TextStyle(color: Color(0xFFFF6B6B)),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 18,
+              ),
+              errorStyle: const TextStyle(color: Color(0xFFE25D5D)),
             ),
             validator: validator,
           ),
@@ -160,19 +205,26 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            border: Border.all(color: const Color(0xFFE7E6DF)),
           ),
           child: DropdownButtonFormField<String>(
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.8)),
+              prefixIcon: Icon(icon, color: const Color(0xFF172B3A)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            dropdownColor: const Color(0xFF1E1B4B),
-            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white.withValues(alpha: 0.8)),
-            style: const TextStyle(color: Colors.white, fontFamily: 'Poppins', fontSize: 15),
+            dropdownColor: Colors.white,
+            icon: const Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF70808C),
+            ),
+            style: const TextStyle(
+              color: Color(0xFF172B3A),
+              fontFamily: 'Poppins',
+              fontSize: 15,
+            ),
             initialValue: value,
             items: items,
             onChanged: onChanged,
@@ -192,7 +244,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: const [Color(0xFF2E1065), Color(0xFF1E1B4B), Color(0xFF0F172A)],
+                colors: const [
+                  Color(0xFFF5F4F0),
+                  Color(0xFFE9EDDF),
+                  Color(0xFFF5F4F0),
+                ],
                 begin: _topAlignment.value,
                 end: _bottomAlignment.value,
               ),
@@ -218,14 +274,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           child: Container(
                             height: 120,
                             padding: const EdgeInsets.all(15),
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.05),
+                              color: Colors.white,
                             ),
                             child: Image.asset(
                               "assets/images/logo.png",
                               fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.app_registration, size: 70, color: Colors.white54),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.app_registration,
+                                    size: 70,
+                                    color: Colors.white54,
+                                  ),
                             ),
                           ),
                         ),
@@ -234,7 +295,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           'Create Account',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF172B3A),
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
                             fontFamily: 'Poppins',
@@ -242,11 +303,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        const Text(
                           'Join us to manage your absensi',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: Color(0xFF70808C),
                             fontSize: 14,
                             fontFamily: 'Poppins',
                           ),
@@ -261,23 +322,29 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 controller: _nameController,
                                 label: 'Nama Lengkap',
                                 icon: Icons.person_outline,
-                                validator: (val) => (val == null || val.isEmpty) ? 'Nama wajib diisi' : null,
+                                validator: (val) => (val == null || val.isEmpty)
+                                    ? 'Nama wajib diisi'
+                                    : null,
                               ),
                               const SizedBox(height: 16),
-                              
+
                               _buildGlassTextField(
                                 controller: _idKaryawanController,
                                 label: 'ID Karyawan (cth: AMB071)',
                                 icon: Icons.badge_outlined,
-                                validator: (val) => (val == null || val.isEmpty) ? 'ID wajib diisi' : null,
+                                validator: (val) => (val == null || val.isEmpty)
+                                    ? 'ID wajib diisi'
+                                    : null,
                               ),
                               const SizedBox(height: 16),
-                              
+
                               _buildGlassTextField(
                                 controller: _departemenController,
                                 label: 'Departemen',
                                 icon: Icons.work_outline,
-                                validator: (val) => (val == null || val.isEmpty) ? 'Departemen wajib diisi' : null,
+                                validator: (val) => (val == null || val.isEmpty)
+                                    ? 'Departemen wajib diisi'
+                                    : null,
                               ),
                               const SizedBox(height: 16),
 
@@ -286,10 +353,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 icon: Icons.card_membership,
                                 value: _selectedEmploymentType,
                                 items: const [
-                                  DropdownMenuItem(value: 'organik', child: Text('Karyawan Organik')),
-                                  DropdownMenuItem(value: 'freelance', child: Text('Freelance / Kontrak')),
+                                  DropdownMenuItem(
+                                    value: 'organik',
+                                    child: Text('Karyawan Organik'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'freelance',
+                                    child: Text('Freelance / Kontrak'),
+                                  ),
                                 ],
-                                onChanged: (val) => setState(() => _selectedEmploymentType = val!),
+                                onChanged: (val) => setState(
+                                  () => _selectedEmploymentType = val!,
+                                ),
                               ),
                               const SizedBox(height: 16),
 
@@ -298,10 +373,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 icon: Icons.location_on_outlined,
                                 value: _selectedWorkLocation,
                                 items: const [
-                                  DropdownMenuItem(value: 'office', child: Text('Office')),
-                                  DropdownMenuItem(value: 'produksi', child: Text('Produksi')),
+                                  DropdownMenuItem(
+                                    value: 'office',
+                                    child: Text('Office'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'produksi',
+                                    child: Text('Produksi'),
+                                  ),
                                 ],
-                                onChanged: (val) => setState(() => _selectedWorkLocation = val!),
+                                onChanged: (val) => setState(
+                                  () => _selectedWorkLocation = val!,
+                                ),
                               ),
                               const SizedBox(height: 16),
 
@@ -311,8 +394,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 icon: Icons.alternate_email,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (val) {
-                                  if (val == null || val.isEmpty) return 'Email wajib diisi';
-                                  if (!val.contains('@')) return 'Format email tidak valid';
+                                  if (val == null || val.isEmpty) {
+                                    return 'Email wajib diisi';
+                                  }
+                                  if (!val.contains('@')) {
+                                    return 'Format email tidak valid';
+                                  }
                                   return null;
                                 },
                               ),
@@ -324,8 +411,14 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 icon: Icons.lock_outline,
                                 isPassword: true,
                                 isPasswordVisible: _isPasswordVisible,
-                                onVisibilityToggle: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                                validator: (val) => (val == null || val.length < 6) ? 'Min 6 karakter' : null,
+                                onVisibilityToggle: () => setState(
+                                  () =>
+                                      _isPasswordVisible = !_isPasswordVisible,
+                                ),
+                                validator: (val) =>
+                                    (val == null || val.length < 6)
+                                    ? 'Min 6 karakter'
+                                    : null,
                               ),
                               const SizedBox(height: 16),
 
@@ -335,15 +428,21 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 icon: Icons.lock_reset,
                                 isPassword: true,
                                 isPasswordVisible: _isConfirmPasswordVisible,
-                                onVisibilityToggle: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
-                                validator: (val) => (val != _passwordController.text) ? 'Password tidak cocok' : null,
+                                onVisibilityToggle: () => setState(
+                                  () => _isConfirmPasswordVisible =
+                                      !_isConfirmPasswordVisible,
+                                ),
+                                validator: (val) =>
+                                    (val != _passwordController.text)
+                                    ? 'Password tidak cocok'
+                                    : null,
                               ),
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 35),
-                        
+
                         Consumer<AuthProvider>(
                           builder: (context, authProvider, child) {
                             return AnimatedContainer(
@@ -352,53 +451,73 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                                  colors: [
+                                    Color(0xFF172B3A),
+                                    Color(0xFF34515F),
+                                  ],
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                                    color: const Color(
+                                      0xFF172B3A,
+                                    ).withValues(alpha: 0.18),
                                     blurRadius: 15,
                                     offset: const Offset(0, 5),
-                                  )
-                                ]
+                                  ),
+                                ],
                               ),
                               child: ElevatedButton(
-                                onPressed: authProvider.isLoading ? null : _register,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : _register,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.transparent,
                                   shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
                                 ),
                                 child: authProvider.isLoading
                                     ? const SizedBox(
-                                        width: 60, height: 24,
+                                        width: 60,
+                                        height: 24,
                                         child: Center(child: _ModernLoading()),
                                       )
                                     : const Text(
                                         'Sign Up',
-                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600, fontFamily: 'Poppins'),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          fontFamily: 'Poppins',
+                                        ),
                                       ),
                               ),
                             );
                           },
                         ),
-                        
+
                         const SizedBox(height: 25),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               "Already have an account? ",
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontFamily: 'Poppins'),
+                              style: TextStyle(
+                                color: Color(0xFF70808C),
+                                fontFamily: 'Poppins',
+                              ),
                             ),
                             GestureDetector(
-                              onTap: () => Navigator.of(context).pushReplacementNamed('/login'),
+                              onTap: () => Navigator.of(
+                                context,
+                              ).pushReplacementNamed('/login'),
                               child: const Text(
                                 'Log In',
                                 style: TextStyle(
-                                  color: Color(0xFFA5B4FC),
+                                  color: Color(0xFF172B3A),
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
                                 ),
@@ -427,18 +546,24 @@ class _ModernLoading extends StatefulWidget {
   State<_ModernLoading> createState() => _ModernLoadingState();
 }
 
-class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProviderStateMixin {
+class _ModernLoadingState extends State<_ModernLoading>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
   }
+
   @override
   void dispose() {
     _ctrl.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -458,8 +583,12 @@ class _ModernLoadingState extends State<_ModernLoading> with SingleTickerProvide
                 child: Opacity(
                   opacity: alpha,
                   child: Container(
-                    width: 8, height: 8,
-                    decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: widget.color,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
               ),

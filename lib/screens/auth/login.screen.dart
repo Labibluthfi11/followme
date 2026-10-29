@@ -229,14 +229,14 @@ class _LoginScreenState extends State<LoginScreen>
       controller: controller,
       obscureText: isPassword && !isPasswordVisible,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Color(0xFF172554), fontFamily: 'Poppins'),
+      style: const TextStyle(color: Color(0xFF172B3A), fontFamily: 'Poppins'),
       decoration: InputDecoration(
         hintText: label,
         hintStyle: const TextStyle(
           color: Color(0xFF8A939B),
           fontFamily: 'Poppins',
         ),
-        prefixIcon: Icon(icon, color: const Color(0xFF279DE0)),
+        prefixIcon: Icon(icon, color: const Color(0xFF172B3A)),
         suffixIcon: isPassword
             ? IconButton(
                 tooltip: isPasswordVisible
@@ -265,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF279DE0), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF172B3A), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -506,7 +506,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 height: 50,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF279DE0),
+                                    backgroundColor: const Color(0xFF172B3A),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
@@ -628,9 +628,9 @@ class _LoginScreenState extends State<LoginScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: const [
-                  Color(0xFFF2F4F7),
-                  Color(0xFFEAF4FA),
-                  Color(0xFFF2F4F7),
+                  Color(0xFFF5F4F0),
+                  Color(0xFFE9EDDF),
+                  Color(0xFFF5F4F0),
                 ],
                 begin: _topAlignment.value,
                 end: _bottomAlignment.value,
@@ -662,7 +662,7 @@ class _LoginScreenState extends State<LoginScreen>
                             boxShadow: [
                               BoxShadow(
                                 color: const Color(
-                                  0xFF279DE0,
+                                  0xFF172B3A,
                                 ).withValues(alpha: 0.13),
                                 blurRadius: 28,
                                 offset: const Offset(0, 12),
@@ -758,7 +758,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         onPressed: _showForgotPasswordPopup,
                                         style: TextButton.styleFrom(
                                           foregroundColor: const Color(
-                                            0xFF279DE0,
+                                            0xFF172B3A,
                                           ),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 4,
@@ -785,10 +785,10 @@ class _LoginScreenState extends State<LoginScreen>
                                                 : _login,
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: const Color(
-                                                0xFF279DE0,
+                                                0xFF172B3A,
                                               ),
                                               disabledBackgroundColor:
-                                                  const Color(0xFF9DD4F2),
+                                                  const Color(0xFF70808C),
                                               elevation: 0,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -898,7 +898,7 @@ class _LoginHeroPainter extends CustomPainter {
     paint.color = const Color(0xFFB38CEB);
     canvas.drawCircle(const Offset(253, 48), 9, paint);
     canvas.drawCircle(const Offset(276, 92), 4, paint);
-    paint.color = const Color(0xFF279DE0);
+    paint.color = const Color(0xFF172B3A);
     canvas.drawCircle(const Offset(221, 78), 5, paint);
     paint.color = const Color(0xFF8FD6C5);
     canvas.drawCircle(const Offset(46, 112), 5, paint);

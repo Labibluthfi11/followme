@@ -1,4 +1,5 @@
 import 'package:absensi_app/screens/home/absensi_pulang_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:camera/camera.dart';
@@ -33,6 +34,11 @@ late List<CameraDescription> cameras;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  if (kIsWeb) {
+    await _startApplication();
+    return;
+  }
+
   await SentryFlutter.init(
     (options) {
       // Masukkan DSN Sentry lu di sini nanti bang
@@ -40,46 +46,53 @@ void main() async {
           'https://ec1c6b4670ff0903c80a5308f638b0fe@o4511295361187840.ingest.us.sentry.io/4511295414468608';
       options.tracesSampleRate = 1.0;
     },
-    appRunner: () async {
-      await Firebase.initializeApp();
-      await NotificationService().initialize();
-      await initializeDateFormatting('id_ID', null);
+    appRunner: _startApplication,
+  );
+}
 
-      // 🔥 VALIDASI KEAMANAN PERANGKAT (ROOT/EMULATOR)
-      final securityStatus = await SecurityService.checkDeviceSecurity();
-      if (!securityStatus['isSafe']) {
-        runApp(DeviceNotSecureScreen(message: securityStatus['message']));
-        return;
-      }
+Future<void> _startApplication() async {
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+    await NotificationService().initialize();
+  }
+  await initializeDateFormatting('id_ID', null);
 
-      try {
-        cameras = await availableCameras();
-      } on CameraException catch (e) {
-        debugPrint('Error initializing cameras: ${e.description}');
-        cameras = [];
-      }
+  if (!kIsWeb) {
+    final securityStatus = await SecurityService.checkDeviceSecurity();
+    if (!securityStatus['isSafe']) {
+      runApp(DeviceNotSecureScreen(message: securityStatus['message']));
+      return;
+    }
 
-      runApp(
-        MultiProvider(
-          providers: [
-            Provider<ApiService>(create: (_) => ApiService()),
-            ChangeNotifierProvider(
-              create: (context) =>
-                  AuthProvider(apiService: context.read<ApiService>()),
-            ),
-            ChangeNotifierProvider(
-              create: (context) =>
-                  AbsensiProvider(apiService: context.read<ApiService>()),
-            ),
-            ChangeNotifierProvider(
-              create: (context) =>
-                  IzinKeluarProvider(apiService: context.read<ApiService>()),
-            ),
-          ],
-          child: const MyApp(),
+    try {
+      cameras = await availableCameras();
+    } on CameraException catch (e) {
+      debugPrint('Error initializing cameras: ${e.description}');
+      cameras = [];
+    }
+  } else {
+    cameras = [];
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<ApiService>(create: (_) => ApiService()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              AuthProvider(apiService: context.read<ApiService>()),
         ),
-      );
-    },
+        ChangeNotifierProvider(
+          create: (context) =>
+              AbsensiProvider(apiService: context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              IzinKeluarProvider(apiService: context.read<ApiService>()),
+        ),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -93,7 +106,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Absensi App',
       debugShowCheckedModeBanner: false,
-      navigatorObservers: [SentryNavigatorObserver()],
+      navigatorObservers: kIsWeb ? [] : [SentryNavigatorObserver()],
       theme: buildAppTheme(),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.light,

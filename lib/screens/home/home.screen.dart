@@ -23,9 +23,10 @@ import '../../providers/absensi_provider.dart';
 import '../../providers/izin_keluar_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/update_service.dart';
+import 'home_dashboard_content.dart';
 
-const Color kPrimaryColor = Color(0xFF279DE0);
-const Color kBackgroundColor = Color(0xFFF2F4F7);
+const Color kPrimaryColor = Color(0xFF172B3A);
+const Color kBackgroundColor = Color(0xFFF5F4F0);
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    const HomeContent(),
+    const HomeDashboardContent(),
     const AttendanceHistoryScreen(),
     const SakitFormScreen(),
     const ProfileScreen(),
@@ -375,7 +376,7 @@ class _HomeContentState extends State<HomeContent> {
                       _buildQuickAction(
                         icon: Icons.fingerprint_rounded,
                         label: 'Masuk',
-                        color: const Color(0xFF279DE0),
+                        color: kPrimaryColor,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -838,14 +839,14 @@ class _HomeContentState extends State<HomeContent> {
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF48B8F2), Color(0xFF279DE0)],
+          colors: [Color(0xFF34515F), kPrimaryColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF279DE0).withValues(alpha: 0.22),
+            color: kPrimaryColor.withValues(alpha: 0.22),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

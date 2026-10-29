@@ -11,8 +11,8 @@ import '../../providers/absensi_provider.dart';
 import 'package:intl/intl.dart';
 import '../../services/security_service.dart';
 
-const Color kPrimaryColor = Color(0xFF279DE0);
-const Color kBackgroundColor = Color(0xFFF2F4F7);
+const Color kPrimaryColor = Color(0xFF172B3A);
+const Color kBackgroundColor = Color(0xFFF5F4F0);
 const Color kSuccessColor = Color(0xFF10B981);
 const Color kErrorColor = Color(0xFFEF4444);
 const Color kLemburColor = Color(0xFFF59E0B); // Amber for Lembur

@@ -6,8 +6,8 @@ import 'package:absensi_app/screens/home/absensi_telat_form_screen.dart';
 import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
 
-const Color kPrimaryColor = Color(0xFF279DE0);
-const Color kBackgroundColor = Color(0xFFF2F4F7);
+const Color kPrimaryColor = Color(0xFF172B3A);
+const Color kBackgroundColor = Color(0xFFF5F4F0);
 const Color kCardColor = Colors.white;
 
 class AttendanceHistoryScreen extends StatefulWidget {
@@ -188,7 +188,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 background: Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF48B8F2), Color(0xFF279DE0)],
+                      colors: [Color(0xFF34515F), Color(0xFF172B3A)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

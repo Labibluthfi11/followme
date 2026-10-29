@@ -8,8 +8,8 @@ import '../../providers/absensi_provider.dart';
 import '../../models/absensi_model.dart';
 import 'custom_camera_screen.dart';
 
-const Color kPrimaryColor = Color(0xFF279DE0);
-const Color kBackgroundColor = Color(0xFFF2F4F7);
+const Color kPrimaryColor = Color(0xFF172B3A);
+const Color kBackgroundColor = Color(0xFFF5F4F0);
 const Color kWarningColor = Color(0xFFF59E0B);
 
 // ======================================================================
@@ -357,7 +357,7 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
                       lateMinutes > 0 ? kWarningColor : kPrimaryColor,
                       lateMinutes > 0
                           ? const Color(0xFFD97706)
-                          : const Color(0xFF4338CA),
+                          : const Color(0xFF34515F),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
