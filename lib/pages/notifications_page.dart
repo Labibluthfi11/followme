@@ -453,8 +453,6 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                                                     ? Colors.grey[500]
                                                     : Colors.grey[700],
                                               ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
                                             ),
                                             const SizedBox(height: 8),
                                             Row(

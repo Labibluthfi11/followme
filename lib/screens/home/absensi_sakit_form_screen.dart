@@ -179,26 +179,60 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
 
+  int? _resubmitId;
+  Absensi? _existingAbsensi;
+  bool _isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _resubmitId = widget.resubmitId;
+      _existingAbsensi = widget.existingAbsensi;
+
+      if (_resubmitId == null) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is int) {
+          _resubmitId = args;
+        }
+      }
+
+      if (_resubmitId != null && _existingAbsensi == null) {
+        final absensiProvider = Provider.of<AbsensiProvider>(context, listen: false);
+        try {
+          _existingAbsensi = absensiProvider.myAbsensiList.firstWhere(
+            (a) => a.id == _resubmitId,
+          );
+        } catch (e) {
+          debugPrint('Could not find existing absensi with id $_resubmitId: $e');
+        }
+      }
+
+      if (_existingAbsensi != null) {
+        _tipePengajuan = (_existingAbsensi!.tipe ?? 'sakit').toLowerCase();
+        _catatanController.text = _existingAbsensi!.keterangan ?? '';
+        if (_tipePengajuan == 'izin') {
+          _catatanPanggilanController.text = _existingAbsensi!.catatanAdmin ?? '';
+        } else if (_tipePengajuan == 'cuti') {
+          _jenisCuti = _existingAbsensi!.catatanAdmin ?? 'cuti_tahunan';
+        }
+        if (_existingAbsensi!.checkInAt != null) {
+          _startDate = DateTime.tryParse(_existingAbsensi!.checkInAt!);
+        }
+        if (_existingAbsensi!.checkOutAt != null) {
+          _endDate = DateTime.tryParse(_existingAbsensi!.checkOutAt!);
+        }
+      } else if (widget.initialTipePengajuan != null) {
+        _tipePengajuan = widget.initialTipePengajuan!;
+      }
+
+      _isInitialized = true;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    if (widget.initialTipePengajuan != null) {
-      _tipePengajuan = widget.initialTipePengajuan!;
-    }
-    if (widget.existingAbsensi != null) {
-      _tipePengajuan = (widget.existingAbsensi!.tipe ?? 'sakit').toLowerCase();
-      _catatanController.text = widget.existingAbsensi!.keterangan ?? '';
-      if (_tipePengajuan == 'izin') {
-        _catatanPanggilanController.text =
-            widget.existingAbsensi!.catatanAdmin ?? '';
-      }
-      if (widget.existingAbsensi!.checkInAt != null) {
-        _startDate = DateTime.tryParse(widget.existingAbsensi!.checkInAt!);
-      }
-      if (widget.existingAbsensi!.checkOutAt != null) {
-        _endDate = DateTime.tryParse(widget.existingAbsensi!.checkOutAt!);
-      }
-    }
   }
 
   @override
@@ -235,7 +269,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
   }
 
   Future<void> _pickStartDate() async {
-    final isResubmit = widget.resubmitId != null;
+    final isResubmit = _resubmitId != null;
     final picked = await showDatePicker(
       context: context,
       initialDate: _startDate ?? DateTime.now(),
