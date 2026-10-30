@@ -183,6 +183,14 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
   Absensi? _existingAbsensi;
   bool _isInitialized = false;
 
+  DateTime? _parseDateOnly(String? dateStr) {
+    if (dateStr == null) return null;
+    final parsed = DateTime.tryParse(dateStr);
+    if (parsed == null) return null;
+    final local = parsed.toLocal();
+    return DateTime(local.year, local.month, local.day);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -204,7 +212,31 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
             (a) => a.id == _resubmitId,
           );
         } catch (e) {
-          debugPrint('Could not find existing absensi with id $_resubmitId: $e');
+          debugPrint('Could not find existing absensi with id $_resubmitId in list: $e. Fetching history...');
+          absensiProvider.fetchHistoryAbsensi().then((_) {
+            if (mounted) {
+              setState(() {
+                try {
+                  _existingAbsensi = absensiProvider.myAbsensiList.firstWhere(
+                    (a) => a.id == _resubmitId,
+                  );
+                  if (_existingAbsensi != null) {
+                    _tipePengajuan = (_existingAbsensi!.tipe ?? 'sakit').toLowerCase();
+                    _catatanController.text = _existingAbsensi!.keterangan ?? '';
+                    if (_tipePengajuan == 'izin') {
+                      _catatanPanggilanController.text = _existingAbsensi!.catatanAdmin ?? '';
+                    } else if (_tipePengajuan == 'cuti') {
+                      _jenisCuti = _existingAbsensi!.catatanAdmin ?? 'cuti_tahunan';
+                    }
+                    _startDate = _parseDateOnly(_existingAbsensi!.checkInAt);
+                    _endDate = _parseDateOnly(_existingAbsensi!.checkOutAt);
+                  }
+                } catch (err) {
+                  debugPrint('Still could not find absensi after fetch: $err');
+                }
+              });
+            }
+          });
         }
       }
 
@@ -216,12 +248,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         } else if (_tipePengajuan == 'cuti') {
           _jenisCuti = _existingAbsensi!.catatanAdmin ?? 'cuti_tahunan';
         }
-        if (_existingAbsensi!.checkInAt != null) {
-          _startDate = DateTime.tryParse(_existingAbsensi!.checkInAt!);
-        }
-        if (_existingAbsensi!.checkOutAt != null) {
-          _endDate = DateTime.tryParse(_existingAbsensi!.checkOutAt!);
-        }
+        _startDate = _parseDateOnly(_existingAbsensi!.checkInAt);
+        _endDate = _parseDateOnly(_existingAbsensi!.checkOutAt);
       } else if (widget.initialTipePengajuan != null) {
         _tipePengajuan = widget.initialTipePengajuan!;
       }
@@ -508,7 +536,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
   }
 
   Future<void> _submitForm() async {
-    final isResubmit = widget.resubmitId != null;
+    final isResubmit = _resubmitId != null;
     if (_isSubmitting) return;
 
     // Premium Haptic Feedback
@@ -571,7 +599,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       _showSnackBar('Bukti medis/dokumen wajib diunggah!', isSuccess: false);
       return;
     }
-    if (isResubmit && _pickedFile == null) {
+    if (isResubmit && _pickedFile == null && (_existingAbsensi?.fileBuktiUrl == null || _existingAbsensi!.fileBuktiUrl!.isEmpty)) {
       setState(() => _isSubmitting = false);
       _showSnackBar('Harap unggah bukti dokumen terbaru!', isSuccess: false);
       return;
@@ -584,7 +612,7 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       await Future.delayed(const Duration(milliseconds: 600)); // Smooth loading
       if (isResubmit) {
         result = await provider.resubmitAbsensi(
-          absensiId: widget.resubmitId!,
+          absensiId: _resubmitId!,
           fileBukti: _pickedFile,
           catatan: _catatanController.text,
           catatanPanggilan: _catatanPanggilanController.text,
@@ -656,6 +684,20 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
             ),
           );
         } else {
+          // 🚀 AUTO-RESUBMIT HANDLER: Jika backend mendeteksi pengajuan tertolak dan meminta resubmit
+          if (result['action'] == 'use_resubmit' || result['rejected_id'] != null) {
+            final rejectedId = int.tryParse(result['rejected_id'].toString());
+            if (rejectedId != null) {
+              setState(() {
+                _resubmitId = rejectedId;
+                _isSubmitting = false;
+              });
+              // Panggil ulang _submitForm secara otomatis sebagai resubmit
+              _submitForm();
+              return;
+            }
+          }
+
           // Cek apakah ini error jaringan "bapuk"
           if (result['isNetworkError'] == true) {
             _showBapukDialog(result['message']);
@@ -757,8 +799,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isResubmit = widget.resubmitId != null;
-    final existing = widget.existingAbsensi;
+    final isResubmit = _resubmitId != null;
+    final existing = _existingAbsensi;
     final userType =
         Provider.of<AuthProvider>(context).user?.employmentType.toLowerCase() ??
         'freelance';
@@ -1208,9 +1250,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        existing.fileBuktiUrl!,
-                        fit: BoxFit.cover,
+                      child: _AuthenticatedImage(
+                        imageUrl: existing.fileBuktiUrl!,
                       ),
                     ),
                   ),
@@ -1430,6 +1471,54 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         ),
         validator: validator,
       ),
+    );
+  }
+}
+
+class _AuthenticatedImage extends StatelessWidget {
+  final String imageUrl;
+  const _AuthenticatedImage({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Colors.grey.shade100,
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey.shade200,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.broken_image_rounded, color: Colors.grey, size: 36),
+              const SizedBox(height: 6),
+              Text(
+                'Gagal memuat dokumen',
+                style: TextStyle(fontFamily: 'Poppins', fontSize: 11, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

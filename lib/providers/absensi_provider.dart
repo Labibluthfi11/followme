@@ -553,50 +553,50 @@ class AbsensiProvider with ChangeNotifier {
       
       // ✅ Panggil API resubmit sesuai tipe
       if (tipe == 'sakit') {
-        if (fileBukti == null) {
-          result = {'success': false, 'message': 'File bukti wajib diisi'};
-        } else {
-          debugPrint('📤 [API] Calling resubmitSakit...');
-          // 🔥 KOMPRESI GAMBAR
-          final File compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
+        File? compressedFileBukti;
+        if (fileBukti != null) {
+          debugPrint('📤 [API] Calling resubmitSakit with new file...');
+          compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
           compressStopwatch.stop();
           final int fileSize = await compressedFileBukti.length();
           debugPrint('⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB');
-
-          final uploadStopwatch = Stopwatch()..start();
-          result = await _apiService.resubmitSakit(
-            absensiId: absensiId,
-            fileBukti: compressedFileBukti,
-            catatan: catatan ?? '',
-            startDate: startDate,
-            endDate: endDate,
-          );
-          uploadStopwatch.stop();
-          debugPrint('⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms');
+        } else {
+          debugPrint('📤 [API] Calling resubmitSakit without new file (reusing existing)...');
         }
+
+        final uploadStopwatch = Stopwatch()..start();
+        result = await _apiService.resubmitSakit(
+          absensiId: absensiId,
+          fileBukti: compressedFileBukti,
+          catatan: catatan ?? '',
+          startDate: startDate,
+          endDate: endDate,
+        );
+        uploadStopwatch.stop();
+        debugPrint('⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms');
       } else if (tipe == 'izin') {
-        if (fileBukti == null) {
-          result = {'success': false, 'message': 'File bukti wajib diisi'};
-        } else {
-          debugPrint('📤 [API] Calling resubmitIzin...');
-          // 🔥 KOMPRESI GAMBAR
-          final File compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
+        File? compressedFileBukti;
+        if (fileBukti != null) {
+          debugPrint('📤 [API] Calling resubmitIzin with new file...');
+          compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
           compressStopwatch.stop();
           final int fileSize = await compressedFileBukti.length();
           debugPrint('⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB');
-
-          final uploadStopwatch = Stopwatch()..start();
-          result = await _apiService.resubmitIzin(
-            absensiId: absensiId,
-            fileBukti: compressedFileBukti,
-            catatan: catatan ?? '',
-            catatanPanggilan: catatanPanggilan ?? '',
-            startDate: startDate,
-            endDate: endDate,
-          );
-          uploadStopwatch.stop();
-          debugPrint('⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms');
+        } else {
+          debugPrint('📤 [API] Calling resubmitIzin without new file (reusing existing)...');
         }
+
+        final uploadStopwatch = Stopwatch()..start();
+        result = await _apiService.resubmitIzin(
+          absensiId: absensiId,
+          fileBukti: compressedFileBukti,
+          catatan: catatan ?? '',
+          catatanPanggilan: catatanPanggilan ?? '',
+          startDate: startDate,
+          endDate: endDate,
+        );
+        uploadStopwatch.stop();
+        debugPrint('⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms');
       } else if (tipe == 'lembur') {
         if (hasilKerjaFiles == null || hasilKerjaFiles.isEmpty) {
           result = {'success': false, 'message': 'Minimal 1 foto bukti wajib diisi'};

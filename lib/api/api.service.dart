@@ -840,18 +840,13 @@ class ApiService {
 
   Future<Map<String, dynamic>> resubmitSakit({
     required int absensiId,
-    required File fileBukti,
+    File? fileBukti,
     required String catatan,
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     try {
-      String fileName = fileBukti.path.split('/').last;
-      FormData formData = FormData.fromMap({
-        'file_bukti': await MultipartFile.fromFile(
-          fileBukti.path,
-          filename: fileName,
-        ),
+      Map<String, dynamic> mapData = {
         'keterangan_izin_sakit': catatan,
         'keterangan': catatan,
         'status': 'pending',
@@ -860,7 +855,22 @@ class ApiService {
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
         if (endDate != null)
           'end_date': DateFormat('yyyy-MM-dd').format(endDate),
-      });
+      };
+
+      FormData formData = FormData.fromMap(mapData);
+
+      if (fileBukti != null) {
+        String fileName = fileBukti.path.split('/').last;
+        formData.files.add(
+          MapEntry(
+            'file_bukti',
+            await MultipartFile.fromFile(
+              fileBukti.path,
+              filename: fileName,
+            ),
+          ),
+        );
+      }
 
       final response = await _dio.post(
         'absensi/sakit/$absensiId/resubmit',
@@ -883,19 +893,14 @@ class ApiService {
 
   Future<Map<String, dynamic>> resubmitIzin({
     required int absensiId,
-    required File fileBukti,
+    File? fileBukti,
     required String catatan,
     required String catatanPanggilan,
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     try {
-      String fileName = fileBukti.path.split('/').last;
-      FormData formData = FormData.fromMap({
-        'file_bukti': await MultipartFile.fromFile(
-          fileBukti.path,
-          filename: fileName,
-        ),
+      Map<String, dynamic> mapData = {
         'catatan': catatan,
         'catatan_panggilan': catatanPanggilan,
         'tipe': 'izin',
@@ -905,7 +910,22 @@ class ApiService {
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
         if (endDate != null)
           'end_date': DateFormat('yyyy-MM-dd').format(endDate),
-      });
+      };
+
+      FormData formData = FormData.fromMap(mapData);
+
+      if (fileBukti != null) {
+        String fileName = fileBukti.path.split('/').last;
+        formData.files.add(
+          MapEntry(
+            'file_bukti',
+            await MultipartFile.fromFile(
+              fileBukti.path,
+              filename: fileName,
+            ),
+          ),
+        );
+      }
 
       final response = await _dio.post(
         'absensi/izin/$absensiId/resubmit',
@@ -1137,6 +1157,26 @@ class ApiService {
 
   Future<String?> getToken() async {
     return await _storage.read(key: _authTokenKey);
+  }
+
+  Future<Uint8List?> getImageBytes(String url) async {
+    try {
+      final response = await _dio.get(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data is Uint8List) {
+          return response.data;
+        } else if (response.data is List<int>) {
+          return Uint8List.fromList(response.data);
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error downloading image bytes: $e');
+      return null;
+    }
   }
 
   Map<String, dynamic> _handleDioError(DioException e, String defaultMessage) {
