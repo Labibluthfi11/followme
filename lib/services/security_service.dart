@@ -14,9 +14,11 @@ class SecurityService {
         'isSafe': isSafe,
         'isJailBroken': isJailBroken,
         'isRealDevice': isRealDevice,
-        'message': !isSafe 
-            ? (isJailBroken ? 'Perangkat terdeteksi Root/Jailbreak.' : 'Aplikasi tidak dapat berjalan di Emulator.')
-            : 'Perangkat aman.'
+        'message': !isSafe
+            ? (isJailBroken
+                  ? 'Perangkat terdeteksi Root/Jailbreak.'
+                  : 'Aplikasi tidak dapat berjalan di Emulator.')
+            : 'Perangkat aman.',
       };
     } catch (e) {
       debugPrint('Security Check Error: $e');
@@ -30,7 +32,7 @@ class SecurityService {
       return await SafeDevice.isMockLocation;
     } catch (e) {
       debugPrint('Mock Location Check Error: $e');
-      return false;
+      rethrow;
     }
   }
 }

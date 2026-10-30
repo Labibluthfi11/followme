@@ -4,12 +4,13 @@ import 'package:camera/camera.dart';
 import 'package:universal_io/io.dart';
 import 'dart:ui';
 import 'package:image/image.dart' as img;
+import '../../services/face_presence_service.dart';
 
 // Warna premium
-const Color kPrimaryColor   = Color(0xFF152C5C);
-const Color kSuccessColor   = Color(0xFF10B981);
+const Color kPrimaryColor = Color(0xFF152C5C);
+const Color kSuccessColor = Color(0xFF10B981);
 const Color kSecondaryColor = Color(0xFF3B82F6);
-const Color kErrorColor     = Color(0xFFEF4444);
+const Color kErrorColor = Color(0xFFEF4444);
 
 class CustomCameraScreen extends StatefulWidget {
   final bool useBackCamera;
@@ -43,12 +44,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    
+
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
@@ -87,7 +88,11 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       }
 
       final targetCam = _cameras.firstWhere(
-        (c) => c.lensDirection == (widget.useBackCamera ? CameraLensDirection.back : CameraLensDirection.front),
+        (c) =>
+            c.lensDirection ==
+            (widget.useBackCamera
+                ? CameraLensDirection.back
+                : CameraLensDirection.front),
         orElse: () => _cameras.first,
       );
 
@@ -118,7 +123,8 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       if (mounted) {
         setState(() {
           _isInitialized = true;
-          _isFrontCamera = description.lensDirection == CameraLensDirection.front;
+          _isFrontCamera =
+              description.lensDirection == CameraLensDirection.front;
         });
       }
     } on CameraException catch (e) {
@@ -147,19 +153,26 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   Future<void> _toggleFlash() async {
     if (_controller == null || !_isInitialized) return;
     final next = _flashMode == FlashMode.off ? FlashMode.torch : FlashMode.off;
-    await _controller!.setFlashMode(next);
-    setState(() => _flashMode = next);
+    try {
+      await _controller!.setFlashMode(next);
+      if (mounted) setState(() => _flashMode = next);
+    } on CameraException catch (e) {
+      _showSnackbar(
+        e.description ?? 'Flash tidak tersedia pada kamera ini.',
+        isError: true,
+      );
+    }
   }
 
-  Future<void> _onTapToFocus(TapUpDetails details, BoxConstraints constraints) async {
+  Future<void> _onTapToFocus(
+    TapUpDetails details,
+    BoxConstraints constraints,
+  ) async {
     if (_controller == null || !_isInitialized) return;
 
     double dx = details.localPosition.dx / constraints.maxWidth;
-    
-    final offset = Offset(
-      dx,
-      details.localPosition.dy / constraints.maxHeight,
-    );
+
+    final offset = Offset(dx, details.localPosition.dy / constraints.maxHeight);
 
     setState(() {
       _focusPoint = details.localPosition;
@@ -182,9 +195,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     setState(() => _isTakingPicture = true);
 
     try {
-      await _controller!.setFlashMode(FlashMode.auto);
       final XFile imageFile = await _controller!.takePicture();
-      await _controller!.setFlashMode(_flashMode);
 
       File finalFile = File(imageFile.path);
 
@@ -202,6 +213,20 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         }
       }
 
+      final faceResult = await FacePresenceService.detectFace(finalFile);
+      if (faceResult != FacePresenceResult.singleFace) {
+        if (mounted) {
+          setState(() => _isTakingPicture = false);
+          _showSnackbar(
+            faceResult == FacePresenceResult.noFace
+                ? 'Wajah tidak terdeteksi. Ambil selfie dengan wajah terlihat jelas.'
+                : 'Terdeteksi lebih dari satu wajah. Pastikan hanya wajah kamu yang terlihat.',
+            isError: true,
+          );
+        }
+        return;
+      }
+
       if (mounted) {
         setState(() {
           _previewFile = finalFile;
@@ -212,6 +237,11 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       if (mounted) {
         setState(() => _isTakingPicture = false);
         _showSnackbar('Gagal mengambil foto: ${e.description}', isError: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isTakingPicture = false);
+        _showSnackbar('Gagal memverifikasi wajah: $e', isError: true);
       }
     }
   }
@@ -245,9 +275,15 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                  CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
+                  ),
                   SizedBox(height: 24),
-                  Text('Memulai kamera...', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  Text(
+                    'Memulai kamera...',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -284,7 +320,8 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                   fit: BoxFit.cover,
                   child: SizedBox(
                     width: constraints.maxWidth,
-                    height: constraints.maxWidth * _controller!.value.aspectRatio,
+                    height:
+                        constraints.maxWidth * _controller!.value.aspectRatio,
                     child: CameraPreview(_controller!),
                   ),
                 ),
@@ -316,8 +353,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
           border: Border.all(color: Colors.amberAccent, width: 2.5),
           borderRadius: BorderRadius.circular(35),
           boxShadow: [
-            BoxShadow(color: Colors.amberAccent.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)
-          ]
+            BoxShadow(
+              color: Colors.amberAccent.withValues(alpha: 0.3),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
+          ],
         ),
         child: const Center(
           child: Icon(Icons.add, color: Colors.amberAccent, size: 24),
@@ -336,13 +377,17 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             icon: Icons.close_rounded,
             onTap: () => Navigator.of(context).pop(),
           ),
-          
+
           const SizedBox(width: 50),
-          
+
           _buildGlassIconButton(
-            icon: _flashMode == FlashMode.off ? Icons.flash_off_rounded : Icons.flash_on_rounded,
-            iconColor: _flashMode == FlashMode.torch ? Colors.amberAccent : Colors.white,
-            onTap: _toggleFlash,
+            icon: _flashMode == FlashMode.off
+                ? Icons.flash_off_rounded
+                : Icons.flash_on_rounded,
+            iconColor: _flashMode == FlashMode.torch
+                ? Colors.amberAccent
+                : Colors.white,
+            onTap: _isFrontCamera ? null : _toggleFlash,
           ),
         ],
       ),
@@ -375,9 +420,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                   SizedBox(
                     width: 280,
                     height: 280,
-                    child: CustomPaint(
-                      painter: FocusBracketPainter(),
-                    ),
+                    child: CustomPaint(painter: FocusBracketPainter()),
                   ),
                 ],
               ),
@@ -438,8 +481,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                   width: 4,
                 ),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))
-                ]
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Center(
                 child: AnimatedContainer(
@@ -448,21 +495,26 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                   height: _isTakingPicture ? 35 : 68,
                   decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
-                    borderRadius: _isTakingPicture ? BorderRadius.circular(10) : BorderRadius.circular(34),
+                    borderRadius: _isTakingPicture
+                        ? BorderRadius.circular(10)
+                        : BorderRadius.circular(34),
                     color: Colors.white,
                   ),
                   child: _isTakingPicture
                       ? const Padding(
                           padding: EdgeInsets.all(6.0),
-                          child: CircularProgressIndicator(color: kPrimaryColor, strokeWidth: 3),
-                      )
+                          child: CircularProgressIndicator(
+                            color: kPrimaryColor,
+                            strokeWidth: 3,
+                          ),
+                        )
                       : null,
                 ),
               ),
             ),
           ),
 
-          const SizedBox(width: 56, height: 56), 
+          const SizedBox(width: 56, height: 56),
         ],
       ),
     );
@@ -495,7 +547,10 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     _buildGlassIconButton(
@@ -507,10 +562,14 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                       child: Text(
                         'Pratinjau Foto',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 48), 
+                    const SizedBox(width: 48),
                   ],
                 ),
               ),
@@ -522,7 +581,11 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                   children: [
                     const Text(
                       'Pastikan wajah terlihat jelas dan tidak blur',
-                      style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     Row(
@@ -536,14 +599,27 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                ),
                               ),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.refresh_rounded, color: Colors.white, size: 22),
+                                  Icon(
+                                    Icons.refresh_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
                                   SizedBox(width: 8),
-                                  Text('Ulangi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
+                                  Text(
+                                    'Ulangi',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -565,15 +641,26 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                                     color: kSuccessColor.withValues(alpha: 0.4),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
-                                  )
-                                ]
+                                  ),
+                                ],
                               ),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 22),
+                                  Icon(
+                                    Icons.check_circle_outline_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
                                   SizedBox(width: 8),
-                                  Text('Gunakan Foto', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
+                                  Text(
+                                    'Gunakan Foto',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -613,7 +700,9 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             ),
             child: Icon(
               icon,
-              color: onTap == null ? Colors.white.withValues(alpha: 0.4) : iconColor,
+              color: onTap == null
+                  ? Colors.white.withValues(alpha: 0.4)
+                  : iconColor,
               size: size * 0.45,
             ),
           ),
@@ -647,7 +736,7 @@ class FocusBracketPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     const double len = 35.0;
-    
+
     // Top-left
     canvas.drawPath(
       Path()

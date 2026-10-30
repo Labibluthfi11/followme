@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import '../../providers/absensi_provider.dart';
 import 'package:intl/intl.dart';
 import '../../services/security_service.dart';
+import '../../services/attendance_location_service.dart';
 
 const Color kPrimaryColor = Color(0xFF172B3A);
 const Color kBackgroundColor = Color(0xFFF5F4F0);
@@ -155,32 +156,34 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
       _currentPosition = null;
     });
 
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      if (mounted) {
-        _showSnackBar('Layanan lokasi belum menyala bos.', isSuccess: false);
-      }
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
         if (mounted) {
-          _showSnackBar('Akses lokasi ditolak.', isSuccess: false);
+          setState(() => _locationStatus = 'Layanan lokasi belum menyala.');
+          _showSnackBar('Layanan lokasi belum menyala bos.', isSuccess: false);
         }
         return;
       }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      if (mounted) {
-        _showSnackBar('Akses lokasi diblokir permanen.', isSuccess: false);
-      }
-      return;
-    }
 
-    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            setState(() => _locationStatus = 'Izin lokasi ditolak.');
+            _showSnackBar('Akses lokasi ditolak.', isSuccess: false);
+          }
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          setState(() => _locationStatus = 'Izin lokasi diblokir.');
+          _showSnackBar('Akses lokasi diblokir permanen.', isSuccess: false);
+        }
+        return;
+      }
+
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
@@ -190,12 +193,22 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
       if (mounted) {
         setState(() {
           _currentPosition = position;
-          _locationStatus = 'Lokasi Jitu 😎';
+          _locationStatus =
+              !position.accuracy.isFinite ||
+                  position.accuracy <= 0 ||
+                  position.accuracy >
+                      AttendanceLocationService.allowedRadiusMeters
+              ? 'Akurasi GPS belum cukup.'
+              : AttendanceLocationService.isWithinAllowedRadius(position)
+              ? 'Lokasi Jitu 😎'
+              : 'Di luar area lokasi kerja atau akurasi GPS belum cukup.';
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _locationStatus = 'Error Lokasi: ${e.toString()}');
+        setState(() {
+          _locationStatus = 'Gagal mendapatkan lokasi: ${e.toString()}';
+        });
       }
     }
   }
@@ -277,6 +290,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
     // Start loading IMMEDIATELY
     absensiProvider.setIsLoading(true);
 
+    await _checkLocation();
     if (_capturedImageFile == null || _currentPosition == null) {
       absensiProvider.setIsLoading(false);
       _showSnackBar(
@@ -285,9 +299,26 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
       );
       return;
     }
+    if (!AttendanceLocationService.isWithinAllowedRadius(_currentPosition!)) {
+      absensiProvider.setIsLoading(false);
+      _showSnackBar(
+        'Lokasi harus berada dalam radius 100 meter dengan akurasi GPS yang memadai.',
+        isSuccess: false,
+      );
+      return;
+    }
 
-    // 🔥 SECURITY CHECK: Deteksi Mock Location / Fake GPS
-    bool isMock = await SecurityService.isMockLocation();
+    bool isMock;
+    try {
+      isMock = await SecurityService.isMockLocation();
+    } catch (e) {
+      absensiProvider.setIsLoading(false);
+      _showSnackBar(
+        'Tidak dapat memverifikasi keamanan lokasi: $e',
+        isSuccess: false,
+      );
+      return;
+    }
     if (isMock || (_currentPosition != null && _currentPosition!.isMocked)) {
       absensiProvider.setIsLoading(false);
       _showSnackBar(
@@ -318,6 +349,8 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
         foto: _capturedImageFile!,
         lat: _currentPosition!.latitude,
         lng: _currentPosition!.longitude,
+        accuracyMeters: _currentPosition!.accuracy,
+        isMocked: _currentPosition!.isMocked,
         tipe: _isPulangSakit ? 'sakit' : null,
         keterangan: _isPulangSakit
             ? _keteranganSakitController.text.trim()
