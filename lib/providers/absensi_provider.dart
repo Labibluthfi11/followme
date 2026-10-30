@@ -615,6 +615,7 @@ class AbsensiProvider with ChangeNotifier {
 
       // ✅ Panggil API resubmit sesuai tipe
       if (tipe == 'sakit') {
+<<<<<<< HEAD
         if (fileBukti == null) {
           result = {'success': false, 'message': 'File bukti wajib diisi'};
         } else {
@@ -640,8 +641,31 @@ class AbsensiProvider with ChangeNotifier {
           debugPrint(
             '⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms',
           );
+=======
+        File? compressedFileBukti;
+        if (fileBukti != null) {
+          debugPrint('📤 [API] Calling resubmitSakit with new file...');
+          compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
+          compressStopwatch.stop();
+          final int fileSize = await compressedFileBukti.length();
+          debugPrint('⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+        } else {
+          debugPrint('📤 [API] Calling resubmitSakit without new file (reusing existing)...');
+>>>>>>> 170cf4e00b6577229267a555a7a9b00b9f9e05e8
         }
+
+        final uploadStopwatch = Stopwatch()..start();
+        result = await _apiService.resubmitSakit(
+          absensiId: absensiId,
+          fileBukti: compressedFileBukti,
+          catatan: catatan ?? '',
+          startDate: startDate,
+          endDate: endDate,
+        );
+        uploadStopwatch.stop();
+        debugPrint('⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms');
       } else if (tipe == 'izin') {
+<<<<<<< HEAD
         if (fileBukti == null) {
           result = {'success': false, 'message': 'File bukti wajib diisi'};
         } else {
@@ -668,7 +692,30 @@ class AbsensiProvider with ChangeNotifier {
           debugPrint(
             '⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms',
           );
+=======
+        File? compressedFileBukti;
+        if (fileBukti != null) {
+          debugPrint('📤 [API] Calling resubmitIzin with new file...');
+          compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
+          compressStopwatch.stop();
+          final int fileSize = await compressedFileBukti.length();
+          debugPrint('⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+        } else {
+          debugPrint('📤 [API] Calling resubmitIzin without new file (reusing existing)...');
+>>>>>>> 170cf4e00b6577229267a555a7a9b00b9f9e05e8
         }
+
+        final uploadStopwatch = Stopwatch()..start();
+        result = await _apiService.resubmitIzin(
+          absensiId: absensiId,
+          fileBukti: compressedFileBukti,
+          catatan: catatan ?? '',
+          catatanPanggilan: catatanPanggilan ?? '',
+          startDate: startDate,
+          endDate: endDate,
+        );
+        uploadStopwatch.stop();
+        debugPrint('⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms');
       } else if (tipe == 'lembur') {
         if (hasilKerjaFiles == null || hasilKerjaFiles.isEmpty) {
           result = {

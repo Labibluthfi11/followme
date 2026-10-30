@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:absensi_app/core/constants/api_constants.dart';
 
 class Absensi {
   final int id;
@@ -173,12 +174,38 @@ class Absensi {
       return null;
     }
 
+    String? parseUrl(dynamic rawUrl) {
+      if (rawUrl == null) return null;
+      String s = rawUrl.toString();
+      if (s.isEmpty) return null;
+      if (s.startsWith('file:///')) {
+        s = s.replaceFirst('file:///', '');
+      }
+      if (s.startsWith('http://') || s.startsWith('https://')) {
+        return s;
+      }
+      final baseDomain = ApiConstants.baseUrl
+          .replaceAll('/api/v1/', '')
+          .replaceAll('/api/', '');
+      if (s.startsWith('/')) {
+        return '$baseDomain$s';
+      } else if (s.startsWith('storage/')) {
+        return '$baseDomain/$s';
+      } else {
+        return '$baseDomain/storage/$s';
+      }
+    }
+
     return Absensi(
       id: int.tryParse(json['id'].toString()) ?? 0,
       userId: int.tryParse(json['user_id'].toString()) ?? 0,
       status: json['status']?.toString() ?? '',
-      checkInAt: json['check_in_at']?.toString(),
-      checkOutAt: json['check_out_at']?.toString(),
+      checkInAt: json['check_in_at']?.toString() ??
+          json['start_date']?.toString() ??
+          json['tanggal']?.toString(),
+      checkOutAt: json['check_out_at']?.toString() ??
+          json['end_date']?.toString() ??
+          json['tanggal_selesai']?.toString(),
       lokasiMasuk: json['lokasi_masuk']?.toString(),
       lokasiPulang: json['lokasi_pulang']?.toString(),
       fotoMasuk: json['foto_masuk']?.toString(),
@@ -196,9 +223,14 @@ class Absensi {
       lemburEnd: json['lembur_end']?.toString(),
       lemburRest: json['lembur_rest'] == "1" || json['lembur_rest'] == true,
       lemburKeterangan: json['lembur_keterangan']?.toString(),
-      fotoMasukUrl: json['foto_masuk_url']?.toString(),
-      fotoPulangUrl: json['foto_pulang_url']?.toString(),
-      fileBuktiUrl: json['file_bukti_url']?.toString(),
+      fotoMasukUrl: parseUrl(json['foto_masuk_url']),
+      fotoPulangUrl: parseUrl(json['foto_pulang_url']),
+      fileBuktiUrl: parseUrl(
+        json['file_bukti_url'] ??
+            json['file_url'] ??
+            json['foto_bukti_url'] ??
+            json['file_bukti'],
+      ),
       currentApprovalLevel: json['current_approval_level'] != null
           ? int.tryParse(json['current_approval_level'].toString())
           : null,
