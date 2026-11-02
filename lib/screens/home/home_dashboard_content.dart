@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../api/api.service.dart';
+import '../../core/constants/app_theme.dart';
+import '../../core/constants/demo_preview.dart';
+import '../../core/theme/followme_design_tokens.dart';
+import '../../core/widgets/glass_container.dart';
 import '../../models/absensi_model.dart';
 import '../../models/user_model.dart';
-import '../../pages/notifications_page.dart';
 import '../../providers/absensi_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/izin_keluar_provider.dart';
@@ -21,10 +24,10 @@ import 'end_izin_screen.dart';
 import 'jadwal_lembur_screen.dart';
 import 'start_izin_screen.dart';
 
-const _ink = Color(0xFF172B3A);
-const _mutedInk = Color(0xFF70808C);
-const _canvas = Color(0xFFF5F4F0);
-const _accent = Color(0xFFB7F36B);
+const _ink = FollowMeTokens.ink;
+const _mutedInk = FollowMeTokens.mutedInk;
+const _canvas = FollowMeTokens.canvas;
+const _accent = FollowMeTokens.accent;
 
 class HomeDashboardContent extends StatefulWidget {
   const HomeDashboardContent({super.key});
@@ -42,14 +45,18 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   void initState() {
     super.initState();
     _timeString = _formatTime(DateTime.now());
-    _unreadCountFuture = context.read<ApiService>().fetchUnreadCount();
+    _unreadCountFuture = DemoPreview.enabled
+        ? Future<int>.value(0)
+        : context.read<ApiService>().fetchUnreadCount();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _timeString = _formatTime(DateTime.now()));
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _refreshProfile();
-        UpdateService.checkForUpdate(context);
+        if (!DemoPreview.enabled) {
+          _refreshProfile();
+          UpdateService.checkForUpdate(context);
+        }
       }
     });
   }
@@ -61,6 +68,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   }
 
   Future<void> _refreshData() async {
+    if (DemoPreview.enabled) return;
     await Future.wait([
       _refreshProfile(),
       context.read<AbsensiProvider>().refreshAbsensi(),
@@ -68,6 +76,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   }
 
   Future<void> _refreshProfile() async {
+    if (DemoPreview.enabled) return;
     await context.read<AuthProvider>().refreshProfile();
     if (mounted) {
       setState(() {
@@ -77,7 +86,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   }
 
   String _formatTime(DateTime date) =>
-      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
 
   String _formatDate(DateTime date) {
     const weekdays = [
@@ -114,18 +123,221 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
     return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _openNotifications(ApiService apiService) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => NotificationsPage(apiService: apiService),
+  Map<String, int> _monthlyStats(List<Absensi> records) {
+    final now = DateTime.now();
+    final stats = {'hadir': 0, 'terlambat': 0, 'izin': 0, 'alpa': 0};
+    for (final record in records) {
+      final rawDate = record.checkInAt ?? record.createdAt;
+      final date = rawDate == null ? null : DateTime.tryParse(rawDate);
+      if (date == null || date.year != now.year || date.month != now.month) {
+        continue;
+      }
+      final status = record.status.toLowerCase();
+      if (status == 'hadir') {
+        stats['hadir'] = stats['hadir']! + 1;
+      }
+      if (status == 'telat' || record.isLate == true) {
+        stats['terlambat'] = stats['terlambat']! + 1;
+      } else if (status.contains('izin') ||
+          status.contains('cuti') ||
+          status == 'sakit') {
+        stats['izin'] = stats['izin']! + 1;
+      } else if (status == 'alpa' || status == 'tanpa keterangan') {
+        stats['alpa'] = stats['alpa']! + 1;
+      }
+    }
+    return stats;
+  }
+
+  Widget _buildMonthlyStats(Map<String, int> stats) {
+    const months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+    final month = months[DateTime.now().month - 1];
+    const items = [
+      ('Hadir', 'hadir', FollowMeTokens.present),
+      ('Terlambat', 'terlambat', FollowMeTokens.late),
+      ('Izin', 'izin', FollowMeTokens.leave),
+      ('Alpa', 'alpa', FollowMeTokens.absent),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Bulan ini',
+                style: TextStyle(
+                  color: _ink,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            Text(
+              month,
+              style: const TextStyle(
+                color: _mutedInk,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            for (var index = 0; index < items.length; index++) ...[
+              if (index > 0) const SizedBox(width: 8),
+              Expanded(
+                child: _MonthlyStatTile(
+                  label: items[index].$1,
+                  value: stats[items[index].$2] ?? 0,
+                  color: items[index].$3,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyAttendance(List<Absensi> records) {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final firstDay = today.subtract(Duration(days: today.weekday - 1));
+    final week = List.generate(
+      7,
+      (index) => firstDay.add(Duration(days: index)),
+    );
+    final recordsByDay = <DateTime, Absensi>{};
+
+    for (final record in records) {
+      final rawDate = record.checkInAt ?? record.createdAt;
+      final date = rawDate == null
+          ? null
+          : DateTime.tryParse(rawDate)?.toLocal();
+      if (date == null) continue;
+
+      final day = DateUtils.dateOnly(date);
+      if (!day.isBefore(firstDay) && !day.isAfter(today)) {
+        recordsByDay.putIfAbsent(day, () => record);
+      }
+    }
+
+    final presentCount = recordsByDay.values
+        .where((record) => record.status.toLowerCase() == 'hadir')
+        .length;
+    final lateCount = recordsByDay.values
+        .where((record) => record.isLate)
+        .length;
+    const labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
+        color: FollowMeTokens.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: FollowMeTokens.border),
+        boxShadow: [
+          BoxShadow(
+            color: _ink.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Minggu ini',
+                  style: TextStyle(
+                    color: _ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Text(
+                '$presentCount hadir · $lateCount terlambat',
+                style: const TextStyle(
+                  color: _mutedInk,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 78,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (var index = 0; index < week.length; index++)
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        SizedBox(
+                          height: 54,
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 350),
+                              width: 18,
+                              height: recordsByDay[week[index]] == null
+                                  ? 9
+                                  : 48,
+                              decoration: BoxDecoration(
+                                color: recordsByDay[week[index]] == null
+                                    ? FollowMeTokens.border
+                                    : recordsByDay[week[index]]!.isLate
+                                    ? FollowMeTokens.late
+                                    : FollowMeTokens.present,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          labels[index],
+                          style: TextStyle(
+                            color: week[index] == today
+                                ? FollowMeTokens.primary
+                                : _mutedInk,
+                            fontSize: 10,
+                            fontWeight: week[index] == today
+                                ? FontWeight.w800
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
-    if (mounted) {
-      setState(() {
-        _unreadCountFuture = apiService.fetchUnreadCount();
-      });
-    }
   }
 
   void _openMainAttendance(Absensi? attendance) {
@@ -153,7 +365,9 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
     final apiService = context.read<ApiService>();
-    final attendance = context.watch<AbsensiProvider>().currentDayAbsensi;
+    final absensiProvider = context.watch<AbsensiProvider>();
+    final attendance = absensiProvider.currentDayAbsensi;
+    final monthlyStats = _monthlyStats(absensiProvider.myAbsensiList);
     final izinProvider = context.watch<IzinKeluarProvider>();
     final isCheckedIn = attendance?.checkInAt != null;
     final isCheckedOut = attendance?.checkOutAt != null;
@@ -176,8 +390,24 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
             children: [
               _buildTopBar(user, apiService),
-              const SizedBox(height: 22),
+              if (DemoPreview.enabled) ...[
+                const SizedBox(height: 14),
+                _buildPreviewNotice(),
+              ],
+              const SizedBox(height: 8),
               _buildAttendanceCard(attendance, isCheckedIn, isCheckedOut),
+              const SizedBox(height: 22),
+              _buildSectionTitle(
+                'Akses cepat',
+                'Pilih layanan yang ingin kamu buka',
+                trailing: 'LAYANAN',
+              ),
+              const SizedBox(height: 14),
+              _buildServiceGrid(user),
+              const SizedBox(height: 22),
+              _buildWeeklyAttendance(absensiProvider.myAbsensiList),
+              const SizedBox(height: 22),
+              _buildMonthlyStats(monthlyStats),
               if (canLeave) ...[
                 const SizedBox(height: 12),
                 _buildLeaveAction(izinProvider.isIzinBerjalan),
@@ -186,15 +416,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
                 const SizedBox(height: 20),
                 _buildLeaveBalance(user!),
               ],
-              const SizedBox(height: 28),
-              _buildSectionTitle(
-                'Butuh sesuatu?',
-                'Pilih layanan yang ingin kamu buka',
-                trailing: 'LAYANAN',
-              ),
-              const SizedBox(height: 14),
-              _buildServiceGrid(user),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
               _buildNotice(),
             ],
           ),
@@ -203,89 +425,220 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
     );
   }
 
+  Widget _buildPreviewNotice() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE9F2D8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _accent.withValues(alpha: 0.7)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.visibility_outlined, size: 18, color: _ink),
+          SizedBox(width: 9),
+          Expanded(
+            child: Text(
+              'Mode preview — akun dan data tidak disimpan.',
+              style: TextStyle(
+                color: _ink,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTopBar(User? user, ApiService apiService) {
     final name = user?.name ?? 'Pengguna';
-    final photoUrl = user?.profilePhotoUrl;
-    final department = user?.departemen;
+    final department = user?.departemen ?? 'Karyawan';
+    final initial = name.isEmpty ? 'U' : name[0].toUpperCase();
 
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 25,
-          backgroundColor: const Color(0xFFE5EAD9),
-          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-              ? NetworkImage(photoUrl)
-              : null,
-          child: photoUrl == null || photoUrl.isEmpty
-              ? Text(
-                  name.isEmpty ? 'U' : name[0].toUpperCase(),
-                  style: const TextStyle(
-                    color: _ink,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                )
-              : null,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF392477), Color(0xFF124C5A)],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -30,
+            left: -20,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: FollowMeDesign.violet.withValues(alpha: 0.28),
+              ),
+            ),
+          ),
+          Positioned(
+            right: -40,
+            bottom: -30,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: FollowMeDesign.cyan.withValues(alpha: 0.22),
+              ),
+            ),
+          ),
+          Column(
             children: [
-              const Text(
-                'RUANG KERJA',
-                style: TextStyle(
-                  color: _mutedInk,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF1D4ED8)],
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Selamat pagi',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 20,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        Text(
+                          department,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  FutureBuilder<int>(
+                    future: _unreadCountFuture,
+                    builder: (context, snapshot) {
+                      final count = snapshot.data ?? 0;
+                      return GlassContainer(
+                        padding: const EdgeInsets.all(10),
+                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.white.withValues(alpha: 0.08),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Icon(
+                              Icons.notifications_none_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            if (count > 0)
+                              Positioned(
+                                top: -6,
+                                right: -6,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFFEF4444),
+                                    border: Border.all(
+                                      color: FollowMeDesign.deepSpace,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Hari ini',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _formatDate(DateTime.now()),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _timeString,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 42,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1.5,
+                  ),
                 ),
               ),
-              const SizedBox(height: 3),
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: _ink,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (department != null && department.isNotEmpty)
-                Text(
-                  department,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: _mutedInk, fontSize: 12),
-                ),
             ],
           ),
-        ),
-        FutureBuilder<int>(
-          future: _unreadCountFuture,
-          builder: (context, snapshot) {
-            final count = snapshot.data ?? 0;
-            return IconButton(
-              tooltip: 'Notifikasi',
-              onPressed: () => _openNotifications(apiService),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: _ink,
-                fixedSize: const Size(48, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              icon: Badge(
-                isLabelVisible: count > 0,
-                label: Text(count > 9 ? '9+' : '$count'),
-                child: const Icon(Icons.notifications_none_rounded, size: 23),
-              ),
-            );
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -296,195 +649,184 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   ) {
     final status = attendance?.status.toLowerCase() ?? '';
     final statusLabel = !isCheckedIn
-        ? 'BELUM ABSEN'
+        ? 'Belum absen'
         : isCheckedOut
-        ? 'SELESAI'
+        ? 'Selesai'
         : status == 'terlambat'
-        ? 'TERLAMBAT'
-        : 'SEDANG BEKERJA';
+        ? 'Terlambat'
+        : 'Sedang bekerja';
     final buttonLabel = !isCheckedIn
-        ? 'Mulai absensi'
+        ? 'Check-in sekarang'
         : isCheckedOut
         ? 'Lihat riwayat'
-        : 'Absen pulang';
+        : 'Check-out sekarang';
     final buttonIcon = !isCheckedIn
         ? Icons.fingerprint_rounded
         : isCheckedOut
         ? Icons.arrow_forward_rounded
         : Icons.logout_rounded;
-    final now = DateTime.now();
+    final checkIn = attendance?.checkInAt == null
+        ? null
+        : DateTime.tryParse(attendance!.checkInAt!)?.toLocal();
+    final checkOut = attendance?.checkOutAt == null
+        ? null
+        : DateTime.tryParse(attendance!.checkOutAt!)?.toLocal();
+    final end = checkOut ?? (isCheckedIn ? DateTime.now() : null);
+    final worked = checkIn != null && end != null
+        ? end.difference(checkIn)
+        : Duration.zero;
+    final durationText = '${worked.inHours}j ${(worked.inMinutes % 60)}m';
+    final progress = (worked.inMinutes / (8 * 60)).clamp(0.0, 1.0);
+    final statusColor = !isCheckedIn
+        ? _mutedInk
+        : status == 'terlambat'
+        ? FollowMeTokens.late
+        : FollowMeTokens.present;
 
     return Container(
-      clipBehavior: Clip.hardEdge,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _ink,
-        borderRadius: BorderRadius.circular(28),
+        color: FollowMeTokens.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: FollowMeTokens.border),
+        boxShadow: [
+          BoxShadow(
+            color: _ink.withValues(alpha: 0.06),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned(
-            right: -52,
-            top: -72,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: .07),
-                  width: 28,
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Absensi hari ini',
+                  style: TextStyle(
+                    color: _ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            right: 22,
-            top: 38,
-            child: Icon(
-              Icons.near_me_rounded,
-              size: 24,
-              color: _accent.withValues(alpha: .8),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Expanded(
-                      child: Text(
-                        'STATUS HARI INI',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.5,
-                        ),
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isCheckedIn
-                            ? _accent.withValues(alpha: .14)
-                            : Colors.white.withValues(alpha: .1),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: isCheckedIn ? _accent : Colors.white54,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 7),
-                          Text(
-                            statusLabel,
-                            style: TextStyle(
-                              color: isCheckedIn ? _accent : Colors.white70,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: .6,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(width: 7),
+                    Text(
+                      statusLabel,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
-                Text(
-                  _timeString,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 48,
-                    height: 1,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -2,
-                    fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTimePoint(
+                  label: 'Masuk',
+                  time: _clockTime(attendance?.checkInAt),
+                  icon: Icons.login_rounded,
+                  active: isCheckedIn,
+                  background: const Color(0xFFEAFBF1),
+                  foreground: FollowMeTokens.present,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildTimePoint(
+                  label: 'Pulang',
+                  time: _clockTime(attendance?.checkOutAt),
+                  icon: Icons.logout_rounded,
+                  active: isCheckedOut,
+                  background: const Color(0xFFF1F4F8),
+                  foreground: _mutedInk,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildTimePoint(
+                  label: 'Durasi',
+                  time: durationText,
+                  icon: Icons.schedule_rounded,
+                  active: isCheckedIn,
+                  background: const Color(0xFFEDF2FF),
+                  foreground: FollowMeTokens.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 7,
+                    backgroundColor: FollowMeTokens.border,
+                    color: FollowMeTokens.primary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _formatDate(now),
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Target 8 jam',
+                style: TextStyle(
+                  color: _mutedInk,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 13,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: .09),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildTimePoint(
-                          label: 'MASUK',
-                          time: _clockTime(attendance?.checkInAt),
-                          icon: Icons.login_rounded,
-                          active: isCheckedIn,
-                        ),
-                      ),
-                      Container(
-                        width: 34,
-                        height: 1,
-                        color: Colors.white24,
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      Expanded(
-                        child: _buildTimePoint(
-                          label: 'PULANG',
-                          time: _clockTime(attendance?.checkOutAt),
-                          icon: Icons.logout_rounded,
-                          active: isCheckedOut,
-                          alignEnd: true,
-                        ),
-                      ),
-                    ],
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => _openMainAttendance(attendance),
+              icon: Icon(buttonIcon, size: 18),
+              label: Text(buttonLabel),
+              style: FilledButton.styleFrom(
+                backgroundColor: FollowMeTokens.primary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(46),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => _openMainAttendance(attendance),
-                    icon: Icon(buttonIcon, size: 19),
-                    label: Text(buttonLabel),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
-                      foregroundColor: _ink,
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -497,45 +839,52 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
     required String time,
     required IconData icon,
     required bool active,
-    bool alignEnd = false,
+    required Color background,
+    required Color foreground,
   }) {
     return Column(
-      crossAxisAlignment: alignEnd
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: alignEnd
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start,
-          children: [
-            if (!alignEnd) ...[
-              Icon(icon, size: 13, color: active ? _accent : Colors.white38),
-              const SizedBox(width: 5),
-            ],
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 9,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 13, color: active ? foreground : _mutedInk),
+                  const SizedBox(width: 5),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: _mutedInk,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            if (alignEnd) ...[
-              const SizedBox(width: 5),
-              Icon(icon, size: 13, color: active ? _accent : Colors.white38),
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  time,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: active ? foreground : _mutedInk,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
             ],
-          ],
-        ),
-        const SizedBox(height: 5),
-        Text(
-          time,
-          style: TextStyle(
-            color: active ? Colors.white : Colors.white38,
-            fontSize: 19,
-            fontWeight: FontWeight.w800,
-            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
@@ -608,6 +957,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
       decoration: BoxDecoration(
         color: const Color(0xFFE5EAD9),
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _ink.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
@@ -709,8 +1059,17 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
     required String trailing,
   }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Container(
+          width: 4,
+          height: 24,
+          decoration: BoxDecoration(
+            color: _accent,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -719,26 +1078,36 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
                 title,
                 style: const TextStyle(
                   color: _ink,
-                  fontSize: 21,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.5,
                 ),
               ),
-              const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: const TextStyle(color: _mutedInk, fontSize: 12),
+                style: const TextStyle(
+                  color: _mutedInk,
+                  fontSize: 11,
+                  height: 1.2,
+                ),
               ),
             ],
           ),
         ),
-        Text(
-          trailing,
-          style: const TextStyle(
-            color: _mutedInk,
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: _ink.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            trailing,
+            style: const TextStyle(
+              color: _mutedInk,
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
       ],
@@ -835,13 +1204,21 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
       decoration: BoxDecoration(
         color: const Color(0xFFEDEBE4),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _ink.withValues(alpha: 0.05)),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.location_on_outlined, color: _ink, size: 20),
-          SizedBox(width: 10),
-          Expanded(
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: _ink.withValues(alpha: 0.05),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.location_on_rounded, color: _ink, size: 16),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
             child: Text(
               'Pastikan lokasi perangkat aktif dan kamu berada di area yang sesuai saat melakukan absensi.',
               style: TextStyle(
@@ -874,6 +1251,62 @@ class _DashboardService {
     required this.foreground,
     required this.onTap,
   });
+}
+
+class _MonthlyStatTile extends StatelessWidget {
+  final String label;
+  final int value;
+  final Color color;
+
+  const _MonthlyStatTile({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 82),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: FollowMeTokens.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$value',
+            style: TextStyle(
+              color: color,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: _mutedInk,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ServiceTile extends StatelessWidget {
@@ -909,8 +1342,6 @@ class _ServiceTile extends StatelessWidget {
                   children: [
                     Text(
                       service.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: _ink,
                         fontSize: 12,
@@ -920,8 +1351,6 @@ class _ServiceTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       service.subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: _mutedInk,
                         fontSize: 9,

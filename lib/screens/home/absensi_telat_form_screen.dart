@@ -7,10 +7,11 @@ import 'dart:math' as math;
 import '../../providers/absensi_provider.dart';
 import '../../models/absensi_model.dart';
 import 'custom_camera_screen.dart';
+import '../../core/constants/app_theme.dart';
 
-const Color kPrimaryColor = Color(0xFF172B3A);
-const Color kBackgroundColor = Color(0xFFF5F4F0);
-const Color kWarningColor = Color(0xFFF59E0B);
+const Color kPrimaryColor = FollowMeTokens.primary;
+const Color kBackgroundColor = FollowMeTokens.canvas;
+const Color kWarningColor = FollowMeTokens.late;
 
 // ======================================================================
 // MODERN LOADING

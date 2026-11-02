@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/izin_keluar_provider.dart';
 import '../../api/api.service.dart';
+import '../../core/constants/app_theme.dart';
 import 'custom_camera_screen.dart';
 
 class StartIzinScreen extends StatefulWidget {
@@ -172,6 +173,7 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
   @override
   Widget build(BuildContext context) {
     bool isTugasKantor = _selectedTipeIzin == 'tugas_kantor';
+    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -180,180 +182,222 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
           'Mulai Izin Keluar',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        centerTitle: true,
       ),
       body: Consumer<IzinKeluarProvider>(
         builder: (context, provider, _) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLabel('Tipe Izin Outing'),
-                DropdownButtonFormField<String>(
-                  decoration: _inputDecoration(
-                    'Pilihan Izin Keluar',
-                    Icons.assignment_rounded,
+                _buildPageHeader(theme),
+                const SizedBox(height: 22),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      FollowMeTokens.radiusMedium,
+                    ),
+                    border: Border.all(color: FollowMeTokens.border),
                   ),
-                  dropdownColor: Colors.white,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Poppins',
-                  ),
-                  icon: Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  initialValue: _selectedTipeIzin,
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'mendesak',
-                      child: Text(
-                        'Mendesak (Max 2 Jam)',
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                    ),
-                    DropdownMenuItem(
-                      value: 'tugas_kantor',
-                      child: Text(
-                        'Keperluan Tugas Kantor',
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedTipeIzin = val;
-                      if (!isTugasKantor) _selectedDurasi = null;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                if (isTugasKantor) ...[
-                  _buildLabel('Durasi Waktu'),
-                  DropdownButtonFormField<String>(
-                    decoration: _inputDecoration(
-                      'Pilih Durasi Tugas',
-                      Icons.timer_rounded,
-                    ),
-                    dropdownColor: Colors.white,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Poppins',
-                    ),
-                    icon: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    initialValue: _selectedDurasi,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'setengah_hari',
-                        child: Text(
-                          'Setengah Hari',
-                          style: TextStyle(color: Colors.black87),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('Tipe Izin Outing'),
+                      DropdownButtonFormField<String>(
+                        decoration: _inputDecoration(
+                          'Pilihan Izin Keluar',
+                          Icons.assignment_rounded,
                         ),
+                        dropdownColor: theme.colorScheme.surface,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Poppins',
+                        ),
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        initialValue: _selectedTipeIzin,
+                        items: [
+                          DropdownMenuItem(
+                            value: 'mendesak',
+                            child: Text(
+                              'Mendesak (Max 2 Jam)',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'tugas_kantor',
+                            child: Text(
+                              'Keperluan Tugas Kantor',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedTipeIzin = val;
+                            if (val != 'tugas_kantor') _selectedDurasi = null;
+                          });
+                        },
                       ),
-                      DropdownMenuItem(
-                        value: 'satu_hari_full',
-                        child: Text(
-                          'Satu Hari Penuh',
-                          style: TextStyle(color: Colors.black87),
+                      const SizedBox(height: 20),
+
+                      if (isTugasKantor) ...[
+                        _buildLabel('Durasi Waktu'),
+                        DropdownButtonFormField<String>(
+                          decoration: _inputDecoration(
+                            'Pilih Durasi Tugas',
+                            Icons.timer_rounded,
+                          ),
+                          dropdownColor: theme.colorScheme.surface,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Poppins',
+                          ),
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          initialValue: _selectedDurasi,
+                          items: [
+                            DropdownMenuItem(
+                              value: 'setengah_hari',
+                              child: Text(
+                                'Setengah Hari',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'satu_hari_full',
+                              child: Text(
+                                'Satu Hari Penuh',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                          onChanged: (val) =>
+                              setState(() => _selectedDurasi = val),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      _buildLabel('Alasan & Tujuan Keluar'),
+                      TextFormField(
+                        controller: _alasanController,
+                        maxLines: 4,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 15,
+                          fontFamily: 'Poppins',
+                        ),
+                        decoration: _inputDecoration(
+                          'Tulis alasan dengan detail...',
+                          Icons.edit_note_rounded,
                         ),
                       ),
                     ],
-                    onChanged: (val) => setState(() => _selectedDurasi = val),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-
-                _buildLabel('Alasan & Tujuan Keluar'),
-                TextFormField(
-                  controller: _alasanController,
-                  maxLines: 4,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 15,
-                    fontFamily: 'Poppins',
-                  ),
-                  decoration: _inputDecoration(
-                    'Tulis alasan dengan detail...',
-                    Icons.edit_note_rounded,
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                _buildLabel('Lampiran Surat Jalan/Bukti (*Kamera)'),
-                GestureDetector(
-                  onTap: _takePicture,
-                  child: Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      FollowMeTokens.radiusMedium,
                     ),
-                    child: _fotoSurat == null
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.camera_alt_rounded,
-                                size: 48,
-                                color: Theme.of(context).colorScheme.primary,
+                    border: Border.all(color: FollowMeTokens.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('Lampiran Surat Jalan/Bukti (*Kamera)'),
+                      GestureDetector(
+                        onTap: _takePicture,
+                        child: Container(
+                          height: 180,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.06,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              FollowMeTokens.radiusMedium,
+                            ),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.24,
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Tap untuk mengambil foto dokumen',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Image.file(
-                              _fotoSurat!,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
                             ),
                           ),
+                          child: _fotoSurat == null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.camera_alt_rounded,
+                                      size: 40,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Tap untuk mengambil foto dokumen',
+                                      style: TextStyle(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    FollowMeTokens.radiusMedium,
+                                  ),
+                                  child: Image.file(
+                                    _fotoSurat!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 28),
 
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(
+                          FollowMeTokens.radiusSmall,
+                        ),
                       ),
-                      elevation: 4,
-                      shadowColor: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.25),
+                      elevation: 0,
                     ),
                     onPressed: provider.isLoading ? null : _submitData,
                     child: provider.isLoading
@@ -390,6 +434,55 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
     );
   }
 
+  Widget _buildPageHeader(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: FollowMeTokens.ink,
+        borderRadius: BorderRadius.circular(FollowMeTokens.radiusLarge),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: FollowMeTokens.accent.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(FollowMeTokens.radiusSmall),
+            ),
+            child: const Icon(
+              Icons.exit_to_app_rounded,
+              color: FollowMeTokens.accent,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ajukan izin keluar',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Isi detail keperluan dan lampirkan bukti',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLabel(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
     child: Text(
@@ -397,7 +490,7 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
       style: TextStyle(
         fontWeight: FontWeight.w700,
         fontSize: 13,
-        color: Colors.grey.shade700,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         fontFamily: 'Poppins',
       ),
     ),
@@ -409,24 +502,13 @@ class _StartIzinScreenState extends State<StartIzinScreen> {
   ) => InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(
-      color: Colors.grey.shade400,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
       fontFamily: 'Poppins',
       fontSize: 14,
     ),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: Theme.of(context).colorScheme.surface,
     prefixIcon: Icon(prefixIcon, color: Theme.of(context).colorScheme.primary),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.primary,
-        width: 1.5,
-      ),
-    ),
   );
 }

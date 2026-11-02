@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../api/api.service.dart';
+import '../../core/constants/app_theme.dart';
 import '../../core/exceptions/app_exception.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Hayo Kenapa?',
+                  'Koneksi terputus',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 20,
@@ -124,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'jaringan kamu bermasalah tauu, cari jaringan bagus dah kalo kata aku mah',
+                  'Periksa koneksi internet Anda, lalu coba masuk kembali.',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     color: Colors.white70,
@@ -146,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen>
                       elevation: 0,
                     ),
                     child: const Text(
-                      'Coba sekali lagi yaa',
+                      'Mengerti',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.bold,
@@ -186,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen>
         } else {
           if (!mounted || !context.mounted) return;
           _showCustomAlert(
-            'salah email kalo engga password yaa anak baik coba periksa lagi lebih teliti gitu',
+            'Email atau kata sandi tidak cocok. Periksa kembali lalu coba lagi.',
           );
         }
       } catch (e) {
@@ -201,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen>
             );
           } else if (e.statusCode == 401) {
             _showCustomAlert(
-              'salah email kalo engga password yaa anak baik coba periksa lagi lebih teliti gitu',
+              'Email atau kata sandi tidak cocok. Periksa kembali lalu coba lagi.',
             );
           } else {
             _showCustomAlert(e.message);
@@ -229,14 +230,17 @@ class _LoginScreenState extends State<LoginScreen>
       controller: controller,
       obscureText: isPassword && !isPasswordVisible,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Color(0xFF172B3A), fontFamily: 'Poppins'),
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+        fontFamily: 'Poppins',
+      ),
       decoration: InputDecoration(
         hintText: label,
-        hintStyle: const TextStyle(
-          color: Color(0xFF8A939B),
+        hintStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           fontFamily: 'Poppins',
         ),
-        prefixIcon: Icon(icon, color: const Color(0xFF172B3A)),
+        prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
         suffixIcon: isPassword
             ? IconButton(
                 tooltip: isPasswordVisible
@@ -250,30 +254,36 @@ class _LoginScreenState extends State<LoginScreen>
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Theme.of(context).colorScheme.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 13,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE9EDF2)),
+          borderRadius: BorderRadius.circular(FollowMeTokens.radiusSmall),
+          borderSide: const BorderSide(color: FollowMeTokens.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE9EDF2)),
+          borderRadius: BorderRadius.circular(FollowMeTokens.radiusSmall),
+          borderSide: const BorderSide(color: FollowMeTokens.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF172B3A), width: 1.5),
+          borderRadius: BorderRadius.circular(FollowMeTokens.radiusSmall),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderRadius: BorderRadius.circular(FollowMeTokens.radiusSmall),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+          borderRadius: BorderRadius.circular(FollowMeTokens.radiusSmall),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
+            width: 1.5,
+          ),
         ),
         errorStyle: const TextStyle(fontFamily: 'Poppins'),
       ),
@@ -620,6 +630,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: AnimatedBuilder(
         animation: _bgAnimController,
@@ -627,10 +638,10 @@ class _LoginScreenState extends State<LoginScreen>
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: const [
-                  Color(0xFFF5F4F0),
-                  Color(0xFFE9EDDF),
-                  Color(0xFFF5F4F0),
+                colors: [
+                  theme.scaffoldBackgroundColor,
+                  theme.colorScheme.surfaceContainerHighest,
+                  theme.scaffoldBackgroundColor,
                 ],
                 begin: _topAlignment.value,
                 end: _bottomAlignment.value,
@@ -657,13 +668,13 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Container(
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(26),
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(
-                                  0xFF172B3A,
-                                ).withValues(alpha: 0.13),
+                                color: FollowMeTokens.primary.withValues(
+                                  alpha: 0.13,
+                                ),
                                 blurRadius: 28,
                                 offset: const Offset(0, 12),
                               ),
@@ -687,22 +698,23 @@ class _LoginScreenState extends State<LoginScreen>
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Selamat Datang Kembali!',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: Color(0xFF24212A),
+                                        color: theme.colorScheme.onSurface,
                                         fontSize: 21,
                                         fontWeight: FontWeight.w800,
                                         fontFamily: 'Poppins',
                                       ),
                                     ),
                                     const SizedBox(height: 5),
-                                    const Text(
+                                    Text(
                                       'Silakan masuk ke akun Anda',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: Color(0xFF817A7D),
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
                                         fontSize: 12,
                                         fontFamily: 'Poppins',
                                       ),
@@ -757,9 +769,8 @@ class _LoginScreenState extends State<LoginScreen>
                                       child: TextButton(
                                         onPressed: _showForgotPasswordPopup,
                                         style: TextButton.styleFrom(
-                                          foregroundColor: const Color(
-                                            0xFF172B3A,
-                                          ),
+                                          foregroundColor:
+                                              theme.colorScheme.primary,
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 4,
                                             vertical: 8,
@@ -784,11 +795,12 @@ class _LoginScreenState extends State<LoginScreen>
                                                 ? null
                                                 : _login,
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(
-                                                0xFF172B3A,
-                                              ),
-                                              disabledBackgroundColor:
-                                                  const Color(0xFF70808C),
+                                              backgroundColor:
+                                                  theme.colorScheme.primary,
+                                              disabledBackgroundColor: theme
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.6),
                                               elevation: 0,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -867,7 +879,29 @@ class _LoginHeroIllustration extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: _LoginHeroPainter(),
-      child: const SizedBox.expand(),
+      child: Center(
+        child: Container(
+          width: 112,
+          height: 112,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: FollowMeTokens.primary.withValues(alpha: 0.12),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.my_location_rounded,
+            color: FollowMeTokens.primary,
+            size: 58,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -875,106 +909,14 @@ class _LoginHeroIllustration extends StatelessWidget {
 class _LoginHeroPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = math.min(size.width / 320, size.height / 188);
-    canvas
-      ..save()
-      ..translate(
-        (size.width - 320 * scale) / 2,
-        (size.height - 188 * scale) / 2,
-      )
-      ..scale(scale);
-
     final paint = Paint()..style = PaintingStyle.fill;
-    final strokePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    paint.color = const Color(0xFFE8F5FD);
-    canvas.drawOval(const Rect.fromLTWH(-30, -100, 230, 190), paint);
-    paint.color = const Color(0xFF8CCDF0);
-    canvas.drawCircle(const Offset(64, 77), 6, paint);
-    canvas.drawCircle(const Offset(93, 52), 4, paint);
-    paint.color = const Color(0xFFB38CEB);
-    canvas.drawCircle(const Offset(253, 48), 9, paint);
-    canvas.drawCircle(const Offset(276, 92), 4, paint);
-    paint.color = const Color(0xFF172B3A);
-    canvas.drawCircle(const Offset(221, 78), 5, paint);
-    paint.color = const Color(0xFF8FD6C5);
-    canvas.drawCircle(const Offset(46, 112), 5, paint);
-
-    paint.color = const Color(0xFF20212B);
-    canvas.drawCircle(const Offset(166, 35), 13, paint);
-    canvas.drawCircle(const Offset(169, 23), 8, paint);
-
-    paint.color = const Color(0xFFEEB18B);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(141, 91, 18, 24),
-        const Radius.circular(8),
-      ),
-      paint,
-    );
-
-    strokePaint
-      ..color = const Color(0xFFEEB18B)
-      ..strokeWidth = 12;
-    canvas.drawLine(const Offset(119, 124), const Offset(95, 105), strokePaint);
-    canvas.drawLine(const Offset(95, 105), const Offset(78, 78), strokePaint);
-    canvas.drawLine(
-      const Offset(174, 123),
-      const Offset(194, 108),
-      strokePaint,
-    );
-
-    paint.color = const Color(0xFFEEB18B);
-    canvas.drawCircle(const Offset(77, 73), 8, paint);
-    strokePaint
-      ..color = const Color(0xFFEEB18B)
-      ..strokeWidth = 4;
-    canvas.drawLine(const Offset(72, 67), const Offset(69, 58), strokePaint);
-    canvas.drawLine(const Offset(77, 66), const Offset(77, 56), strokePaint);
-    canvas.drawLine(const Offset(82, 68), const Offset(86, 60), strokePaint);
-
-    paint.color = const Color(0xFFFFA21A);
-    final shirt = Path()
-      ..moveTo(125, 108)
-      ..quadraticBezierTo(150, 98, 175, 108)
-      ..lineTo(195, 176)
-      ..lineTo(102, 176)
-      ..close();
-    canvas.drawPath(shirt, paint);
-
-    paint.color = const Color(0xFFEEB18B);
-    canvas.drawOval(const Rect.fromLTWH(126, 34, 48, 61), paint);
-
-    paint.color = const Color(0xFF20212B);
-    final hair = Path()
-      ..moveTo(126, 63)
-      ..quadraticBezierTo(124, 36, 143, 28)
-      ..quadraticBezierTo(165, 18, 178, 39)
-      ..quadraticBezierTo(181, 48, 172, 58)
-      ..lineTo(166, 49)
-      ..quadraticBezierTo(155, 55, 144, 48)
-      ..quadraticBezierTo(137, 58, 126, 63)
-      ..close();
-    canvas.drawPath(hair, paint);
-
-    paint.color = const Color(0xFF20212B);
-    canvas.drawCircle(const Offset(140, 66), 2, paint);
-    canvas.drawCircle(const Offset(160, 66), 2, paint);
-    strokePaint
-      ..color = const Color(0xFFB76D5C)
-      ..strokeWidth = 1.5;
-    canvas.drawArc(
-      const Rect.fromLTWH(143, 69, 14, 10),
-      0.2,
-      2.7,
-      false,
-      strokePaint,
-    );
-
-    canvas.restore();
+    paint.color = FollowMeTokens.primary.withValues(alpha: 0.08);
+    canvas.drawCircle(Offset(size.width * 0.12, size.height * 0.18), 92, paint);
+    paint.color = FollowMeTokens.accent.withValues(alpha: 0.34);
+    canvas.drawCircle(Offset(size.width * 0.88, size.height * 0.86), 76, paint);
+    paint.color = FollowMeTokens.primary.withValues(alpha: 0.24);
+    canvas.drawCircle(Offset(size.width * 0.84, size.height * 0.22), 5, paint);
+    canvas.drawCircle(Offset(size.width * 0.2, size.height * 0.78), 4, paint);
   }
 
   @override

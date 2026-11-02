@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:absensi_app/providers/auth_provider.dart';
+
+import '../../core/theme/followme_design_tokens.dart';
+import '../../core/widgets/glass_container.dart';
+import '../../core/widgets/glow_background.dart';
+import '../../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   final String title;
@@ -13,63 +19,78 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
-  late AnimationController _mainController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-  late Animation<double> _slideAnimation;
-
-  // Controller for infinite floating elements
-  late AnimationController _floatController;
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
+  late final AnimationController _mainController;
+  late final AnimationController _floatController;
+  late final AnimationController _pulseController;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _opacityAnimation;
+  late final Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // 1. Setup floating background animation
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
     )..repeat(reverse: true);
 
-    // 2. Setup main logo reveal animation (Staggered)
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    )..repeat(reverse: true);
+
     _mainController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     );
 
-    // Bouncy scale for the logo card
     _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 1.05).chain(CurveTween(curve: Curves.easeOutBack)), weight: 60),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.05, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 40),
-    ]).animate(CurvedAnimation(parent: _mainController, curve: const Interval(0.0, 0.6)));
-
-    // Fade in
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _mainController, curve: const Interval(0.2, 0.8, curve: Curves.easeIn)),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.8, end: 1.08)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 60,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.08, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 40,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.0, 0.6),
+      ),
     );
 
-    // Slide up text
-    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
-      CurvedAnimation(parent: _mainController, curve: const Interval(0.4, 0.9, curve: Curves.easeOutCubic)),
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.2, 0.8, curve: Curves.easeIn),
+      ),
+    );
+
+    _slideAnimation = Tween<double>(begin: 34.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _mainController,
+        curve: const Interval(0.35, 0.9, curve: Curves.easeOutCubic),
+      ),
     );
 
     _mainController.forward();
 
-    // Redirect setelah logo selesai animasi & Auth data siap
     Timer(const Duration(milliseconds: 3500), () async {
-      if (mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        
-        // TUNGGU SAMPE PROSES BACA MEMORI KELAR
-        await authProvider.initializationFuture; 
-        if (!mounted) return;
+      if (!mounted) return;
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.initializationFuture;
+      if (!mounted) return;
 
-        if (authProvider.isAuthenticated) {
-          Navigator.of(context).pushReplacementNamed('/home');
-        } else {
-          Navigator.of(context).pushReplacementNamed('/login');
-        }
+      if (authProvider.isAuthenticated) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/login');
       }
     });
   }
@@ -78,249 +99,288 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void dispose() {
     _mainController.dispose();
     _floatController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Pure Indigo Brand Color for that Super-App feel
-    const Color brandColor = Color(0xFF4F46E5);
+    final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
-      backgroundColor: brandColor,
+      backgroundColor: FollowMeDesign.deepSpace,
       body: Stack(
         children: [
-          // ================= BACKGROUND ANIMATED ELEMENTS =================
+          const GlowBackground(),
           AnimatedBuilder(
             animation: _floatController,
             builder: (context, child) {
+              final floatOffset = 18 * math.sin(_floatController.value * math.pi * 2);
               return Stack(
                 children: [
-                  // Top right floating blob
                   Positioned(
-                    top: -100 + (30 * math.sin(_floatController.value * math.pi)),
-                    right: -50,
-                    child: Container(
-                      width: 250,
-                      height: 250,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.05),
-                      ),
+                    top: 110 + floatOffset,
+                    left: 28,
+                    child: _buildFloatingCard(
+                      'Check In',
+                      Icons.fingerprint_rounded,
+                      const Color(0xFFB8E6FF),
                     ),
                   ),
-                  // Bottom left floating blob
                   Positioned(
-                    bottom: -80 + (20 * math.cos(_floatController.value * math.pi)),
-                    left: -80,
-                    child: Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.03),
-                      ),
+                    top: 200 - floatOffset,
+                    right: 20,
+                    child: _buildFloatingCard(
+                      'Lokasi sesuai',
+                      Icons.location_on_rounded,
+                      const Color(0xFFB5F7D0),
                     ),
                   ),
-                  // Center glowing flare
-                  Center(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 400,
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0.15),
-                            Colors.transparent,
-                          ],
-                          radius: 0.6,
-                        ),
-                      ),
+                  Positioned(
+                    bottom: 220 + floatOffset,
+                    left: 40,
+                    child: _buildFloatingCard(
+                      'Wajah terverifikasi',
+                      Icons.face_rounded,
+                      const Color(0xFFD9C5FF),
                     ),
-                  )
+                  ),
                 ],
               );
             },
           ),
-
-          // ================= FOREGROUND CONTENT =================
           SafeArea(
-            child: AnimatedBuilder(
-              animation: _mainController,
-              builder: (context, child) {
-                return Stack(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Center Content
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // App Logo Glassmorphic Container
-                          Transform.scale(
-                            scale: _scaleAnimation.value,
-                            child: Opacity(
-                              opacity: _scaleAnimation.value.clamp(0.0, 1.0),
-                              child: Container(
-                                height: 140,
-                                width: 140,
-                                padding: const EdgeInsets.all(28),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(35), // Rounded squircle super-app style
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.15),
-                                      blurRadius: 30,
-                                      offset: const Offset(0, 15),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      blurRadius: 0,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: Image.asset(
-                                  'assets/images/logo.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.location_on_rounded, size: 70, color: brandColor),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-
-                          // Typography Area
-                          Opacity(
+                    const SizedBox(height: 16),
+                    AnimatedBuilder(
+                      animation: _mainController,
+                      builder: (_, __) {
+                        return Transform.scale(
+                          scale: _scaleAnimation.value,
+                          child: Opacity(
                             opacity: _opacityAnimation.value,
-                            child: Transform.translate(
-                              offset: Offset(0, _slideAnimation.value),
-                              child: const Column(
-                                children: [
-                                  Text(
-                                    'Absensi',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'Poppins',
-                                      letterSpacing: 1.0,
+                            child: _buildScanRing(size),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 42),
+                    AnimatedBuilder(
+                      animation: _mainController,
+                      builder: (_, __) {
+                        return Transform.translate(
+                          offset: Offset(0, _slideAnimation.value),
+                          child: Opacity(
+                            opacity: _opacityAnimation.value,
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.12),
                                     ),
                                   ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    'ENTERPRISE WORKFORCE',
+                                  child: const Text(
+                                    'Absensi wajah pintar',
                                     style: TextStyle(
                                       color: Colors.white70,
                                       fontSize: 12,
-                                      fontFamily: 'Poppins',
-                                      letterSpacing: 4.0,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.4,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 18),
+                                Text(
+                                  'Sekali scan,\nkehadiran beres.',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    height: 1.08,
+                                    letterSpacing: -1.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                ShaderMask(
+                                  shaderCallback: (bounds) => const LinearGradient(
+                                    colors: [FollowMeDesign.cyan, FollowMeDesign.successLight],
+                                  ).createShader(bounds),
+                                  child: Text(
+                                    'Waktu Anda terdata aman.',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 22),
+                                SizedBox(
+                                  width: 220,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: LinearProgressIndicator(
+                                      minHeight: 12,
+                                      value: 0.8,
+                                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                                      valueColor: const AlwaysStoppedAnimation<Color>(FollowMeDesign.cyan),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'Memuat…',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // Bottom Loading & Branding
-                    Positioned(
-                      bottom: 40,
-                      left: 0,
-                      right: 0,
-                      child: Opacity(
-                        opacity: _opacityAnimation.value,
-                        child: Column(
-                          children: [
-                            const _PremiumLoadingDots(),
-                            const SizedBox(height: 24),
-                            Text(
-                              'Powered by Advanced Technology',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 11,
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
 
-// ======================================================================
-// PREMIUM DOT LOADING TWEAKED FOR BLUE BACKGROUND
-// ======================================================================
-class _PremiumLoadingDots extends StatefulWidget {
-  const _PremiumLoadingDots();
-  @override
-  State<_PremiumLoadingDots> createState() => _PremiumLoadingDotsState();
-}
-class _PremiumLoadingDotsState extends State<_PremiumLoadingDots> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat();
+  Widget _buildFloatBubble(String label, IconData icon, Color tint) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.white.withValues(alpha: 0.08),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: tint, size: 16),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
   }
-  @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (i) {
-            final delay = i * 0.2;
-            final t = (_ctrl.value - delay) % 1.0;
-            final curve = math.sin(t * math.pi); // 0 to 1 to 0
-            final offset = curve * 8.0;
-            final scale = 1.0 + (curve * 0.4);
 
-            return Transform.translate(
-              offset: Offset(0, -offset),
-              child: Transform.scale(
-                scale: t >= 0 ? scale : 1.0,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: Container(
-                    width: 7, 
-                    height: 7, 
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          blurRadius: 6 * curve,
-                          spreadRadius: 1 * curve,
-                        )
-                      ]
-                    )
+  Widget _buildFloatingCard(String label, IconData icon, Color tint) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final pulse = 1 + (0.04 * math.sin(_pulseController.value * math.pi * 2));
+        return Transform.scale(
+          scale: pulse,
+          child: _buildFloatBubble(label, icon, tint),
+        );
+      },
+    );
+  }
+
+  Widget _buildScanRing(Size size) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        AnimatedBuilder(
+          animation: _pulseController,
+          builder: (context, child) {
+            final pulse = 1.0 + (0.18 * math.sin(_pulseController.value * math.pi * 2));
+            return Transform.scale(
+              scale: pulse,
+              child: Container(
+                width: 176,
+                height: 176,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.45),
+                    width: 2,
                   ),
                 ),
               ),
             );
-          }),
-        );
-      },
+          },
+        ),
+        Container(
+          width: 142,
+          height: 142,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.35),
+              width: 1.5,
+              style: BorderStyle.solid,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: FollowMeDesign.cyan.withValues(alpha: 0.25),
+                blurRadius: 24,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: 98,
+          height: 98,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+          ),
+          child: const Icon(
+            Icons.face_rounded,
+            color: Colors.white,
+            size: 46,
+          ),
+        ),
+        Positioned(
+          top: 12,
+          child: Container(
+            width: 2,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, FollowMeDesign.cyan, Colors.transparent],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

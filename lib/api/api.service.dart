@@ -11,6 +11,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 
 import '../core/constants/api_constants.dart';
+import '../core/constants/demo_preview.dart';
 import '../models/user_model.dart';
 import '../models/absensi_model.dart';
 import '../models/notification_model.dart';
@@ -43,6 +44,14 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          if (DemoPreview.enabled) {
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                message: 'Network access is disabled in local preview mode.',
+              ),
+            );
+          }
           final token = await _storage.read(key: _authTokenKey);
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -868,10 +877,7 @@ class ApiService {
         formData.files.add(
           MapEntry(
             'file_bukti',
-            await MultipartFile.fromFile(
-              fileBukti.path,
-              filename: fileName,
-            ),
+            await MultipartFile.fromFile(fileBukti.path, filename: fileName),
           ),
         );
       }
@@ -923,10 +929,7 @@ class ApiService {
         formData.files.add(
           MapEntry(
             'file_bukti',
-            await MultipartFile.fromFile(
-              fileBukti.path,
-              filename: fileName,
-            ),
+            await MultipartFile.fromFile(fileBukti.path, filename: fileName),
           ),
         );
       }

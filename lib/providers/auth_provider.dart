@@ -4,34 +4,44 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
-import '../api/api.service.dart'; 
-import '../models/user_model.dart'; 
+import '../api/api.service.dart';
+import '../models/user_model.dart';
 import 'dart:convert';
 import '../core/exceptions/app_exception.dart';
+import '../core/constants/demo_preview.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
   String? _token;
   bool _isLoading = false;
+  bool _isDemoPreviewSession = false;
   String? _errorMessage;
 
   final ApiService _apiService;
   final _storage = const FlutterSecureStorage();
-  
+
   late Future<void> initializationFuture; // Tambahkan ini
 
   static const String _authTokenKey = 'auth_token';
   static const String _userDataKey = 'user_data';
 
-  AuthProvider({required ApiService apiService}) 
+  AuthProvider({required ApiService apiService})
     : _apiService = apiService,
       super() {
-    initializationFuture = _loadTokenAndUser(); // Simpan proses loading ke future
+    if (DemoPreview.enabled) {
+      _isDemoPreviewSession = true;
+      _token = DemoPreview.token;
+      _user = DemoPreview.user;
+      initializationFuture = Future<void>.value();
+    } else {
+      initializationFuture = _loadTokenAndUser();
+    }
   }
 
   User? get user => _user;
   String? get token => _token;
   bool get isAuthenticated => _token != null;
+  bool get isDemoPreviewSession => _isDemoPreviewSession;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -53,15 +63,15 @@ class AuthProvider extends ChangeNotifier {
         if (decodedData is Map<String, dynamic>) {
           _user = User.fromJson(decodedData);
           if (_user != null) {
-              notifyListeners();
+            notifyListeners();
           } else {
-            await logout(); 
+            await logout();
           }
         } else {
-          await logout(); 
+          await logout();
         }
       } catch (e) {
-        await logout(); 
+        await logout();
       }
     } else {
       _user = null;
@@ -82,7 +92,7 @@ class AuthProvider extends ChangeNotifier {
       );
 
       final String? accessToken = result['access_token'];
-      final User? userObject = result['user'] as User?; 
+      final User? userObject = result['user'] as User?;
 
       if (accessToken != null && userObject != null) {
         _token = accessToken;
@@ -90,7 +100,7 @@ class AuthProvider extends ChangeNotifier {
 
         await _storage.write(key: _authTokenKey, value: _token!);
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_userDataKey, jsonEncode(_user!.toJson())); 
+        await prefs.setString(_userDataKey, jsonEncode(_user!.toJson()));
 
         _isLoading = false;
         notifyListeners();
@@ -124,10 +134,10 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
     required String passwordConfirmation,
-    required String idKaryawan, 
-    required String departemen, 
+    required String idKaryawan,
+    required String departemen,
     required String employmentType,
-    required String workLocation, 
+    required String workLocation,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -139,9 +149,9 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
         passwordConfirmation: passwordConfirmation,
-        idKaryawan: idKaryawan, 
-        departemen: departemen, 
-        employmentType: employmentType, 
+        idKaryawan: idKaryawan,
+        departemen: departemen,
+        employmentType: employmentType,
         workLocation: workLocation,
       );
 
@@ -154,7 +164,7 @@ class AuthProvider extends ChangeNotifier {
 
         await _storage.write(key: _authTokenKey, value: _token!);
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_userDataKey, jsonEncode(_user!.toJson())); 
+        await prefs.setString(_userDataKey, jsonEncode(_user!.toJson()));
 
         _isLoading = false;
         notifyListeners();
@@ -184,8 +194,9 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> refreshProfile() async {
+    if (_isDemoPreviewSession) return;
     try {
-      final User? updatedUser = await _apiService.getAuthenticatedUser(); 
+      final User? updatedUser = await _apiService.getAuthenticatedUser();
       if (updatedUser != null) {
         _user = updatedUser;
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -200,8 +211,15 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     _isLoading = true;
     notifyListeners();
+    if (_isDemoPreviewSession) {
+      _token = null;
+      _user = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     try {
-      await _apiService.logout(); 
+      await _apiService.logout();
     } catch (e) {
       debugPrint('Logout error: $e');
     } finally {
@@ -214,19 +232,22 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   String _handleDioError(DioException e) {
     String message = 'An unknown error occurred.';
     if (e.response != null) {
-      if (e.response!.data != null && e.response!.data is Map<String, dynamic>) {
-        if (e.response!.data.containsKey('message') && e.response!.data['message'] != null) {
+      if (e.response!.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        if (e.response!.data.containsKey('message') &&
+            e.response!.data['message'] != null) {
           message = e.response!.data['message'];
-        } else if (e.response!.data.containsKey('errors') && e.response!.data['errors'] != null) {
+        } else if (e.response!.data.containsKey('errors') &&
+            e.response!.data['errors'] != null) {
           Map<String, dynamic> errors = e.response!.data['errors'];
           if (errors.values.isNotEmpty && errors.values.first is List) {
-              message = errors.values.first[0];
+            message = errors.values.first[0];
           } else {
-              message = 'Validation error.';
+            message = 'Validation error.';
           }
         } else {
           message = 'Server error: ${e.response!.statusCode}';

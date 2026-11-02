@@ -8,23 +8,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:absensi_app/main.dart';
+import 'package:absensi_app/core/constants/app_theme.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  test(
+    'FollowMe defines light and dark themes with attendance status colors',
+    () {
+      expect(buildAppTheme().brightness, Brightness.light);
+      expect(buildAppDarkTheme().brightness, Brightness.dark);
+      expect(FollowMeTokens.present, isNot(FollowMeTokens.absent));
+      expect(FollowMeTokens.leave, isNot(FollowMeTokens.overtime));
+    },
+  );
 }

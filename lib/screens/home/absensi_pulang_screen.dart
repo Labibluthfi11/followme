@@ -11,12 +11,14 @@ import '../../providers/absensi_provider.dart';
 import 'package:intl/intl.dart';
 import '../../services/security_service.dart';
 import '../../services/attendance_location_service.dart';
+import '../../widgets/location_status_card.dart';
+import '../../core/constants/app_theme.dart';
 
-const Color kPrimaryColor = Color(0xFF172B3A);
-const Color kBackgroundColor = Color(0xFFF5F4F0);
+const Color kPrimaryColor = FollowMeTokens.primary;
+const Color kBackgroundColor = FollowMeTokens.canvas;
 const Color kSuccessColor = Color(0xFF10B981);
 const Color kErrorColor = Color(0xFFEF4444);
-const Color kLemburColor = Color(0xFFF59E0B); // Amber for Lembur
+const Color kLemburColor = FollowMeTokens.overtime;
 
 // ======================================================================
 // MODERN LOADING
@@ -501,7 +503,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             // Delay appearance of button
-            Future.delayed(const Duration(seconds: 3), () {
+            Future.delayed(const Duration(milliseconds: 450), () {
               if (context.mounted && !showButton) {
                 setDialogState(() => showButton = true);
               }
@@ -539,7 +541,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                     ),
                     const SizedBox(height: 24),
                     const Text(
-                      'Kerja Bagus Hari Ini! ✨',
+                      'Check-out berhasil',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 22,
@@ -550,23 +552,12 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'kamu capee ga kerjanya? kalo capee jangan di pendem sendiri yaa.. ceritain aja ke pasangan masing masing atau orang tua atau hts kalian wkwk.',
+                      'Waktu pulang Anda berhasil dicatat.',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         color: Colors.grey.shade700,
                         fontSize: 14,
                         height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'kalian kalo ga ada tempat cerita bisa berbagi cerita ke kami, kami siap menjadi pendengar yang baik.',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        color: Colors.grey.shade500,
-                        fontSize: 13,
-                        fontStyle: FontStyle.italic,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -592,7 +583,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                               elevation: 0,
                             ),
                             child: const Text(
-                              'Istirahat Dulu Ya..',
+                              'Kembali ke beranda',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.bold,
@@ -606,7 +597,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                     ),
                     if (!showButton)
                       const Text(
-                        'Sabar ya, lagi nyiapin pelukan virtual...',
+                        'Menyelesaikan pencatatan...',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 12,
@@ -864,73 +855,13 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: locationReady
-                                ? Colors.green.shade50
-                                : Colors.red.shade50,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            locationReady
-                                ? Icons.my_location_rounded
-                                : Icons.location_off_rounded,
-                            color: locationReady
-                                ? Colors.green.shade500
-                                : Colors.red.shade500,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                locationReady
-                                    ? 'Lokasi Akurat'
-                                    : 'Mencari Lokasi...',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: locationReady
-                                      ? Colors.green.shade700
-                                      : Colors.red.shade700,
-                                ),
-                              ),
-                              if (!locationReady)
-                                Text(
-                                  _locationStatus,
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 11,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (!locationReady && !absensiProvider.isLoading)
-                          IconButton(
-                            onPressed: _checkLocation,
-                            icon: Icon(
-                              Icons.refresh_rounded,
-                              color: Colors.blue.shade600,
-                            ),
-                          )
-                        else if (!locationReady)
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                      ],
+                    LocationStatusCard(
+                      isWithinRadius: locationReady,
+                      isLoading: _locationStatus == 'Memuat lokasi...',
+                      message: _locationStatus,
+                      onRetry: !locationReady && !absensiProvider.isLoading
+                          ? _checkLocation
+                          : null,
                     ),
                     const SizedBox(height: 24),
 

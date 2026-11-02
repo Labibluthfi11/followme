@@ -11,9 +11,11 @@ import '../../providers/absensi_provider.dart';
 import 'package:intl/intl.dart';
 import '../../services/security_service.dart';
 import '../../services/attendance_location_service.dart';
+import '../../widgets/location_status_card.dart';
+import '../../core/constants/app_theme.dart';
 
-const Color kPrimaryColor = Color(0xFF172B3A);
-const Color kBackgroundColor = Color(0xFFF5F4F0);
+const Color kPrimaryColor = FollowMeTokens.primary;
+const Color kBackgroundColor = FollowMeTokens.canvas;
 const Color kSuccessColor = Color(0xFF10B981);
 const Color kErrorColor = Color(0xFFEF4444);
 
@@ -662,7 +664,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Hadir Tercatat!',
+                  'Check-in berhasil',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 22,
@@ -677,6 +679,17 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                   style: const TextStyle(
                     fontFamily: 'Poppins',
                     color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Lokasi kantor berhasil diverifikasi. Semangat bekerja hari ini.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    color: Color(0xFF52636B),
+                    fontSize: 13,
+                    height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -883,73 +896,13 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: locationReady
-                                ? Colors.green.shade50
-                                : Colors.red.shade50,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            locationReady
-                                ? Icons.my_location_rounded
-                                : Icons.location_off_rounded,
-                            color: locationReady
-                                ? Colors.green.shade500
-                                : Colors.red.shade500,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                locationReady
-                                    ? 'Lokasi Akurat'
-                                    : 'Mencari Lokasi...',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: locationReady
-                                      ? Colors.green.shade700
-                                      : Colors.red.shade700,
-                                ),
-                              ),
-                              if (!locationReady)
-                                Text(
-                                  _locationStatus,
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 11,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (!locationReady && !absensiProvider.isLoading)
-                          IconButton(
-                            onPressed: _checkLocation,
-                            icon: Icon(
-                              Icons.refresh_rounded,
-                              color: Colors.blue.shade600,
-                            ),
-                          )
-                        else if (!locationReady)
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                      ],
+                    LocationStatusCard(
+                      isWithinRadius: locationReady,
+                      isLoading: _locationStatus == 'Memuat lokasi...',
+                      message: _locationStatus,
+                      onRetry: !locationReady && !absensiProvider.isLoading
+                          ? _checkLocation
+                          : null,
                     ),
                     const SizedBox(height: 24),
 

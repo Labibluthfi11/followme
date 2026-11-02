@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/constants/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -141,38 +142,39 @@ class _RegisterScreenState extends State<RegisterScreen>
     String? Function(String?)? validator,
     TextInputType keyboardType = TextInputType.text,
   }) {
+    final theme = Theme.of(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(FollowMeTokens.radiusMedium),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE7E6DF)),
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(FollowMeTokens.radiusMedium),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
           child: TextFormField(
             controller: controller,
             obscureText: isPassword && !isPasswordVisible,
             keyboardType: keyboardType,
-            style: const TextStyle(
-              color: Color(0xFF172B3A),
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
               fontFamily: 'Poppins',
             ),
             decoration: InputDecoration(
               hintText: label,
-              hintStyle: const TextStyle(
-                color: Color(0xFF70808C),
+              hintStyle: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
                 fontFamily: 'Poppins',
               ),
-              prefixIcon: Icon(icon, color: const Color(0xFF172B3A)),
+              prefixIcon: Icon(icon, color: theme.colorScheme.primary),
               suffixIcon: isPassword
                   ? IconButton(
                       icon: Icon(
                         isPasswordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: const Color(0xFF70808C),
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                       onPressed: onVisibilityToggle,
                     )
@@ -182,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 horizontal: 20,
                 vertical: 18,
               ),
-              errorStyle: const TextStyle(color: Color(0xFFE25D5D)),
+              errorStyle: TextStyle(color: theme.colorScheme.error),
             ),
             validator: validator,
           ),
@@ -198,30 +200,31 @@ class _RegisterScreenState extends State<RegisterScreen>
     required List<DropdownMenuItem<String>> items,
     required void Function(String?) onChanged,
   }) {
+    final theme = Theme.of(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(FollowMeTokens.radiusMedium),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE7E6DF)),
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(FollowMeTokens.radiusMedium),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
           child: DropdownButtonFormField<String>(
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: const Color(0xFF172B3A)),
+              prefixIcon: Icon(icon, color: theme.colorScheme.primary),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            dropdownColor: Colors.white,
-            icon: const Icon(
+            dropdownColor: theme.colorScheme.surface,
+            icon: Icon(
               Icons.keyboard_arrow_down,
-              color: Color(0xFF70808C),
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-            style: const TextStyle(
-              color: Color(0xFF172B3A),
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
               fontFamily: 'Poppins',
               fontSize: 15,
             ),
@@ -236,18 +239,18 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      extendBodyBehindAppBar: true,
       body: AnimatedBuilder(
         animation: _bgAnimController,
         builder: (context, child) {
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: const [
-                  Color(0xFFF5F4F0),
-                  Color(0xFFE9EDDF),
-                  Color(0xFFF5F4F0),
+                colors: [
+                  theme.scaffoldBackgroundColor,
+                  theme.colorScheme.surfaceContainerHighest,
+                  theme.scaffoldBackgroundColor,
                 ],
                 begin: _topAlignment.value,
                 end: _bottomAlignment.value,
@@ -274,28 +277,28 @@ class _RegisterScreenState extends State<RegisterScreen>
                           child: Container(
                             height: 120,
                             padding: const EdgeInsets.all(15),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white,
+                              color: theme.colorScheme.surface,
                             ),
                             child: Image.asset(
                               "assets/images/logo.png",
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
+                                  Icon(
                                     Icons.app_registration,
                                     size: 70,
-                                    color: Colors.white54,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 20),
-                        const Text(
+                        Text(
                           'Create Account',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF172B3A),
+                            color: theme.colorScheme.onSurface,
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
                             fontFamily: 'Poppins',
@@ -303,11 +306,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Join us to manage your absensi',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF70808C),
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontSize: 14,
                             fontFamily: 'Poppins',
                           ),
@@ -449,20 +452,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                               duration: const Duration(milliseconds: 300),
                               height: 60,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(
+                                  FollowMeTokens.radiusMedium,
+                                ),
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFF172B3A),
-                                    Color(0xFF34515F),
+                                    FollowMeTokens.ink,
+                                    FollowMeTokens.primary,
                                   ],
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(
-                                      0xFF172B3A,
-                                    ).withValues(alpha: 0.18),
+                                    color: FollowMeTokens.primary.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     blurRadius: 15,
                                     offset: const Offset(0, 5),
                                   ),
@@ -476,7 +481,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   backgroundColor: Colors.transparent,
                                   shadowColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(
+                                      FollowMeTokens.radiusMedium,
+                                    ),
                                   ),
                                 ),
                                 child: authProvider.isLoading
@@ -503,10 +510,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               "Already have an account? ",
                               style: TextStyle(
-                                color: Color(0xFF70808C),
+                                color: theme.colorScheme.onSurfaceVariant,
                                 fontFamily: 'Poppins',
                               ),
                             ),
@@ -514,10 +521,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                               onTap: () => Navigator.of(
                                 context,
                               ).pushReplacementNamed('/login'),
-                              child: const Text(
+                              child: Text(
                                 'Log In',
                                 style: TextStyle(
-                                  color: Color(0xFF172B3A),
+                                  color: theme.colorScheme.primary,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
                                 ),

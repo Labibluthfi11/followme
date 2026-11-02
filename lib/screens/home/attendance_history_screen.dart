@@ -5,6 +5,8 @@ import 'package:absensi_app/models/absensi_model.dart';
 import 'package:absensi_app/screens/home/absensi_telat_form_screen.dart';
 import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:absensi_app/core/constants/app_theme.dart';
+import 'package:absensi_app/core/constants/demo_preview.dart';
 
 const Color kPrimaryColor = Color(0xFF172B3A);
 const Color kBackgroundColor = Color(0xFFF5F4F0);
@@ -27,7 +29,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _refreshData();
+    if (!DemoPreview.enabled) _refreshData();
   }
 
   @override
@@ -37,6 +39,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   }
 
   Future<void> _refreshData() async {
+    if (DemoPreview.enabled) return;
     final provider = Provider.of<AbsensiProvider>(context, listen: false);
 
     String? searchDateStr;
@@ -593,13 +596,13 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
       final String approval = statusApproval?.toLowerCase() ?? 'pending';
       if (['pending', 'menunggu', 'waiting'].contains(approval)) {
         displayedStatusText = 'DI PROSES';
-        displayedStatusColor = const Color(0xFFF59E0B);
+        displayedStatusColor = FollowMeTokens.late;
       } else if (['approved', 'disetujui'].contains(approval)) {
         displayedStatusText = 'DISETUJUI';
-        displayedStatusColor = const Color(0xFF10B981);
+        displayedStatusColor = FollowMeTokens.present;
       } else if (['rejected', 'ditolak'].contains(approval)) {
         displayedStatusText = 'DITOLAK';
-        displayedStatusColor = const Color(0xFFEF4444);
+        displayedStatusColor = FollowMeTokens.absent;
       }
     }
 
@@ -963,17 +966,17 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   Color _getStatusColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'hadir':
-        return const Color(0xFF10B981);
+        return FollowMeTokens.present;
       case 'telat':
-        return const Color(0xFFF59E0B);
+        return FollowMeTokens.late;
       case 'izin':
-        return const Color(0xFF8B5CF6);
+        return FollowMeTokens.leave;
       case 'sakit':
-        return const Color(0xFF3B82F6);
+        return FollowMeTokens.leave;
       case 'tanpa keterangan':
-        return const Color(0xFFEF4444);
+        return FollowMeTokens.absent;
       case 'lembur':
-        return const Color(0xFFFCD34D);
+        return FollowMeTokens.overtime;
       default:
         return Colors.grey.shade500;
     }

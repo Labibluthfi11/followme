@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../api/api.service.dart';
+import '../../core/constants/app_theme.dart';
 import '../../services/image_compress_service.dart';
 
 const Color kPrimaryColor = Color(0xFF172B3A);
@@ -585,6 +586,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
+
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: FollowMeTokens.border),
+                        ),
+                        child: SwitchListTile(
+                          value:
+                              context.watch<FollowMeThemeController>().mode ==
+                              ThemeMode.dark,
+                          onChanged: (enabled) => context
+                              .read<FollowMeThemeController>()
+                              .setDarkMode(enabled),
+                          secondary: const Icon(Icons.dark_mode_outlined),
+                          title: const Text('Tema gelap'),
+                          subtitle: const Text('Sesuaikan tampilan aplikasi'),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
                       ModernTextField(
                         label: 'Nama Lengkap',

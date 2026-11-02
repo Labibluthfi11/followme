@@ -228,6 +228,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       }
 
       if (mounted) {
+        HapticFeedback.lightImpact();
         setState(() {
           _previewFile = finalFile;
           _isTakingPicture = false;
@@ -579,6 +580,36 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF237A4B).withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.verified_rounded,
+                            color: Colors.white,
+                            size: 17,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Wajah terdeteksi',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     const Text(
                       'Pastikan wajah terlihat jelas dan tidak blur',
                       style: TextStyle(

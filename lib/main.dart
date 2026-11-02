@@ -39,15 +39,12 @@ void main() async {
     return;
   }
 
-  await SentryFlutter.init(
-    (options) {
-      // Masukkan DSN Sentry lu di sini nanti bang
-      options.dsn =
-          'https://ec1c6b4670ff0903c80a5308f638b0fe@o4511295361187840.ingest.us.sentry.io/4511295414468608';
-      options.tracesSampleRate = 1.0;
-    },
-    appRunner: _startApplication,
-  );
+  await SentryFlutter.init((options) {
+    // Masukkan DSN Sentry lu di sini nanti bang
+    options.dsn =
+        'https://ec1c6b4670ff0903c80a5308f638b0fe@o4511295361187840.ingest.us.sentry.io/4511295414468608';
+    options.tracesSampleRate = 1.0;
+  }, appRunner: _startApplication);
 }
 
 Future<void> _startApplication() async {
@@ -90,6 +87,9 @@ Future<void> _startApplication() async {
           create: (context) =>
               IzinKeluarProvider(apiService: context.read<ApiService>()),
         ),
+        ChangeNotifierProvider(
+          create: (_) => FollowMeThemeController()..load(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -102,14 +102,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = context.read<ApiService>();
+    final themeController = context.watch<FollowMeThemeController>();
 
     return MaterialApp(
       title: 'Absensi App',
       debugShowCheckedModeBanner: false,
       navigatorObservers: kIsWeb ? [] : [SentryNavigatorObserver()],
       theme: buildAppTheme(),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.light,
+      darkTheme: buildAppDarkTheme(),
+      themeMode: themeController.mode,
+      themeAnimationDuration: const Duration(milliseconds: 250),
       home: const SplashScreen(title: 'Absensi App'),
 
       // 🧭 Semua route lengkap

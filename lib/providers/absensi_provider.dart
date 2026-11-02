@@ -3,6 +3,7 @@ import 'package:absensi_app/api/api.service.dart';
 import 'package:absensi_app/models/absensi_model.dart';
 import 'package:absensi_app/services/image_compress_service.dart';
 import 'package:universal_io/io.dart';
+import '../core/constants/demo_preview.dart';
 
 class AbsensiProvider with ChangeNotifier {
   final ApiService _apiService;
@@ -38,7 +39,11 @@ class AbsensiProvider with ChangeNotifier {
   int get totalTanpaKet => _totalTanpaKet;
 
   AbsensiProvider({required ApiService apiService}) : _apiService = apiService {
-    refreshAbsensi();
+    if (DemoPreview.enabled) {
+      _isInitialLoadComplete = true;
+    } else {
+      refreshAbsensi();
+    }
   }
 
   void setIsLoading(bool value) {
@@ -618,12 +623,18 @@ class AbsensiProvider with ChangeNotifier {
         File? compressedFileBukti;
         if (fileBukti != null) {
           debugPrint('📤 [API] Calling resubmitSakit with new file...');
-          compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
+          compressedFileBukti = await ImageCompressService.compressImage(
+            fileBukti,
+          );
           compressStopwatch.stop();
           final int fileSize = await compressedFileBukti.length();
-          debugPrint('⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+          debugPrint(
+            '⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB',
+          );
         } else {
-          debugPrint('📤 [API] Calling resubmitSakit without new file (reusing existing)...');
+          debugPrint(
+            '📤 [API] Calling resubmitSakit without new file (reusing existing)...',
+          );
         }
 
         final uploadStopwatch = Stopwatch()..start();
@@ -635,17 +646,25 @@ class AbsensiProvider with ChangeNotifier {
           endDate: endDate,
         );
         uploadStopwatch.stop();
-        debugPrint('⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms');
+        debugPrint(
+          '⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms',
+        );
       } else if (tipe == 'izin') {
         File? compressedFileBukti;
         if (fileBukti != null) {
           debugPrint('📤 [API] Calling resubmitIzin with new file...');
-          compressedFileBukti = await ImageCompressService.compressImage(fileBukti);
+          compressedFileBukti = await ImageCompressService.compressImage(
+            fileBukti,
+          );
           compressStopwatch.stop();
           final int fileSize = await compressedFileBukti.length();
-          debugPrint('⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+          debugPrint(
+            '⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB',
+          );
         } else {
-          debugPrint('📤 [API] Calling resubmitIzin without new file (reusing existing)...');
+          debugPrint(
+            '📤 [API] Calling resubmitIzin without new file (reusing existing)...',
+          );
         }
 
         final uploadStopwatch = Stopwatch()..start();
@@ -658,7 +677,9 @@ class AbsensiProvider with ChangeNotifier {
           endDate: endDate,
         );
         uploadStopwatch.stop();
-        debugPrint('⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms');
+        debugPrint(
+          '⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms',
+        );
       } else if (tipe == 'lembur') {
         if (hasilKerjaFiles == null || hasilKerjaFiles.isEmpty) {
           result = {

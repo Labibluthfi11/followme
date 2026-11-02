@@ -9,10 +9,14 @@ import 'package:absensi_app/models/absensi_model.dart';
 import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:absensi_app/services/image_compress_service.dart';
 import 'package:intl/intl.dart';
+import '../../core/constants/app_theme.dart';
+import '../../core/theme/followme_design_tokens.dart';
+import '../../core/widgets/glass_container.dart';
+import '../../core/widgets/status_badge.dart';
 
-const Color kPrimaryColor = Color(0xFF172B3A);
-const Color kBackgroundColor = Color(0xFFF5F4F0);
-const Color kCardColor = Colors.white;
+const Color kPrimaryColor = FollowMeTokens.primary;
+const Color kBackgroundColor = FollowMeTokens.canvas;
+const Color kCardColor = FollowMeTokens.surface;
 
 const Map<String, Map<String, dynamic>> _cutiConfig = {
   'cuti_tahunan': {
@@ -206,13 +210,18 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       }
 
       if (_resubmitId != null && _existingAbsensi == null) {
-        final absensiProvider = Provider.of<AbsensiProvider>(context, listen: false);
+        final absensiProvider = Provider.of<AbsensiProvider>(
+          context,
+          listen: false,
+        );
         try {
           _existingAbsensi = absensiProvider.myAbsensiList.firstWhere(
             (a) => a.id == _resubmitId,
           );
         } catch (e) {
-          debugPrint('Could not find existing absensi with id $_resubmitId in list: $e. Fetching history...');
+          debugPrint(
+            'Could not find existing absensi with id $_resubmitId in list: $e. Fetching history...',
+          );
           absensiProvider.fetchHistoryAbsensi().then((_) {
             if (mounted) {
               setState(() {
@@ -221,12 +230,16 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                     (a) => a.id == _resubmitId,
                   );
                   if (_existingAbsensi != null) {
-                    _tipePengajuan = (_existingAbsensi!.tipe ?? 'sakit').toLowerCase();
-                    _catatanController.text = _existingAbsensi!.keterangan ?? '';
+                    _tipePengajuan = (_existingAbsensi!.tipe ?? 'sakit')
+                        .toLowerCase();
+                    _catatanController.text =
+                        _existingAbsensi!.keterangan ?? '';
                     if (_tipePengajuan == 'izin') {
-                      _catatanPanggilanController.text = _existingAbsensi!.catatanAdmin ?? '';
+                      _catatanPanggilanController.text =
+                          _existingAbsensi!.catatanAdmin ?? '';
                     } else if (_tipePengajuan == 'cuti') {
-                      _jenisCuti = _existingAbsensi!.catatanAdmin ?? 'cuti_tahunan';
+                      _jenisCuti =
+                          _existingAbsensi!.catatanAdmin ?? 'cuti_tahunan';
                     }
                     _startDate = _parseDateOnly(_existingAbsensi!.checkInAt);
                     _endDate = _parseDateOnly(_existingAbsensi!.checkOutAt);
@@ -244,7 +257,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         _tipePengajuan = (_existingAbsensi!.tipe ?? 'sakit').toLowerCase();
         _catatanController.text = _existingAbsensi!.keterangan ?? '';
         if (_tipePengajuan == 'izin') {
-          _catatanPanggilanController.text = _existingAbsensi!.catatanAdmin ?? '';
+          _catatanPanggilanController.text =
+              _existingAbsensi!.catatanAdmin ?? '';
         } else if (_tipePengajuan == 'cuti') {
           _jenisCuti = _existingAbsensi!.catatanAdmin ?? 'cuti_tahunan';
         }
@@ -599,7 +613,10 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
       _showSnackBar('Bukti medis/dokumen wajib diunggah!', isSuccess: false);
       return;
     }
-    if (isResubmit && _pickedFile == null && (_existingAbsensi?.fileBuktiUrl == null || _existingAbsensi!.fileBuktiUrl!.isEmpty)) {
+    if (isResubmit &&
+        _pickedFile == null &&
+        (_existingAbsensi?.fileBuktiUrl == null ||
+            _existingAbsensi!.fileBuktiUrl!.isEmpty)) {
       setState(() => _isSubmitting = false);
       _showSnackBar('Harap unggah bukti dokumen terbaru!', isSuccess: false);
       return;
@@ -685,7 +702,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
           );
         } else {
           // 🚀 AUTO-RESUBMIT HANDLER: Jika backend mendeteksi pengajuan tertolak dan meminta resubmit
-          if (result['action'] == 'use_resubmit' || result['rejected_id'] != null) {
+          if (result['action'] == 'use_resubmit' ||
+              result['rejected_id'] != null) {
             final rejectedId = int.tryParse(result['rejected_id'].toString());
             if (rejectedId != null) {
               setState(() {
@@ -824,500 +842,580 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
         );
       },
       child: Scaffold(
-        backgroundColor: kBackgroundColor,
-        appBar: AppBar(
-          title: Text(
-            isResubmit ? 'Re-Submit Pengajuan' : 'Form Pengajuan',
-            style: const TextStyle(
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+        backgroundColor: FollowMeDesign.background,
+        body: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [FollowMeDesign.deepSpace, Color(0xFF101B3B)],
+                ),
+              ),
             ),
-          ),
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1F2937),
-          elevation: 0,
-          centerTitle: true,
-        ),
-        body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Kategori Pengajuan',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
+            Positioned(
+              top: -100,
+              left: -60,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: FollowMeDesign.violet.withValues(alpha: 0.26),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildChoiceCard(
-                        'Sakit',
-                        'sakit',
-                        const Color(0xFFEF4444),
-                        Icons.local_hospital_rounded,
-                      ),
-                    ),
-                    if (userType != 'organik') ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildChoiceCard(
-                          'Izin',
-                          'izin',
-                          const Color(0xFF8B5CF6),
-                          Icons.event_note_rounded,
-                        ),
-                      ),
-                    ],
-                    if (userType == 'organik') ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildChoiceCard(
-                          'Cuti',
-                          'cuti',
-                          const Color(0xFF10B981),
-                          Icons.beach_access_rounded,
-                        ),
-                      ),
-                    ],
-                  ],
+              ),
+            ),
+            Positioned(
+              bottom: -90,
+              right: -30,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: FollowMeDesign.cyan.withValues(alpha: 0.22),
                 ),
-                const SizedBox(height: 32),
-
-                const Text(
-                  'Rentang Waktu',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildDatePicker(
-                        label: 'Mulai',
-                        date: _startDate,
-                        onTap: _pickStartDate,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildDatePicker(
-                        label: 'Selesai',
-                        date: _endDate,
-                        onTap: _pickEndDate,
-                      ),
-                    ),
-                  ],
-                ),
-
-                if (_startDate != null && _endDate != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color:
-                          (_tipePengajuan == 'cuti' &&
-                              _jumlahHariDipilih > _maxHariJenisCuti)
-                          ? Colors.red.shade50
-                          : Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+              ),
+            ),
+            SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                     child: Row(
                       children: [
-                        Icon(
-                          (_tipePengajuan == 'cuti' &&
-                                  _jumlahHariDipilih > _maxHariJenisCuti)
-                              ? Icons.error_rounded
-                              : Icons.event_available_rounded,
-                          size: 18,
-                          color:
-                              (_tipePengajuan == 'cuti' &&
-                                  _jumlahHariDipilih > _maxHariJenisCuti)
-                              ? Colors.red
-                              : Colors.blue.shade700,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            (_tipePengajuan == 'cuti' &&
-                                    _jumlahHariDipilih > _maxHariJenisCuti)
-                                ? 'Total $_jumlahHariDipilih Hari (Melebihi Batas!)'
-                                : 'Total: $_jumlahHariDipilih Hari',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color:
-                                  (_tipePengajuan == 'cuti' &&
-                                      _jumlahHariDipilih > _maxHariJenisCuti)
-                                  ? Colors.red.shade700
-                                  : Colors.blue.shade700,
+                        GlassContainer(
+                          padding: const EdgeInsets.all(10),
+                          borderRadius: BorderRadius.circular(14),
+                          color: Colors.white.withValues(alpha: 0.08),
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).maybePop(),
+                            borderRadius: BorderRadius.circular(14),
+                            child: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                              size: 18,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 32),
-
-                if (_tipePengajuan == 'cuti') ...[
-                  const Text(
-                    'Rincian Cuti',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200, width: 2),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _jenisCuti,
-                        icon: const Icon(
-                          Icons.expand_more_rounded,
-                          color: kPrimaryColor,
-                        ),
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Color(0xFF1F2937),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        items: _cutiConfig.entries
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e.key,
-                                child: Text(e.value['label'] as String),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _jenisCuti = val!;
-                            _startDate = null;
-                            _endDate = null;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: _potongJatahTahunan
-                          ? Colors.orange.shade50
-                          : Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _potongJatahTahunan
-                              ? Icons.warning_rounded
-                              : Icons.check_circle_rounded,
-                          color: _potongJatahTahunan
-                              ? Colors.orange.shade600
-                              : Colors.green.shade600,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _potongJatahTahunan
-                                    ? 'Memotong jatah cuti'
-                                    : 'Tidak memotong cuti',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.bold,
-                                  color: _potongJatahTahunan
-                                      ? Colors.orange.shade800
-                                      : Colors.green.shade800,
-                                  fontSize: 13,
+                                isResubmit ? 'Re-Submit Pengajuan' : 'Form Pengajuan',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
                                 ),
                               ),
-                              Text(
-                                _gratisHari > 0
-                                    ? '$_gratisHari hari pertama gratis, sisanya potong cuti tahunan. Maks. $_maxHariJenisCuti hari.'
-                                    : 'Maks. pengajuan $_maxHariJenisCuti hari.',
+                              const Text(
+                                'Ajukan kebutuhan Anda dengan cepat',
                                 style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  color: _potongJatahTahunan
-                                      ? Colors.orange.shade700
-                                      : Colors.green.shade700,
+                                  color: Colors.white70,
                                   fontSize: 12,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              if (_potongJatahTahunan) ...[
-                                const SizedBox(height: 6),
+                            ],
+                          ),
+                        ),
+                        StatusBadge(
+                          label: isResubmit ? 'Revisi' : 'Baru',
+                          variant: StatusBadgeVariant.info,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                      child: Form(
+                        key: _formKey,
+                        child: Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 30,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Kategori Pengajuan',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildChoiceCard(
+                                      'Sakit',
+                                      'sakit',
+                                      const Color(0xFFEF4444),
+                                      Icons.local_hospital_rounded,
+                                    ),
+                                  ),
+                                  if (userType != 'organik') ...[
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildChoiceCard(
+                                        'Izin',
+                                        'izin',
+                                        const Color(0xFF8B5CF6),
+                                        Icons.event_note_rounded,
+                                      ),
+                                    ),
+                                  ],
+                                  if (userType == 'organik') ...[
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildChoiceCard(
+                                        'Cuti',
+                                        'cuti',
+                                        const Color(0xFF10B981),
+                                        Icons.beach_access_rounded,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 32),
+                              const Text(
+                                'Rentang Waktu',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildDatePicker(
+                                      label: 'Mulai',
+                                      date: _startDate,
+                                      onTap: _pickStartDate,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildDatePicker(
+                                      label: 'Selesai',
+                                      date: _endDate,
+                                      onTap: _pickEndDate,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (_startDate != null && _endDate != null) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: (_tipePengajuan == 'cuti' &&
+                                            _jumlahHariDipilih > _maxHariJenisCuti)
+                                        ? Colors.red.shade50
+                                        : Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        (_tipePengajuan == 'cuti' &&
+                                                _jumlahHariDipilih > _maxHariJenisCuti)
+                                            ? Icons.error_rounded
+                                            : Icons.event_available_rounded,
+                                        size: 18,
+                                        color: (_tipePengajuan == 'cuti' &&
+                                                _jumlahHariDipilih > _maxHariJenisCuti)
+                                            ? Colors.red
+                                            : Colors.blue.shade700,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          (_tipePengajuan == 'cuti' &&
+                                                  _jumlahHariDipilih > _maxHariJenisCuti)
+                                              ? 'Total $_jumlahHariDipilih Hari (Melebihi Batas!)'
+                                              : 'Total: $_jumlahHariDipilih Hari',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            color: (_tipePengajuan == 'cuti' &&
+                                                    _jumlahHariDipilih > _maxHariJenisCuti)
+                                                ? Colors.red.shade700
+                                                : Colors.blue.shade700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 32),
+                              if (_tipePengajuan == 'cuti') ...[
+                                const Text(
+                                  'Rincian Cuti',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
+                                    horizontal: 16,
+                                    vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange.shade200,
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: Colors.grey.shade200, width: 2),
                                   ),
-                                  child: Text(
-                                    'Sisa Cuti: $sisaCuti Hari',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                      color: Colors.orange.shade900,
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      isExpanded: true,
+                                      value: _jenisCuti,
+                                      icon: const Icon(
+                                        Icons.expand_more_rounded,
+                                        color: kPrimaryColor,
+                                      ),
+                                      style: const TextStyle(
+                                        fontFamily: 'Poppins',
+                                        color: Color(0xFF1F2937),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      items: _cutiConfig.entries
+                                          .map(
+                                            (e) => DropdownMenuItem(
+                                              value: e.key,
+                                              child: Text(e.value['label'] as String),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _jenisCuti = val!;
+                                          _startDate = null;
+                                          _endDate = null;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: _potongJatahTahunan
+                                        ? Colors.orange.shade50
+                                        : Colors.green.shade50,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _potongJatahTahunan
+                                            ? Icons.warning_rounded
+                                            : Icons.check_circle_rounded,
+                                        color: _potongJatahTahunan
+                                            ? Colors.orange.shade600
+                                            : Colors.green.shade600,
+                                        size: 28,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _potongJatahTahunan
+                                                  ? 'Memotong jatah cuti'
+                                                  : 'Tidak memotong cuti',
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.bold,
+                                                color: _potongJatahTahunan
+                                                    ? Colors.orange.shade800
+                                                    : Colors.green.shade800,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                            Text(
+                                              _gratisHari > 0
+                                                  ? '$_gratisHari hari pertama gratis, sisanya potong cuti tahunan. Maks. $_maxHariJenisCuti hari.'
+                                                  : 'Maks. pengajuan $_maxHariJenisCuti hari.',
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                color: _potongJatahTahunan
+                                                    ? Colors.orange.shade700
+                                                    : Colors.green.shade700,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            if (_potongJatahTahunan) ...[
+                                              const SizedBox(height: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.orange.shade200,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: Text(
+                                                  'Sisa Cuti: $sisaCuti Hari',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Poppins',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 11,
+                                                    color: Colors.orange.shade900,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                              ],
+                              const Text(
+                                'Keterangan',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildModernTextField(
+                                controller: _catatanController,
+                                hintText: 'Tuliskan rincian alasan dengan jelas...',
+                                icon: Icons.notes_rounded,
+                                maxLines: 4,
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? 'Detail pengajuan tidak boleh kosong!'
+                                    : null,
+                              ),
+                              if (_tipePengajuan == 'izin') ...[
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Pihak Bersangkutan',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                _buildModernTextField(
+                                  controller: _catatanPanggilanController,
+                                  hintText: 'Contoh: Panggilan Sekolah / Dinas terkait',
+                                  icon: Icons.school_rounded,
+                                  validator: (v) =>
+                                      (_tipePengajuan == 'izin' && (v == null || v.isEmpty))
+                                          ? 'Wajib diisi untuk Izin'
+                                          : null,
+                                ),
+                              ],
+                              const SizedBox(height: 32),
+                              const Text(
+                                'Bukti Pendukung',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: _showPickerOptions,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 24,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(
+                                      color: _pickedFile != null
+                                          ? kPrimaryColor
+                                          : Colors.grey.shade300,
+                                      width: 2,
+                                      style: BorderStyle.solid,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        _pickedFile != null
+                                            ? Icons.check_circle_rounded
+                                            : Icons.cloud_upload_rounded,
+                                        size: 40,
+                                        color: _pickedFile != null
+                                            ? kPrimaryColor
+                                            : Colors.grey.shade400,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        _pickedFile != null
+                                            ? 'Dokumen Terlampir'
+                                            : 'Tekan untuk mengunggah Surat/Foto',
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontWeight: _pickedFile != null
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: _pickedFile != null
+                                              ? kPrimaryColor
+                                              : Colors.grey.shade500,
+                                        ),
+                                      ),
+                                      if (_pickedFile != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Text(
+                                            _pickedFile!.path.split('/').last,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (isResubmit &&
+                                  existing != null &&
+                                  existing.fileBuktiUrl != null &&
+                                  _pickedFile == null) ...[
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Dokumen Sebelumnya:',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  height: 140,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: _AuthenticatedImage(
+                                      imageUrl: existing.fileBuktiUrl!,
                                     ),
                                   ),
                                 ),
                               ],
+                              if (_pickedFile != null) ...[
+                                const SizedBox(height: 16),
+                                Container(
+                                  height: 180,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: kPrimaryColor.withValues(alpha: 0.3),
+                                      width: 3,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.file(_pickedFile!, fit: BoxFit.cover),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 40),
+                              Container(
+                                width: double.infinity,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: kPrimaryColor.withValues(alpha: 0.4),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: _isSubmitting ? null : _submitForm,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kPrimaryColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: _isSubmitting
+                                      ? const _ModernLoading()
+                                      : Text(
+                                          isResubmit ? 'Kirim Ulang' : 'Kirim Pengajuan',
+                                          style: const TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-
-                const Text(
-                  'Keterangan',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildModernTextField(
-                  controller: _catatanController,
-                  hintText: 'Tuliskan rincian alasan dengan jelas...',
-                  icon: Icons.notes_rounded,
-                  maxLines: 4,
-                  validator: (v) => (v == null || v.isEmpty)
-                      ? 'Detail pengajuan tidak boleh kosong!'
-                      : null,
-                ),
-
-                if (_tipePengajuan == 'izin') ...[
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Pihak Bersangkutan',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildModernTextField(
-                    controller: _catatanPanggilanController,
-                    hintText: 'Contoh: Panggilan Sekolah / Dinas terkait',
-                    icon: Icons.school_rounded,
-                    validator: (v) =>
-                        (_tipePengajuan == 'izin' && (v == null || v.isEmpty))
-                        ? 'Wajib diisi untuk Izin'
-                        : null,
-                  ),
-                ],
-                const SizedBox(height: 32),
-
-                const Text(
-                  'Bukti Pendukung',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: _showPickerOptions,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 24,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: _pickedFile != null
-                            ? kPrimaryColor
-                            : Colors.grey.shade300,
-                        width: 2,
-                        style: BorderStyle.solid,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          _pickedFile != null
-                              ? Icons.check_circle_rounded
-                              : Icons.cloud_upload_rounded,
-                          size: 40,
-                          color: _pickedFile != null
-                              ? kPrimaryColor
-                              : Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _pickedFile != null
-                              ? 'Dokumen Terlampir'
-                              : 'Tekan untuk mengunggah Surat/Foto',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontWeight: _pickedFile != null
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: _pickedFile != null
-                                ? kPrimaryColor
-                                : Colors.grey.shade500,
-                          ),
-                        ),
-                        if (_pickedFile != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              _pickedFile!.path.split('/').last,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                if (isResubmit &&
-                    existing != null &&
-                    existing.fileBuktiUrl != null &&
-                    _pickedFile == null) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Dokumen Sebelumnya:',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 140,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: _AuthenticatedImage(
-                        imageUrl: existing.fileBuktiUrl!,
                       ),
                     ),
                   ),
                 ],
-
-                if (_pickedFile != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: kPrimaryColor.withValues(alpha: 0.3),
-                        width: 3,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(_pickedFile!, fit: BoxFit.cover),
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 40),
-
-                Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: kPrimaryColor.withValues(alpha: 0.4),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kPrimaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isSubmitting
-                        ? const _ModernLoading()
-                        : Text(
-                            isResubmit ? 'Kirim Ulang' : 'Kirim Pengajuan',
-                            style: const TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -1496,7 +1594,7 @@ class _AuthenticatedImage extends StatelessWidget {
               strokeWidth: 2,
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
+                        loadingProgress.expectedTotalBytes!
                   : null,
             ),
           ),
@@ -1509,11 +1607,19 @@ class _AuthenticatedImage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.broken_image_rounded, color: Colors.grey, size: 36),
+              const Icon(
+                Icons.broken_image_rounded,
+                color: Colors.grey,
+                size: 36,
+              ),
               const SizedBox(height: 6),
               Text(
                 'Gagal memuat dokumen',
-                style: TextStyle(fontFamily: 'Poppins', fontSize: 11, color: Colors.grey.shade600),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                ),
               ),
             ],
           ),

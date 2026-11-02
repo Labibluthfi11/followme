@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import '../api/api.service.dart';
 import '../models/notification_model.dart';
 import '../screens/home/absensi_pulang_screen.dart'; // Import screen lembur
+import '../core/constants/app_theme.dart';
+import '../core/constants/demo_preview.dart';
+
 // <<< AKHIR Penyesuaian path import >>>
 
 class NotificationsPage extends StatefulWidget {
@@ -23,25 +26,28 @@ class _NotificationsPageState extends State<NotificationsPage>
   bool _isRefreshing = false;
 
   // Warna-warna utama untuk tema modern premium
-  static const Color _primaryColor = Color(0xFF4F46E5); // Deep Indigo
-  static const Color _backgroundColor = Color(0xFFF3F4F6);
+  static const Color _primaryColor = FollowMeTokens.primary;
+  static const Color _backgroundColor = FollowMeTokens.canvas;
   static const Color _shadowLight = Color(0xFFFFFFFF);
   static const Color _shadowDark = Color(0xFFD9DCE2);
 
   @override
   void initState() {
     super.initState();
-    _notificationsFuture = widget.apiService.fetchNotifications().then((notifs) {
-      for (var notif in notifs) {
-        if (!notif.isRead) {
-          widget.apiService.markNotificationAsRead(notif.id);
-        }
-      }
-      return notifs;
-    });
+    _notificationsFuture = DemoPreview.enabled
+        ? Future<List<NotificationModel>>.value(const [])
+        : widget.apiService.fetchNotifications().then((notifs) {
+            for (var notif in notifs) {
+              if (!notif.isRead) {
+                widget.apiService.markNotificationAsRead(notif.id);
+              }
+            }
+            return notifs;
+          });
   }
 
   Future<void> _refreshNotifications() async {
+    if (DemoPreview.enabled) return;
     setState(() {
       _isRefreshing = true;
       _notificationsFuture = widget.apiService.fetchNotifications();
@@ -61,24 +67,23 @@ class _NotificationsPageState extends State<NotificationsPage>
     debugPrint('   - Target ID: $targetId');
     debugPrint('   - Target Page: ${notif.targetPage}');
 
-  
-if (type.contains('scheduled_lembur')) {
-  debugPrint('✅ Navigate to: Jadwal Lembur Screen');
-  Navigator.pushNamed(context, '/jadwal_lembur');
-  return;
-}
+    if (type.contains('scheduled_lembur')) {
+      debugPrint('✅ Navigate to: Jadwal Lembur Screen');
+      Navigator.pushNamed(context, '/jadwal_lembur');
+      return;
+    }
 
-// Reminder lembur hari ini → ke absen pulang lembur
-if (type.contains('lembur_reminder') || type == 'lembur') {
-  debugPrint('✅ Navigate to: Absensi Pulang Lembur Screen (lembur: true)');
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const AbsensiPulangScreen(lembur: true),
-    ),
-  );
-  return;
-}
+    // Reminder lembur hari ini → ke absen pulang lembur
+    if (type.contains('lembur_reminder') || type == 'lembur') {
+      debugPrint('✅ Navigate to: Absensi Pulang Lembur Screen (lembur: true)');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AbsensiPulangScreen(lembur: true),
+        ),
+      );
+      return;
+    }
 
     // Untuk tipe lainnya, gunakan named route
     String route = '/home'; // default fallback
@@ -97,11 +102,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
 
     // Gunakan try-catch untuk handle route yang tidak terdaftar
     try {
-      Navigator.pushNamed(
-        context,
-        route,
-        arguments: targetId,
-      );
+      Navigator.pushNamed(context, route, arguments: targetId);
     } catch (e) {
       debugPrint('⚠️ Route not found: $route - Fallback to /home');
       Navigator.pushReplacementNamed(context, '/home');
@@ -112,7 +113,7 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
     try {
       // Optimistic UI: navigasi dulu
       _navigateToTargetPage(notif);
-      
+
       // Tandai sebagai dibaca di background
       final result = await widget.apiService.markNotificationAsRead(notif.id);
       if (result['success']) {
@@ -178,9 +179,29 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
     } else if (title.contains('promo') || title.contains('diskon')) {
       return [const Color(0xFFF39C12), const Color(0xFFE67E22)];
     } else if (title.contains('lembur')) {
-      return [const Color(0xFF9B59B6), const Color(0xFF8E44AD)];
-    } else if (title.contains('sakit') || title.contains('cuti') || title.contains('izin')) {
-      return [const Color(0xFFE74C3C), const Color(0xFFC0392B)];
+      return [
+        FollowMeTokens.overtime,
+        FollowMeTokens.overtime.withValues(alpha: 0.8),
+      ];
+    } else if (title.contains('telat') || title.contains('terlambat')) {
+      return [FollowMeTokens.late, FollowMeTokens.late.withValues(alpha: 0.8)];
+    } else if (title.contains('sakit') ||
+        title.contains('cuti') ||
+        title.contains('izin')) {
+      return [
+        FollowMeTokens.leave,
+        FollowMeTokens.leave.withValues(alpha: 0.8),
+      ];
+    } else if (title.contains('alpa') || title.contains('tanpa keterangan')) {
+      return [
+        FollowMeTokens.absent,
+        FollowMeTokens.absent.withValues(alpha: 0.8),
+      ];
+    } else if (title.contains('hadir') || title.contains('absensi')) {
+      return [
+        FollowMeTokens.present,
+        FollowMeTokens.present.withValues(alpha: 0.8),
+      ];
     }
     return [const Color(0xFF95A5A6), const Color(0xFF7F8C8D)];
   }
@@ -222,13 +243,11 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    _primaryColor,
-                    _primaryColor.withValues(alpha: 0.8),
-                  ],
+                  colors: [_primaryColor, _primaryColor.withValues(alpha: 0.8)],
                 ),
                 borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(20)),
+                  bottom: Radius.circular(20),
+                ),
               ),
               child: const FlexibleSpaceBar(
                 centerTitle: false,
@@ -254,12 +273,16 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
-                      : const Icon(Icons.refresh_rounded,
-                          color: Colors.white, size: 28),
+                      : const Icon(
+                          Icons.refresh_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                   onPressed: _isRefreshing ? null : _refreshNotifications,
                 ),
               ),
@@ -276,8 +299,9 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                   return const SliverFillRemaining(
                     child: Center(
                       child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(_primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _primaryColor,
+                        ),
                       ),
                     ),
                   );
@@ -289,13 +313,18 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.error_outline,
-                              size: 80, color: Colors.red.shade300),
+                          Icon(
+                            Icons.error_outline,
+                            size: 80,
+                            color: Colors.red.shade300,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             '❌ Gagal memuat notifikasi',
                             style: TextStyle(
-                                fontSize: 18, color: Colors.grey[700]),
+                              fontSize: 18,
+                              color: Colors.grey[700],
+                            ),
                           ),
                           const SizedBox(height: 8),
                           TextButton.icon(
@@ -317,13 +346,18 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.inbox_rounded,
-                              size: 80, color: Colors.grey[300]),
+                          Icon(
+                            Icons.inbox_rounded,
+                            size: 80,
+                            color: Colors.grey[300],
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'Kotak masuk masih kosong! ✨',
                             style: TextStyle(
-                                fontSize: 18, color: Colors.grey[600]),
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ],
                       ),
@@ -332,165 +366,167 @@ if (type.contains('lembur_reminder') || type == 'lembur') {
                 }
 
                 return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final notif = notifications[index];
-                      final gradientColors = _getNotificationGradient(notif);
-                      final icon = _getNotificationIcon(notif);
-                      final isRead = notif.isRead;
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final notif = notifications[index];
+                    final gradientColors = _getNotificationGradient(notif);
+                    final icon = _getNotificationIcon(notif);
+                    final isRead = notif.isRead;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 15),
-                        child: InkWell(
-                          onTap: () => _handleNotificationTap(notif),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isRead ? _backgroundColor : Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _shadowDark
-                                      .withValues(alpha: isRead ? 0.8 : 0.5),
-                                  offset: const Offset(4, 4),
-                                  blurRadius: 10,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: InkWell(
+                        onTap: () => _handleNotificationTap(notif),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isRead ? _backgroundColor : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _shadowDark.withValues(
+                                  alpha: isRead ? 0.8 : 0.5,
                                 ),
-                                BoxShadow(
-                                  color: _shadowLight
-                                      .withValues(alpha: isRead ? 0.5 : 1.0),
-                                  offset: const Offset(-4, -4),
-                                  blurRadius: 10,
+                                offset: const Offset(4, 4),
+                                blurRadius: 10,
+                              ),
+                              BoxShadow(
+                                color: _shadowLight.withValues(
+                                  alpha: isRead ? 0.5 : 1.0,
                                 ),
-                              ],
-                              border: isRead
-                                  ? null
-                                  : Border.all(
-                                      color:
-                                          gradientColors[0].withValues(alpha: 0.2),
-                                      width: 1,
+                                offset: const Offset(-4, -4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                            border: isRead
+                                ? null
+                                : Border.all(
+                                    color: gradientColors[0].withValues(
+                                      alpha: 0.2,
                                     ),
-                            ),
-                            child: Stack(
-                              children: [
-                                // Garis indikator belum dibaca
-                                if (!isRead)
-                                  Positioned(
-                                    left: 0,
-                                    top: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      width: 4,
-                                      decoration: BoxDecoration(
-                                        color: gradientColors[0],
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          bottomLeft: Radius.circular(20),
-                                        ),
+                                    width: 1,
+                                  ),
+                          ),
+                          child: Stack(
+                            children: [
+                              // Garis indikator belum dibaca
+                              if (!isRead)
+                                Positioned(
+                                  left: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 4,
+                                    decoration: BoxDecoration(
+                                      color: gradientColors[0],
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(20),
+                                        bottomLeft: Radius.circular(20),
                                       ),
                                     ),
                                   ),
-                                Padding(
-                                  padding: const EdgeInsets.all(18),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Icon dengan Gradient
-                                      Container(
-                                        width: 50,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: isRead
-                                                ? [
-                                                    Colors.grey.shade400,
-                                                    Colors.grey.shade300,
-                                                  ]
-                                                : gradientColors,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                          boxShadow: isRead
-                                              ? null
-                                              : [
-                                                  BoxShadow(
-                                                    color: gradientColors[1]
-                                                        .withValues(alpha: 0.4),
-                                                    blurRadius: 10,
-                                                    offset: const Offset(0, 5),
-                                                  ),
-                                                ],
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.all(18),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Icon dengan Gradient
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: isRead
+                                              ? [
+                                                  Colors.grey.shade400,
+                                                  Colors.grey.shade300,
+                                                ]
+                                              : gradientColors,
                                         ),
-                                        child: Icon(icon,
-                                            color: Colors.white, size: 26),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              notif.title,
-                                              style: TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: isRead
-                                                    ? FontWeight.w600
-                                                    : FontWeight.w800,
-                                                color: isRead
-                                                    ? Colors.grey[700]
-                                                    : Colors.grey[900],
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              notif.message,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: isRead
-                                                    ? Colors.grey[500]
-                                                    : Colors.grey[700],
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons
-                                                      .access_time_filled_rounded,
-                                                  size: 14,
-                                                  color: Colors.grey[400],
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  _formatDateTime(
-                                                      notif.createdAt),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey[500],
-                                                    fontWeight: isRead
-                                                        ? FontWeight.normal
-                                                        : FontWeight.w600,
-                                                  ),
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: isRead
+                                            ? null
+                                            : [
+                                                BoxShadow(
+                                                  color: gradientColors[1]
+                                                      .withValues(alpha: 0.4),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 5),
                                                 ),
                                               ],
-                                            ),
-                                          ],
-                                        ),
                                       ),
-                                    ],
-                                  ),
+                                      child: Icon(
+                                        icon,
+                                        color: Colors.white,
+                                        size: 26,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            notif.title,
+                                            style: TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: isRead
+                                                  ? FontWeight.w600
+                                                  : FontWeight.w800,
+                                              color: isRead
+                                                  ? Colors.grey[700]
+                                                  : Colors.grey[900],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            notif.message,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: isRead
+                                                  ? Colors.grey[500]
+                                                  : Colors.grey[700],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons
+                                                    .access_time_filled_rounded,
+                                                size: 14,
+                                                color: Colors.grey[400],
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                _formatDateTime(
+                                                  notif.createdAt,
+                                                ),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[500],
+                                                  fontWeight: isRead
+                                                      ? FontWeight.normal
+                                                      : FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                    childCount: notifications.length,
-                  ),
+                      ),
+                    );
+                  }, childCount: notifications.length),
                 );
               },
             ),
