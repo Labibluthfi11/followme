@@ -12,7 +12,7 @@
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:usesCleartextTraffic="true"
-        android:label="absensi_app"
+        android:label="PT.Followme"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

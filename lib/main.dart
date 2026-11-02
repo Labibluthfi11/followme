@@ -105,14 +105,14 @@ class MyApp extends StatelessWidget {
     final themeController = context.watch<FollowMeThemeController>();
 
     return MaterialApp(
-      title: 'Absensi App',
+      title: 'PT.Followme',
       debugShowCheckedModeBanner: false,
       navigatorObservers: kIsWeb ? [] : [SentryNavigatorObserver()],
       theme: buildAppTheme(),
       darkTheme: buildAppDarkTheme(),
       themeMode: themeController.mode,
       themeAnimationDuration: const Duration(milliseconds: 250),
-      home: const SplashScreen(title: 'Absensi App'),
+      home: const SplashScreen(title: 'PT.Followme'),
 
       // 🧭 Semua route lengkap
       routes: {
