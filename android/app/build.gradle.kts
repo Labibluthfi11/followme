@@ -1,8 +1,27 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
+}
+
+val releaseSigningPropertiesFile = rootProject.file("key.properties")
+val releaseSigningProperties = Properties().apply {
+    if (releaseSigningPropertiesFile.exists()) {
+        releaseSigningPropertiesFile.inputStream().use { load(it) }
+    }
+}
+val requiredSigningProperties = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+val releaseSigningConfigured = requiredSigningProperties.all {
+    !releaseSigningProperties.getProperty(it).isNullOrBlank()
+}
+
+if (releaseSigningPropertiesFile.exists() && !releaseSigningConfigured) {
+    throw GradleException(
+        "android/key.properties must define storeFile, storePassword, keyAlias, and keyPassword."
+    )
 }
 
 android {
@@ -32,15 +51,46 @@ android {
         versionName = flutter.versionName
     }
 
+    if (releaseSigningConfigured) {
+        signingConfigs {
+            create("release") {
+                keyAlias = releaseSigningProperties.getProperty("keyAlias")
+                keyPassword = releaseSigningProperties.getProperty("keyPassword")
+                storeFile = rootProject.file(releaseSigningProperties.getProperty("storeFile"))
+                storePassword = releaseSigningProperties.getProperty("storePassword")
+            }
+        }
+    } else {
+        logger.warn(
+            "Release signing is not configured. Add android/key.properties before creating a release bundle."
+        )
+    }
+
     buildTypes {
         release {
             // Aktifkan R8 untuk proteksi kode (obfuscation) & ukuran APK lebih kecil
             isMinifyEnabled = true 
             isShrinkResources = true
             
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (releaseSigningConfigured) {
+                signingConfigs.getByName("release")
+            } else {
+                null
+            }
             
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+}
+
+tasks.configureEach {
+    if (name == "bundleRelease" || name == "assembleRelease") {
+        doFirst {
+            if (!releaseSigningConfigured) {
+                throw GradleException(
+                    "Release signing is not configured. Create android/key.properties using the documented release keystore settings."
+                )
+            }
         }
     }
 }

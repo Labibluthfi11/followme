@@ -2,6 +2,29 @@
 
 A new Flutter project.
 
+## Android release
+
+Release builds require a dedicated upload keystore. Do not use the debug keystore
+for Play Store releases.
+
+1. Create an upload keystore and store it outside version control.
+2. Create `android/key.properties` with these entries:
+
+   ```properties
+   storePassword=<keystore-password>
+   keyPassword=<key-password>
+   keyAlias=<key-alias>
+   storeFile=<path-to-keystore>
+   ```
+
+   `storeFile` can be an absolute path or a path relative to the `android/`
+   directory. `android/key.properties`, `*.jks`, and `*.keystore` are ignored by
+   Git.
+3. Build the signed bundle with `flutter build appbundle --release`.
+
+Back up the keystore and passwords securely. Losing them can prevent updates to
+an app already published with that signing key.
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

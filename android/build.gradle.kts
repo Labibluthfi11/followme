@@ -5,6 +5,17 @@ buildscript {
     }
     dependencies {
         classpath("com.google.gms:google-services:4.4.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
+    }
+}
+
+subprojects {
+    if (name == "sentry_flutter") {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            compilerOptions {
+                languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_8)
+            }
+        }
     }
 }
 
