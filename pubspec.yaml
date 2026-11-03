@@ -68,7 +68,7 @@ flutter:
 flutter_launcher_icons:
   android: true                 # Hasilkan ikon untuk Android
   ios: true                     # Hasilkan ikon untuk iOS (jika kamu nanti juga develop iOS)
-  image_path: "assets/images/amb2.jpg" # PATH MENUJU GAMBAR LOGO KAMU
+  image_path: "assets/images/followme.jpeg"
   min_sdk_android: 21           # Sesuaikan dengan minSdkVersion kamu (biasanya 21 atau lebih tinggi)
                                 # Kamu bisa cek di android/app/build.gradle.kts, di defaultConfig.minSdk
                                 # Biasanya minSdk ini diambil dari flutter.minSdkVersion
