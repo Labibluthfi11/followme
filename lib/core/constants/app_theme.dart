@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
@@ -31,28 +30,6 @@ abstract final class FollowMeTokens {
   static const radiusSmall = AppRadius.small;
   static const radiusMedium = AppRadius.large;
   static const radiusLarge = AppRadius.extraLarge;
-}
-
-class FollowMeThemeController extends ChangeNotifier {
-  ThemeMode _mode = ThemeMode.light;
-
-  ThemeMode get mode => _mode;
-
-  Future<void> load() async {
-    final preferences = await SharedPreferences.getInstance();
-    final savedMode = preferences.getString('followme_theme_mode');
-    if (savedMode == ThemeMode.dark.name) {
-      _mode = ThemeMode.dark;
-      notifyListeners();
-    }
-  }
-
-  Future<void> setDarkMode(bool enabled) async {
-    _mode = enabled ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString('followme_theme_mode', _mode.name);
-  }
 }
 
 const Color appPrimaryColor = AppColors.primary;
@@ -95,41 +72,6 @@ ThemeData buildAppTheme() {
     textColor: AppColors.ink,
     mutedColor: AppColors.mutedInk,
     borderColor: AppColors.border,
-  );
-}
-
-ThemeData buildAppDarkTheme() {
-  const colorScheme = ColorScheme(
-    brightness: Brightness.dark,
-    primary: Color(0xFF82C9C1),
-    onPrimary: Color(0xFF073B38),
-    primaryContainer: Color(0xFF124F4D),
-    onPrimaryContainer: Color(0xFFD1F0EC),
-    secondary: AppColors.accent,
-    onSecondary: AppColors.ink,
-    secondaryContainer: Color(0xFF39451A),
-    onSecondaryContainer: Color(0xFFEDF5C8),
-    error: Color(0xFFFF7B82),
-    onError: Color(0xFF5F1018),
-    surface: AppColors.darkSurface,
-    onSurface: AppColors.darkInk,
-    surfaceContainerHighest: AppColors.darkCanvas,
-    onSurfaceVariant: AppColors.darkMutedInk,
-    outline: AppColors.darkBorder,
-    outlineVariant: AppColors.darkBorder,
-    shadow: Colors.black,
-    scrim: Colors.black,
-    inverseSurface: AppColors.darkInk,
-    onInverseSurface: AppColors.darkCanvas,
-    inversePrimary: AppColors.primary,
-  );
-
-  return _buildTheme(
-    colorScheme,
-    canvas: AppColors.darkCanvas,
-    textColor: AppColors.darkInk,
-    mutedColor: AppColors.darkMutedInk,
-    borderColor: AppColors.darkBorder,
   );
 }
 

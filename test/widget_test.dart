@@ -13,13 +13,9 @@ import 'package:absensi_app/core/constants/app_theme.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test(
-    'FollowMe defines light and dark themes with attendance status colors',
-    () {
-      expect(buildAppTheme().brightness, Brightness.light);
-      expect(buildAppDarkTheme().brightness, Brightness.dark);
-      expect(FollowMeTokens.present, isNot(FollowMeTokens.absent));
-      expect(FollowMeTokens.leave, isNot(FollowMeTokens.overtime));
-    },
-  );
+  test('FollowMe defines its light theme with attendance status colors', () {
+    expect(buildAppTheme().brightness, Brightness.light);
+    expect(FollowMeTokens.present, isNot(FollowMeTokens.absent));
+    expect(FollowMeTokens.leave, isNot(FollowMeTokens.overtime));
+  });
 }

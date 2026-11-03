@@ -14,7 +14,13 @@ const Color kErrorColor = Color(0xFFEF4444);
 
 class CustomCameraScreen extends StatefulWidget {
   final bool useBackCamera;
-  const CustomCameraScreen({super.key, this.useBackCamera = false});
+  final bool verifyFace;
+
+  const CustomCameraScreen({
+    super.key,
+    this.useBackCamera = false,
+    this.verifyFace = true,
+  });
 
   @override
   State<CustomCameraScreen> createState() => _CustomCameraScreenState();
@@ -213,18 +219,20 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         }
       }
 
-      final faceResult = await FacePresenceService.detectFace(finalFile);
-      if (faceResult != FacePresenceResult.singleFace) {
-        if (mounted) {
-          setState(() => _isTakingPicture = false);
-          _showSnackbar(
-            faceResult == FacePresenceResult.noFace
-                ? 'Wajah tidak terdeteksi. Ambil selfie dengan wajah terlihat jelas.'
-                : 'Terdeteksi lebih dari satu wajah. Pastikan hanya wajah kamu yang terlihat.',
-            isError: true,
-          );
+      if (widget.verifyFace) {
+        final faceResult = await FacePresenceService.detectFace(finalFile);
+        if (faceResult != FacePresenceResult.singleFace) {
+          if (mounted) {
+            setState(() => _isTakingPicture = false);
+            _showSnackbar(
+              faceResult == FacePresenceResult.noFace
+                  ? 'Wajah tidak terdeteksi. Ambil selfie dengan wajah terlihat jelas.'
+                  : 'Terdeteksi lebih dari satu wajah. Pastikan hanya wajah kamu yang terlihat.',
+              isError: true,
+            );
+          }
+          return;
         }
-        return;
       }
 
       if (mounted) {
@@ -295,7 +303,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             children: [
               _buildTopBar(),
               const Spacer(),
-              _buildFaceGuide(),
+              _buildCaptureGuide(),
               const Spacer(),
               _buildBottomControls(),
               const SizedBox(height: 40),
@@ -395,7 +403,33 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     );
   }
 
-  Widget _buildFaceGuide() {
+  Widget _buildCaptureGuide() {
+    if (!widget.verifyFace) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+            ),
+            child: const Text(
+              'Ambil foto bukti dengan jelas',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -407,17 +441,18 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Container(
-                    width: 240,
-                    height: 240,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        width: 2,
+                  if (widget.verifyFace)
+                    Container(
+                      width: 240,
+                      height: 240,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 2,
+                        ),
                       ),
                     ),
-                  ),
                   SizedBox(
                     width: 280,
                     height: 280,
@@ -580,39 +615,42 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF237A4B).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.verified_rounded,
-                            color: Colors.white,
-                            size: 17,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            'Wajah terdeteksi',
-                            style: TextStyle(
+                    if (widget.verifyFace)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF237A4B).withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.verified_rounded,
                               color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              size: 17,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 6),
+                            Text(
+                              'Wajah terdeteksi',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Pastikan wajah terlihat jelas dan tidak blur',
-                      style: TextStyle(
+                    if (widget.verifyFace) const SizedBox(height: 12),
+                    Text(
+                      widget.verifyFace
+                          ? 'Pastikan wajah terlihat jelas dan tidak blur'
+                          : 'Pastikan foto bukti terlihat jelas dan tidak blur',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
