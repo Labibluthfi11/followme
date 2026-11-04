@@ -25,6 +25,16 @@ for Play Store releases.
 Back up the keystore and passwords securely. Losing them can prevent updates to
 an app already published with that signing key.
 
+The app's default API endpoint is the production HTTPS service. Release builds
+require a valid TLS certificate; do not enable certificate bypasses or use a
+local `localhost` API URL for employee devices.
+
+On Windows, `build_apk.bat` builds a signed, obfuscated APK for direct
+distribution. It requires Flutter to be available on `PATH`. For Play Store
+uploads, use the app bundle command above. Ensure `storeFile` in
+`android/key.properties` points to a keystore path valid on the machine doing
+the build.
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

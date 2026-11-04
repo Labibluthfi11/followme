@@ -2,7 +2,6 @@
 
 import 'package:universal_io/io.dart';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,15 +30,6 @@ class ApiService {
           headers: {'Accept': 'application/json'},
         ),
       ) {
-    _dio.httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        final client = HttpClient();
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return client;
-      },
-    );
-
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
