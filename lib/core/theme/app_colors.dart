@@ -18,12 +18,6 @@ abstract final class AppColors {
   static const error = Color(0xFFB42332);
   static const overtime = Color(0xFF6941A5);
 
-  static const darkCanvas = Color(0xFF111B20);
-  static const darkSurface = Color(0xFF1D2B31);
-  static const darkInk = Color(0xFFF2F6F4);
-  static const darkMutedInk = Color(0xFFB4C2C0);
-  static const darkBorder = Color(0xFF34454B);
-
   static const brandGradient = LinearGradient(
     colors: [primaryDark, primary],
     begin: Alignment.topLeft,

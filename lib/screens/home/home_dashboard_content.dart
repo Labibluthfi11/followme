@@ -12,17 +12,14 @@ import '../../models/absensi_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/absensi_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/izin_keluar_provider.dart';
 import '../../services/update_service.dart';
 import 'absensi_lembur_screen.dart';
 import 'absensi_masuk_screen.dart';
 import 'absensi_pulang_screen.dart';
 import 'absensi_sakit_form_screen.dart';
 import 'absensi_telat_form_screen.dart';
+import 'early_leave_request_screen.dart';
 import 'attendance_history_screen.dart';
-import 'end_izin_screen.dart';
-import 'jadwal_lembur_screen.dart';
-import 'start_izin_screen.dart';
 
 const _ink = FollowMeTokens.ink;
 const _mutedInk = FollowMeTokens.mutedInk;
@@ -37,9 +34,29 @@ class HomeDashboardContent extends StatefulWidget {
 }
 
 class _HomeDashboardContentState extends State<HomeDashboardContent> {
+  static const _monthNames = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+
   late String _timeString;
   late final Timer _timer;
   late Future<int> _unreadCountFuture;
+  int _selectedStatsMonth = DateTime.now().month;
+  final int _selectedStatsYear = DateTime.now().year;
+  List<Absensi> _monthlyAttendanceRecords = [];
+  bool _isLoadingMonthlyStats = false;
+  String? _monthlyStatsError;
 
   @override
   void initState() {
@@ -55,6 +72,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
       if (mounted) {
         if (!DemoPreview.enabled) {
           _refreshProfile();
+          _refreshMonthlyStats();
           UpdateService.checkForUpdate(context);
         }
       }
@@ -69,10 +87,39 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
 
   Future<void> _refreshData() async {
     if (DemoPreview.enabled) return;
+    final provider = context.read<AbsensiProvider>();
     await Future.wait([
       _refreshProfile(),
-      context.read<AbsensiProvider>().refreshAbsensi(),
+      provider.refreshAbsensi(),
+      _refreshMonthlyStats(),
     ]);
+  }
+
+  Future<void> _refreshMonthlyStats() async {
+    if (DemoPreview.enabled) return;
+    final month = _selectedStatsMonth;
+    setState(() {
+      _isLoadingMonthlyStats = true;
+      _monthlyStatsError = null;
+    });
+
+    try {
+      final records = await context.read<ApiService>().getHistoryAbsensi(
+        month: month,
+        year: _selectedStatsYear,
+      );
+      if (!mounted || month != _selectedStatsMonth) return;
+      setState(() => _monthlyAttendanceRecords = records);
+    } catch (error) {
+      debugPrint('Gagal memuat rekap absensi bulanan: $error');
+      if (mounted && month == _selectedStatsMonth) {
+        setState(() => _monthlyStatsError = 'Gagal memuat rekap absensi.');
+      }
+    } finally {
+      if (mounted && month == _selectedStatsMonth) {
+        setState(() => _isLoadingMonthlyStats = false);
+      }
+    }
   }
 
   Future<void> _refreshProfile() async {
@@ -124,52 +171,51 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   }
 
   Map<String, int> _monthlyStats(List<Absensi> records) {
-    final now = DateTime.now();
-    final stats = {'hadir': 0, 'terlambat': 0, 'izin': 0, 'alpa': 0};
+    final stats = {
+      'hadir': 0,
+      'terlambat': 0,
+      'izin': 0,
+      'alfa': 0,
+      'sakit': 0,
+    };
     for (final record in records) {
       final rawDate = record.checkInAt ?? record.createdAt;
-      final date = rawDate == null ? null : DateTime.tryParse(rawDate);
-      if (date == null || date.year != now.year || date.month != now.month) {
+      final date = rawDate == null
+          ? null
+          : DateTime.tryParse(rawDate)?.toLocal();
+      if (date == null ||
+          date.year != _selectedStatsYear ||
+          date.month != _selectedStatsMonth) {
         continue;
       }
-      final status = record.status.toLowerCase();
+      final status = record.status.trim().toLowerCase();
       if (status == 'hadir') {
         stats['hadir'] = stats['hadir']! + 1;
       }
-      if (status == 'telat' || record.isLate == true) {
+      if (status == 'telat' || status == 'terlambat' || record.isLate == true) {
         stats['terlambat'] = stats['terlambat']! + 1;
-      } else if (status.contains('izin') ||
-          status.contains('cuti') ||
-          status == 'sakit') {
+      }
+      if (status == 'sakit') {
+        stats['sakit'] = stats['sakit']! + 1;
+      } else if (status.contains('izin') || status.contains('cuti')) {
         stats['izin'] = stats['izin']! + 1;
-      } else if (status == 'alpa' || status == 'tanpa keterangan') {
-        stats['alpa'] = stats['alpa']! + 1;
+      } else if (status == 'alfa' ||
+          status == 'alpa' ||
+          status == 'alpha' ||
+          status == 'tanpa keterangan') {
+        stats['alfa'] = stats['alfa']! + 1;
       }
     }
     return stats;
   }
 
   Widget _buildMonthlyStats(Map<String, int> stats) {
-    const months = [
-      'Januari',
-      'Februari',
-      'Maret',
-      'April',
-      'Mei',
-      'Juni',
-      'Juli',
-      'Agustus',
-      'September',
-      'Oktober',
-      'November',
-      'Desember',
-    ];
-    final month = months[DateTime.now().month - 1];
     const items = [
       ('Hadir', 'hadir', FollowMeTokens.present),
       ('Terlambat', 'terlambat', FollowMeTokens.late),
       ('Izin', 'izin', FollowMeTokens.leave),
-      ('Alpa', 'alpa', FollowMeTokens.absent),
+      ('Alfa', 'alfa', FollowMeTokens.absent),
+      ('Sakit', 'sakit', Color(0xFF3B82F6)),
     ];
 
     return Column(
@@ -179,7 +225,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
           children: [
             const Expanded(
               child: Text(
-                'Bulan ini',
+                'Rekap Bulanan',
                 style: TextStyle(
                   color: _ink,
                   fontSize: 17,
@@ -187,30 +233,82 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
                 ),
               ),
             ),
-            Text(
-              month,
-              style: const TextStyle(
-                color: _mutedInk,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            Container(
+              padding: const EdgeInsets.only(left: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: FollowMeTokens.border),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: _selectedStatsMonth,
+                  borderRadius: BorderRadius.circular(12),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: _mutedInk,
+                  ),
+                  style: const TextStyle(
+                    color: _ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  items: List.generate(
+                    _monthNames.length,
+                    (index) => DropdownMenuItem(
+                      value: index + 1,
+                      child: Text('${_monthNames[index]} $_selectedStatsYear'),
+                    ),
+                  ),
+                  onChanged: (month) {
+                    if (month == null || month == _selectedStatsMonth) return;
+                    setState(() => _selectedStatsMonth = month);
+                    _refreshMonthlyStats();
+                  },
+                ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            for (var index = 0; index < items.length; index++) ...[
-              if (index > 0) const SizedBox(width: 8),
-              Expanded(
-                child: _MonthlyStatTile(
-                  label: items[index].$1,
-                  value: stats[items[index].$2] ?? 0,
-                  color: items[index].$3,
-                ),
+            if (_isLoadingMonthlyStats) ...[
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ],
           ],
+        ),
+        if (_monthlyStatsError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _monthlyStatsError!,
+            style: const TextStyle(
+              color: FollowMeTokens.absent,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final tileWidth = (constraints.maxWidth - 16) / 3;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: tileWidth,
+                    child: _MonthlyStatTile(
+                      label: item.$1,
+                      value: stats[item.$2] ?? 0,
+                      color: item.$3,
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -361,20 +459,24 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
     }
   }
 
+  Future<void> _openEarlyLeaveRequest(DateTime checkInAt) async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EarlyLeaveRequestScreen(checkInAt: checkInAt),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
     final apiService = context.read<ApiService>();
     final absensiProvider = context.watch<AbsensiProvider>();
     final attendance = absensiProvider.currentDayAbsensi;
-    final monthlyStats = _monthlyStats(absensiProvider.myAbsensiList);
-    final izinProvider = context.watch<IzinKeluarProvider>();
+    final monthlyStats = _monthlyStats(_monthlyAttendanceRecords);
     final isCheckedIn = attendance?.checkInAt != null;
     final isCheckedOut = attendance?.checkOutAt != null;
-    final canLeave =
-        isCheckedIn &&
-        !isCheckedOut &&
-        ['hadir', 'terlambat'].contains(attendance?.status.toLowerCase());
 
     return Scaffold(
       backgroundColor: _canvas,
@@ -408,10 +510,6 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
               _buildWeeklyAttendance(absensiProvider.myAbsensiList),
               const SizedBox(height: 22),
               _buildMonthlyStats(monthlyStats),
-              if (canLeave) ...[
-                const SizedBox(height: 12),
-                _buildLeaveAction(izinProvider.isIzinBerjalan),
-              ],
               if (user?.employmentType.toLowerCase() == 'organik') ...[
                 const SizedBox(height: 20),
                 _buildLeaveBalance(user!),
@@ -455,7 +553,6 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   Widget _buildTopBar(User? user, ApiService apiService) {
     final name = user?.name ?? 'Pengguna';
     final department = user?.departemen ?? 'Karyawan';
-    final initial = name.isEmpty ? 'U' : name[0].toUpperCase();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -499,26 +596,7 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF8B5CF6), Color(0xFF1D4ED8)],
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        initial,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildProfileAvatar(user),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -642,6 +720,34 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
     );
   }
 
+  Widget _buildProfileAvatar(User? user) {
+    final photoUrl = user?.profilePhotoUrl;
+    final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
+
+    return ClipOval(
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: hasPhoto
+            ? Image.network(
+                photoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _profileAvatarFallback(),
+              )
+            : _profileAvatarFallback(),
+      ),
+    );
+  }
+
+  Widget _profileAvatarFallback() {
+    return Container(
+      color: const Color(0xFFE8F5FD),
+      alignment: Alignment.center,
+      child: const Icon(Icons.person_rounded, color: _mutedInk, size: 30),
+    );
+  }
+
   Widget _buildAttendanceCard(
     Absensi? attendance,
     bool isCheckedIn,
@@ -682,6 +788,9 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
         : status == 'terlambat'
         ? FollowMeTokens.late
         : FollowMeTokens.present;
+    final hasPendingEarlyLeave =
+        attendance?.catatanAdmin?.trim() == 'izin_pulang_cepat' &&
+        attendance?.statusApproval?.toLowerCase() == 'pending';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -829,6 +938,58 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
               ),
             ),
           ),
+          if (isCheckedIn && !isCheckedOut) ...[
+            const SizedBox(height: 10),
+            if (hasPendingEarlyLeave)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF4D6),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.hourglass_top_rounded,
+                      size: 18,
+                      color: Color(0xFF946200),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Pengajuan pulang lebih awal menunggu persetujuan HRD.',
+                        style: TextStyle(
+                          color: Color(0xFF755000),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (checkIn != null)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _openEarlyLeaveRequest(checkIn),
+                  icon: const Icon(Icons.schedule_rounded, size: 18),
+                  label: const Text('Ajukan pulang lebih awal'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: FollowMeTokens.primary,
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -888,61 +1049,6 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildLeaveAction(bool isLeaveOngoing) {
-    return Material(
-      color: isLeaveOngoing ? const Color(0xFFFFE7E1) : const Color(0xFFE7F2DF),
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => isLeaveOngoing
-                ? const EndIzinScreen()
-                : const StartIzinScreen(),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(
-                isLeaveOngoing
-                    ? Icons.keyboard_return_rounded
-                    : Icons.exit_to_app_rounded,
-                color: isLeaveOngoing
-                    ? const Color(0xFFB84C36)
-                    : const Color(0xFF456C36),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  isLeaveOngoing
-                      ? 'Selesaikan izin keluar'
-                      : 'Ajukan izin keluar',
-                  style: TextStyle(
-                    color: isLeaveOngoing
-                        ? const Color(0xFF8F3928)
-                        : const Color(0xFF385A2B),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 19,
-                color: isLeaveOngoing
-                    ? const Color(0xFFB84C36)
-                    : const Color(0xFF456C36),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -1164,17 +1270,6 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
           MaterialPageRoute(
             builder: (_) => const SakitFormScreen(initialTipePengajuan: 'izin'),
           ),
-        ),
-      ),
-      _DashboardService(
-        title: 'Jadwal lembur',
-        subtitle: 'Lihat lembur terjadwal',
-        icon: Icons.calendar_month_rounded,
-        background: const Color(0xFFF5E3D8),
-        foreground: const Color(0xFF9A5A35),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const JadwalLemburScreen()),
         ),
       ),
     ];

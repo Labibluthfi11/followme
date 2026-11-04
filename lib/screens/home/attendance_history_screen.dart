@@ -29,7 +29,11 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    if (!DemoPreview.enabled) _refreshData();
+    if (!DemoPreview.enabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _refreshData();
+      });
+    }
   }
 
   @override
@@ -92,25 +96,6 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     }
   }
 
-  Map<String, int> _calculateAttendanceStats(
-    List<Absensi> absensiList,
-    String userType,
-  ) {
-    int totalHadir = 0;
-    int totalTelat = 0;
-    for (var absensi in absensiList) {
-      if (absensi.status.toLowerCase() == 'hadir') {
-        totalHadir++;
-        if (absensi.isLate == true &&
-            userType != 'organik' &&
-            userType != 'magang') {
-          totalTelat++;
-        }
-      }
-    }
-    return {'hadir': totalHadir, 'telat': totalTelat};
-  }
-
   List<Absensi> get _filteredList {
     final list = Provider.of<AbsensiProvider>(context).myAbsensiList;
     if (_searchQuery.isEmpty) return list;
@@ -153,10 +138,6 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           listen: false,
         ).user?.employmentType.toLowerCase() ??
         'freelance';
-    final stats = _calculateAttendanceStats(
-      absensiProvider.myAbsensiList,
-      userType,
-    );
     final filteredList = _filteredList;
 
     return Scaffold(
@@ -233,12 +214,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                   children: [
                     _buildFilterRow(),
                     const SizedBox(height: 24),
-                    _buildStatisticsHorizontal(
-                      absensiProvider,
-                      stats,
-                      userType,
-                    ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
                     _buildHistoryHeader(filteredList.length),
                     const SizedBox(height: 16),
 
@@ -412,117 +388,6 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildStatisticsHorizontal(
-    AbsensiProvider provider,
-    Map<String, int> stats,
-    String userType,
-  ) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: [
-          _buildStatCard(
-            'Hadir',
-            stats['hadir'].toString(),
-            const Color(0xFF10B981),
-            Icons.verified_user_rounded,
-          ),
-          if (userType != 'organik' && userType != 'magang')
-            _buildStatCard(
-              'Telat',
-              stats['telat'].toString(),
-              const Color(0xFFF59E0B),
-              Icons.timer_off_rounded,
-            ),
-          _buildStatCard(
-            'Absen',
-            provider.totalTanpaKet.toString(),
-            const Color(0xFFEF4444),
-            Icons.block_rounded,
-          ),
-          _buildStatCard(
-            'Izin',
-            provider.totalIzin.toString(),
-            const Color(0xFF8B5CF6),
-            Icons.assignment_ind_rounded,
-          ),
-          _buildStatCard(
-            'Sakit',
-            provider.totalSakit.toString(),
-            const Color(0xFF3B82F6),
-            Icons.local_hospital_rounded,
-          ),
-          _buildStatCard(
-            'Lembur',
-            provider.totalLembur.toString(),
-            const Color(0xFFFCD34D),
-            Icons.nightlight_round,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    String label,
-    String value,
-    Color color,
-    IconData icon,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      width: 130,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: color,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

@@ -137,7 +137,9 @@ class _AbsensiTelatFormScreenState extends State<AbsensiTelatFormScreen> {
   Future<void> _pickFile() async {
     final File? result = await Navigator.push<File>(
       context,
-      MaterialPageRoute(builder: (_) => const CustomCameraScreen()),
+      MaterialPageRoute(
+        builder: (_) => const CustomCameraScreen(verifyFace: false),
+      ),
     );
     if (result != null && mounted) {
       setState(() => _fileBukti = result);

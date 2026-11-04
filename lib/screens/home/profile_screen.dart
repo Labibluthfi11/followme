@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../api/api.service.dart';
-import '../../core/constants/app_theme.dart';
 import '../../services/image_compress_service.dart';
+import 'change_password_dialog.dart';
 
 const Color kPrimaryColor = Color(0xFF172B3A);
 const Color kBackgroundColor = Color(0xFFF5F4F0);
@@ -308,8 +308,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
 
       if (result['success'] == true) {
-        if (result['user'] != null && result['user'] is User) {
-          final User updatedUser = result['user'] as User;
+        User? updatedUser = result['user'] is User
+            ? result['user'] as User
+            : null;
+        updatedUser ??= await _apiService.getAuthenticatedUser();
+
+        if (!mounted) return;
+
+        if (updatedUser != null) {
           Provider.of<AuthProvider>(
             context,
             listen: false,
@@ -318,11 +324,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _user = updatedUser;
             _imageFile = null;
           });
+          _showSnackBar(
+            result['message'] ?? 'Profil berhasil diperbarui!',
+            isSuccess: true,
+          );
+        } else {
+          _showSnackBar(
+            'Profil berhasil disimpan, tetapi data foto belum berhasil dimuat ulang.',
+            isSuccess: false,
+          );
         }
-        _showSnackBar(
-          result['message'] ?? 'Profil berhasil diperbarui!',
-          isSuccess: true,
-        );
       } else {
         _showSnackBar(
           result['message'] ?? 'Gagal memperbarui profil.',
@@ -339,6 +350,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
+  }
+
+  Future<void> _showChangePasswordDialog() async {
+    final passwordChanged = await showDialog<bool>(
+      context: context,
+      builder: (_) => ChangePasswordDialog(apiService: _apiService),
+    );
+
+    if (passwordChanged != true || !mounted) return;
+    await context.read<AuthProvider>().clearSessionLocally();
   }
 
   void _showSnackBar(String message, {required bool isSuccess}) {
@@ -587,26 +608,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 32),
 
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: FollowMeTokens.border),
-                        ),
-                        child: SwitchListTile(
-                          value:
-                              context.watch<FollowMeThemeController>().mode ==
-                              ThemeMode.dark,
-                          onChanged: (enabled) => context
-                              .read<FollowMeThemeController>()
-                              .setDarkMode(enabled),
-                          secondary: const Icon(Icons.dark_mode_outlined),
-                          title: const Text('Tema gelap'),
-                          subtitle: const Text('Sesuaikan tampilan aplikasi'),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
                       ModernTextField(
                         label: 'Nama Lengkap',
                         controller: _nameController,
@@ -629,6 +630,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
 
                       const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        onPressed: _showChangePasswordDialog,
+                        icon: const Icon(Icons.lock_reset_rounded),
+                        label: const Text('Ganti Password'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
 
                       // Save Button
                       AnimatedContainer(

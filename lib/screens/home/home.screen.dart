@@ -17,12 +17,7 @@ import 'absensi_masuk_screen.dart';
 import 'absensi_pulang_screen.dart';
 import 'absensi_sakit_form_screen.dart';
 import 'absensi_telat_form_screen.dart';
-import 'jadwal_lembur_screen.dart';
 import 'absensi_lembur_screen.dart';
-import 'start_izin_screen.dart';
-import 'end_izin_screen.dart';
-import '../../providers/absensi_provider.dart';
-import '../../providers/izin_keluar_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/update_service.dart';
 import '../../core/theme/followme_design_tokens.dart';
@@ -40,6 +35,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  bool _isRedirectingToLogin = false;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -54,9 +50,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final apiService = context.read<ApiService>();
 
     if (!authProvider.isAuthenticated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.of(context).pushReplacementNamed('/login');
-      });
+      if (!_isRedirectingToLogin) {
+        _isRedirectingToLogin = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (context.read<AuthProvider>().isAuthenticated) {
+            _isRedirectingToLogin = false;
+            return;
+          }
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/login', (route) => false);
+        });
+      }
       return const Scaffold(
         body: Center(child: CircularProgressIndicator(color: kPrimaryColor)),
       );
@@ -253,8 +259,6 @@ class _HomeContentState extends State<HomeContent> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final apiService = Provider.of<ApiService>(context);
-    final absensiProvider = Provider.of<AbsensiProvider>(context);
-    final izinProvider = Provider.of<IzinKeluarProvider>(context);
     final user = authProvider.user;
     final userName = user?.name ?? 'Pengguna';
 
@@ -335,67 +339,6 @@ class _HomeContentState extends State<HomeContent> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Tombol Izin Keluar (Hanya jika Sedang Hadir)
-                  if (absensiProvider.currentDayAbsensi != null &&
-                      (absensiProvider.currentDayAbsensi!.status
-                                  .toLowerCase() ==
-                              'hadir' ||
-                          absensiProvider.currentDayAbsensi!.status
-                                  .toLowerCase() ==
-                              'terlambat') &&
-                      absensiProvider.currentDayAbsensi!.checkOutAt == null)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: izinProvider.isIzinBerjalan
-                              ? Colors.redAccent.shade700
-                              : kPrimaryColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          if (izinProvider.isIzinBerjalan) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const EndIzinScreen(),
-                              ),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const StartIzinScreen(),
-                              ),
-                            );
-                          }
-                        },
-                        icon: Icon(
-                          izinProvider.isIzinBerjalan
-                              ? Icons.back_hand_rounded
-                              : Icons.exit_to_app_rounded,
-                        ),
-                        label: Text(
-                          izinProvider.isIzinBerjalan
-                              ? "Selesaikan Izin Keluar"
-                              : "Izin Keluar",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
                   // Quick Actions Grid (Gojek/Shopee Style)
                   Wrap(
                     spacing: 12,
@@ -471,17 +414,6 @@ class _HomeContentState extends State<HomeContent> {
                             builder: (_) => const SakitFormScreen(
                               initialTipePengajuan: 'izin',
                             ),
-                          ),
-                        ),
-                      ),
-                      _buildQuickAction(
-                        icon: Icons.event_available_rounded,
-                        label: 'Lembur\nTerjadwal',
-                        color: const Color(0xFFF97316),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const JadwalLemburScreen(),
                           ),
                         ),
                       ),

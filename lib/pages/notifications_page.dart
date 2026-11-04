@@ -67,12 +67,6 @@ class _NotificationsPageState extends State<NotificationsPage>
     debugPrint('   - Target ID: $targetId');
     debugPrint('   - Target Page: ${notif.targetPage}');
 
-    if (type.contains('scheduled_lembur')) {
-      debugPrint('✅ Navigate to: Jadwal Lembur Screen');
-      Navigator.pushNamed(context, '/jadwal_lembur');
-      return;
-    }
-
     // Reminder lembur hari ini → ke absen pulang lembur
     if (type.contains('lembur_reminder') || type == 'lembur') {
       debugPrint('✅ Navigate to: Absensi Pulang Lembur Screen (lembur: true)');

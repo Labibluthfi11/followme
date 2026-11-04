@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   cupertino_icons: ^1.0.6
   dio: ^5.7.0
   shared_preferences: ^2.2.3
@@ -38,45 +39,31 @@ dependencies:
   sentry_flutter: ^8.14.2
   safe_device: ^1.1.1
   crypto: ^3.0.3
-  google_mlkit_face_detection: ^0.15.1
+  google_mlkit_face_detection: ^0.14.0
   flutter_animate: ^4.5.2
   shimmer: ^3.0.0
-
+  file_picker: ^11.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-  # TAMBAHKAN INI UNTUK flutter_launcher_icons
-  flutter_launcher_icons: "^0.13.1" # Pastikan kamu pakai versi terbaru atau versi yang stabil dari pub.dev
+  flutter_launcher_icons: ^0.13.1
 
-# The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/ # Ini sudah benar untuk memasukkan semua gambar di folder ini
-    # Kamu tidak perlu menambahkan 'assets/images/amb2.jpg' secara spesifik di sini
-    # karena 'assets/images/' sudah mencakup semua isinya.
+    - assets/images/
 
-  # Bagian komentar 'To add assets to your application...' dan contohnya
-  # tidak perlu dihapus, biarkan saja, yang penting baris di atas sudah benar.
-
-# --- KONFIGURASI UNTUK flutter_launcher_icons DIMULAI DI SINI ---
-# Pastikan indentasinya sejajar dengan 'flutter:' di atas (tidak masuk ke dalam 'flutter:')
 flutter_launcher_icons:
-  android: true                 # Hasilkan ikon untuk Android
-  ios: true                     # Hasilkan ikon untuk iOS (jika kamu nanti juga develop iOS)
-  image_path: "assets/images/logo.png" # PATH MENUJU GAMBAR LOGO KAMU
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
   remove_alpha_ios: true
   web:
     generate: true
     image_path: "assets/images/logo.png"
     background_color: "#40D9C6"
     theme_color: "#40D9C6"
-  min_sdk_android: 21           # Sesuaikan dengan minSdkVersion kamu (biasanya 21 atau lebih tinggi)
-                                # Kamu bisa cek di android/app/build.gradle.kts, di defaultConfig.minSdk
-                                # Biasanya minSdk ini diambil dari flutter.minSdkVersion
-  # Jika kamu ingin ikon adaptif (untuk Android 8.0+), uncomment dan konfigurasi ini:
-  # adaptive_icon_background: "#FFFFFF" # Contoh warna putih sebagai latar belakang
-  # adaptive_icon_foreground: "assets/images/amb2_foreground.png" # Contoh jika kamu punya gambar foreground terpisah
+  min_sdk_android: 21

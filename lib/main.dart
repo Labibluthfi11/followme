@@ -12,7 +12,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:absensi_app/api/api.service.dart';
 import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:absensi_app/providers/absensi_provider.dart';
-import 'package:absensi_app/providers/izin_keluar_provider.dart';
 
 // === Import screens utama ===
 import 'package:absensi_app/screens/auth/login.screen.dart';
@@ -23,7 +22,6 @@ import 'package:absensi_app/screens/splash/splash_screen.dart';
 // === Import halaman tambahan untuk navigasi dari notifikasi ===
 import 'package:absensi_app/pages/notifications_page.dart';
 import 'package:absensi_app/screens/home/absensi_sakit_form_screen.dart';
-import 'package:absensi_app/screens/home/jadwal_lembur_screen.dart';
 import 'package:absensi_app/screens/home/absensi_lembur_screen.dart';
 import 'package:absensi_app/services/security_service.dart';
 import 'package:absensi_app/screens/security/device_not_secure_screen.dart';
@@ -83,13 +81,6 @@ Future<void> _startApplication() async {
           create: (context) =>
               AbsensiProvider(apiService: context.read<ApiService>()),
         ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              IzinKeluarProvider(apiService: context.read<ApiService>()),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => FollowMeThemeController()..load(),
-        ),
       ],
       child: const MyApp(),
     ),
@@ -102,15 +93,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = context.read<ApiService>();
-    final themeController = context.watch<FollowMeThemeController>();
 
     return MaterialApp(
       title: 'PT.Followme',
       debugShowCheckedModeBanner: false,
       navigatorObservers: kIsWeb ? [] : [SentryNavigatorObserver()],
       theme: buildAppTheme(),
-      darkTheme: buildAppDarkTheme(),
-      themeMode: themeController.mode,
       themeAnimationDuration: const Duration(milliseconds: 250),
       home: const SplashScreen(title: 'PT.Followme'),
 
@@ -130,7 +118,6 @@ class MyApp extends StatelessWidget {
 
         // ✅ Tambahkan ini biar gak error lagi
         '/absensi_detail': (context) => const AbsensiPulangScreen(),
-        '/jadwal_lembur': (context) => const JadwalLemburScreen(),
       },
     );
   }

@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../api/api.service.dart';
 import '../../core/constants/app_theme.dart';
 import '../../core/exceptions/app_exception.dart';
+import '../../core/validation/password_validation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -292,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _showForgotPasswordPopup() async {
-    final apiService = ApiService();
+    final apiService = Provider.of<ApiService>(context, listen: false);
     int step = 1;
     bool isLoading = false;
 
@@ -305,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen>
     bool showNewPassword = false;
     bool showConfirmPassword = false;
 
-    showGeneralDialog(
+    await showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Forgot Password',
@@ -397,10 +398,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ),
                                   ),
-                                  validator: (v) =>
-                                      (v == null || !v.contains('@'))
-                                      ? 'Email tidak valid'
-                                      : null,
+                                  validator: PasswordValidation.email,
                                 ),
 
                               if (step == 2)
@@ -412,6 +410,9 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
                                   maxLength: 6,
                                   decoration: InputDecoration(
                                     filled: true,
@@ -428,9 +429,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     counterText: "",
                                   ),
-                                  validator: (v) => (v == null || v.length != 6)
-                                      ? 'OTP harus 6 digit'
-                                      : null,
+                                  validator: PasswordValidation.otp,
                                 ),
 
                               if (step == 3) ...[
@@ -466,9 +465,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ),
                                   ),
-                                  validator: (v) => (v == null || v.length < 6)
-                                      ? 'Minimal 6 karakter'
-                                      : null,
+                                  validator: PasswordValidation.newPassword,
                                 ),
                                 const SizedBox(height: 12),
                                 TextFormField(
@@ -504,9 +501,10 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   ),
                                   validator: (v) =>
-                                      (v != newPasswordController.text)
-                                      ? 'Password tidak cocok'
-                                      : null,
+                                      PasswordValidation.confirmation(
+                                        v,
+                                        newPasswordController.text,
+                                      ),
                                 ),
                               ],
 
@@ -583,10 +581,18 @@ class _LoginScreenState extends State<LoginScreen>
                                               return;
                                             }
                                             if (result['success'] == true) {
+                                              await Provider.of<AuthProvider>(
+                                                context,
+                                                listen: false,
+                                              ).clearSessionLocally();
+                                              if (!mounted ||
+                                                  !context.mounted) {
+                                                return;
+                                              }
                                               Navigator.of(context).pop();
                                               _showCustomAlert(
                                                 result['message'] ??
-                                                    'Password berhasil direset!',
+                                                    'Password berhasil direset. Silakan login kembali.',
                                                 isSuccess: true,
                                               );
                                               return;
@@ -626,6 +632,10 @@ class _LoginScreenState extends State<LoginScreen>
         );
       },
     );
+    emailController.dispose();
+    otpController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
   }
 
   @override
@@ -883,10 +893,7 @@ class _LoginHeroIllustration extends StatelessWidget {
         child: Container(
           width: 112,
           height: 112,
-          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: FollowMeTokens.primary.withValues(alpha: 0.12),
@@ -895,10 +902,12 @@ class _LoginHeroIllustration extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.my_location_rounded,
-            color: FollowMeTokens.primary,
-            size: 58,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: Image.asset(
+              'assets/images/followme.jpeg',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),

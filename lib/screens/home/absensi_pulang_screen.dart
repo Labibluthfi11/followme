@@ -368,9 +368,6 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
           _showBapukDialog(result['message']);
         } else if (mounted) {
           int? statusCode = result['statusCode'];
-          String? errorType = result['data'] != null
-              ? result['data']['error_type']
-              : null;
 
           absensiProvider.setErrorMessage(
             result['message'] ?? 'Absensi Pulang Gagal.',
@@ -379,11 +376,6 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
           if (statusCode == 403) {
             _showSnackBar(
               'Absen Pulang Ditolak! Anda melanggar aturan jam keluar perusahaan hari ini.',
-              isSuccess: false,
-            );
-          } else if (statusCode == 400 && errorType == 'unfinished_izin') {
-            _showSnackBar(
-              'Harap lampirkan bukti foto Izin Keluar terlebih dahulu untuk menyelesaikan sesi izin.',
               isSuccess: false,
             );
           } else {

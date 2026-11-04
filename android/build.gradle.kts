@@ -76,6 +76,15 @@ subprojects {
                 }
             }
 
+            project.extensions.configure<com.android.build.api.variant.LibraryAndroidComponentsExtension>(
+                "androidComponents"
+            ) {
+                finalizeDsl { androidExtension ->
+                    androidExtension.compileOptions.sourceCompatibility = org.gradle.api.JavaVersion.VERSION_17
+                    androidExtension.compileOptions.targetCompatibility = org.gradle.api.JavaVersion.VERSION_17
+                }
+            }
+
             // 3. Hapus 'package' dari Manifest plugin lama
             project.tasks.matching { it.name.contains("Manifest") }.configureEach {
                 doFirst {
@@ -95,4 +104,14 @@ subprojects {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
+}
+
+subprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_8)
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_8)
+        }
+    }
 }

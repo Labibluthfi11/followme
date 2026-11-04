@@ -17,21 +17,20 @@ import '../models/absensi_model.dart';
 import '../models/notification_model.dart';
 
 class ApiService {
-  late Dio _dio;
+  final Dio _dio;
   final _storage = const FlutterSecureStorage();
   static const String _authTokenKey = 'auth_token';
 
-  ApiService() {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 60),
-        sendTimeout: const Duration(seconds: 60),
-        headers: {'Accept': 'application/json'},
-      ),
-    );
-
+  ApiService()
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: ApiConstants.baseUrl,
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
+          headers: {'Accept': 'application/json'},
+        ),
+      ) {
     _dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();
@@ -70,6 +69,9 @@ class ApiService {
       ),
     );
   }
+
+  @visibleForTesting
+  ApiService.withDio(this._dio);
 
   // =========================================================================
   // SECTION AUTH
@@ -193,7 +195,7 @@ class ApiService {
         'message': response.data['message'] ?? 'Gagal mengirim OTP.',
       };
     } on DioException catch (e) {
-      return _handleDioError(e, 'Gagal mengirim OTP');
+      return _handleDioError(e, 'Gagal mengirim OTP', logResponse: false);
     } catch (e) {
       return {'success': false, 'message': e.toString()};
     }
@@ -219,7 +221,7 @@ class ApiService {
         'message': response.data['message'] ?? 'OTP tidak valid.',
       };
     } on DioException catch (e) {
-      return _handleDioError(e, 'Gagal verifikasi OTP');
+      return _handleDioError(e, 'Gagal verifikasi OTP', logResponse: false);
     } catch (e) {
       return {'success': false, 'message': e.toString()};
     }
@@ -252,7 +254,40 @@ class ApiService {
         'message': response.data['message'] ?? 'Gagal reset password.',
       };
     } on DioException catch (e) {
-      return _handleDioError(e, 'Gagal reset password');
+      return _handleDioError(e, 'Gagal reset password', logResponse: false);
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> updatePassword({
+    required String currentPassword,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _dio.put(
+        'user/password',
+        data: {
+          'current_password': currentPassword,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message':
+              response.data['message'] ??
+              'Password berhasil diperbarui. Silakan login kembali.',
+        };
+      }
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Gagal mengganti password.',
+      };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Gagal mengganti password', logResponse: false);
     } catch (e) {
       return {'success': false, 'message': e.toString()};
     }
@@ -635,66 +670,6 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> submitLemburTerjadwal({
-    required String tanggalLembur,
-    required String keterangan,
-    File? fotoBukti,
-  }) async {
-    try {
-      FormData formData = FormData.fromMap({
-        'tanggal_lembur': tanggalLembur,
-        'keterangan': keterangan,
-      });
-
-      if (fotoBukti != null) {
-        String fileName = fotoBukti.path.split('/').last;
-        formData.files.add(
-          MapEntry(
-            'foto_bukti',
-            await MultipartFile.fromFile(fotoBukti.path, filename: fileName),
-          ),
-        );
-      }
-
-      final response = await _dio.post(
-        'absensi/scheduled-lembur',
-        data: formData,
-        options: Options(
-          sendTimeout: const Duration(seconds: 60),
-          receiveTimeout: const Duration(seconds: 60),
-        ),
-      );
-
-      if (response.data != null) {
-        return {
-          'success': true,
-          'message': response.data['message'],
-          'data': response.data['data'],
-        };
-      }
-      return {'success': false, 'message': 'Data tidak ditemukan.'};
-    } on DioException catch (e) {
-      return _handleDioError(e, 'Pengajuan lembur terjadwal gagal');
-    } catch (e) {
-      return {'success': false, 'message': e.toString()};
-    }
-  }
-
-  Future<List<dynamic>> getLemburTerjadwal() async {
-    try {
-      final response = await _dio.get('absensi/scheduled-lembur');
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          response.data['data'] is List) {
-        return response.data['data'];
-      }
-      return [];
-    } catch (e) {
-      debugPrint('Error fetching scheduled lembur: $e');
-      return [];
-    }
-  }
-
   Future<List<Absensi>> getHistoryAbsensi({
     String? searchDate,
     int? month,
@@ -812,6 +787,71 @@ class ApiService {
       return _handleDioError(e, 'Gagal mengajukan izin');
     } catch (e) {
       return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> submitEarlyLeaveRequest({
+    required Uint8List fileBytes,
+    required String fileName,
+    required String catatan,
+    required String jamPulangRencana,
+  }) async {
+    try {
+      final extension = fileName.split('.').last.toLowerCase();
+      final contentType = switch (extension) {
+        'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+        'png' => MediaType('image', 'png'),
+        'pdf' => MediaType('application', 'pdf'),
+        _ => null,
+      };
+      final formData = FormData.fromMap({
+        'status': 'izin',
+        'catatan_admin': 'izin_pulang_cepat',
+        'jam_pulang_rencana': jamPulangRencana,
+        'keterangan_izin_sakit': catatan,
+        'file_bukti': MultipartFile.fromBytes(
+          fileBytes,
+          filename: fileName,
+          contentType: contentType,
+        ),
+      });
+
+      final response = await _dio.post(
+        'absensi/izin',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final responseData = response.data;
+      if (response.statusCode == 201 &&
+          responseData is Map<String, dynamic> &&
+          responseData['success'] == true) {
+        return {
+          'success': true,
+          'statusCode': response.statusCode,
+          'message':
+              responseData['message'] ??
+              'Pengajuan terkirim dan menunggu persetujuan HRD.',
+        };
+      }
+
+      return {
+        'success': false,
+        'statusCode': response.statusCode,
+        'message': responseData is Map<String, dynamic>
+            ? responseData['message'] ?? 'Pengajuan pulang lebih awal gagal.'
+            : 'Pengajuan pulang lebih awal gagal.',
+      };
+    } on DioException catch (e) {
+      return _handleDioError(
+        e,
+        'Gagal mengajukan pulang lebih awal.',
+        logResponse: false,
+      );
+    } catch (_) {
+      return {
+        'success': false,
+        'message': 'Gagal mengajukan pulang lebih awal. Coba lagi.',
+      };
     }
   }
 
@@ -1019,67 +1059,6 @@ class ApiService {
   }
 
   // =========================================================================
-  // SECTION IZIN KELUAR
-  // =========================================================================
-
-  Future<Map<String, dynamic>> startIzinKeluar({
-    required String tipeIzin,
-    String? tipeDurasi,
-    required String alasanKeluar,
-    required File fotoSurat,
-  }) async {
-    try {
-      var formData = FormData.fromMap({
-        'tipe_izin': tipeIzin,
-        'alasan_keluar': alasanKeluar,
-        if (tipeDurasi != null) 'tipe_durasi': tipeDurasi,
-        'foto_surat': await MultipartFile.fromFile(
-          fotoSurat.path,
-          filename: fotoSurat.path.split('/').last,
-        ),
-      });
-
-      final response = await _dio.post('izin-keluar/start', data: formData);
-      return {
-        'success': true,
-        'message': response.data['message'] ?? 'Berhasil memulai izin',
-        'statusCode': response.statusCode,
-      };
-    } on DioException catch (e) {
-      return _handleDioError(e, 'Gagal memulai izin keluar');
-    } catch (e) {
-      return {'success': false, 'message': e.toString()};
-    }
-  }
-
-  Future<Map<String, dynamic>> endIzinKeluar({
-    required String keteranganKembali,
-    required File dokumenKembali,
-  }) async {
-    try {
-      var formData = FormData.fromMap({
-        'keterangan_kembali': keteranganKembali,
-        'dokumen_kembali': await MultipartFile.fromFile(
-          dokumenKembali.path,
-          filename: dokumenKembali.path.split('/').last,
-        ),
-      });
-
-      final response = await _dio.post('izin-keluar/end', data: formData);
-      return {
-        'success': true,
-        'message': response.data['message'] ?? 'Berhasil menyelesaikan izin',
-        'statusCode': response.statusCode,
-        'is_pelanggaran': response.data['is_pelanggaran'] == true,
-      };
-    } on DioException catch (e) {
-      return _handleDioError(e, 'Gagal menyelesaikan izin keluar');
-    } catch (e) {
-      return {'success': false, 'message': e.toString()};
-    }
-  }
-
-  // =========================================================================
   // SECTION NOTIFICATIONS
   // =========================================================================
 
@@ -1186,9 +1165,14 @@ class ApiService {
     }
   }
 
-  Map<String, dynamic> _handleDioError(DioException e, String defaultMessage) {
+  Map<String, dynamic> _handleDioError(
+    DioException e,
+    String defaultMessage, {
+    bool logResponse = true,
+  }) {
     String message = defaultMessage;
     bool isNetworkError = false;
+    dynamic validationErrors;
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.sendTimeout ||
@@ -1201,6 +1185,7 @@ class ApiService {
     if (e.response != null) {
       if (e.response!.data != null &&
           e.response!.data is Map<String, dynamic>) {
+        validationErrors = e.response!.data['errors'];
         if (e.response!.data.containsKey('message') &&
             e.response!.data['message'] != null) {
           message = e.response!.data['message'];
@@ -1216,10 +1201,26 @@ class ApiService {
       } else {
         message = 'Server error: ${e.response!.statusCode}';
       }
-      debugPrint('Dio error: ${e.response!.statusCode} - ${e.response!.data}');
+      if (validationErrors is Map) {
+        final details = validationErrors.values
+            .expand((value) => value is List ? value : [value])
+            .where((value) => value != null)
+            .map((value) => value.toString())
+            .toList();
+        if (details.isNotEmpty) {
+          message = '$message ${details.join(' ')}';
+        }
+      }
+      if (logResponse) {
+        debugPrint(
+          'Dio error: ${e.response!.statusCode} - ${e.response!.data}',
+        );
+      }
     } else if (!isNetworkError) {
       message = 'Network error: ${e.message}';
-      debugPrint('Dio error: ${e.message}');
+      if (logResponse) {
+        debugPrint('Dio error: ${e.message}');
+      }
     }
 
     return {
@@ -1228,6 +1229,7 @@ class ApiService {
       'statusCode': e.response?.statusCode,
       'isNetworkError': isNetworkError,
       'data': e.response?.data,
+      if (validationErrors != null) 'errors': validationErrors,
     };
   }
 }

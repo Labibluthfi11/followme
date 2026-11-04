@@ -223,14 +223,19 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Logout error: $e');
     } finally {
-      await _storage.delete(key: _authTokenKey);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_userDataKey);
-      _token = null;
-      _user = null;
-      _isLoading = false;
-      notifyListeners();
+      await clearSessionLocally();
     }
+  }
+
+  Future<void> clearSessionLocally() async {
+    await _storage.delete(key: _authTokenKey);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_userDataKey);
+    _token = null;
+    _user = null;
+    _isDemoPreviewSession = false;
+    _isLoading = false;
+    notifyListeners();
   }
 
   String _handleDioError(DioException e) {

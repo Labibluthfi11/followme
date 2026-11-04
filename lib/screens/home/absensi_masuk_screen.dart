@@ -329,9 +329,9 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
         if (result['success'] == true) {
           _showSuccessDialog();
         } else {
-          // Cek status code 403 (Hari Libur)
+          // Server can return 403 for different attendance restrictions.
           if (result['statusCode'] == 403) {
-            _showHolidayDialog(
+            _showAttendanceErrorDialog(
               result['message'] ?? 'Hari ini adalah hari libur.',
             );
           }
@@ -439,7 +439,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
     );
   }
 
-  void _showHolidayDialog(String message) {
+  void _showAttendanceErrorDialog(String message) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -465,18 +465,18 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
+                    color: Colors.red.shade50,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.calendar_today_rounded,
-                    color: Colors.amber.shade600,
+                    Icons.info_outline_rounded,
+                    color: Colors.red.shade600,
                     size: 60,
                   ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Hari Libur Terdeteksi',
+                  'Absensi Tidak Dapat Diproses',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 20,
