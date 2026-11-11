@@ -15,7 +15,6 @@ import 'package:absensi_app/providers/absensi_provider.dart';
 
 // === Import screens utama ===
 import 'package:absensi_app/screens/auth/login.screen.dart';
-import 'package:absensi_app/screens/auth/register.screen.dart';
 import 'package:absensi_app/screens/home/home.screen.dart';
 import 'package:absensi_app/screens/splash/splash_screen.dart';
 
@@ -95,17 +94,16 @@ class MyApp extends StatelessWidget {
     final apiService = context.read<ApiService>();
 
     return MaterialApp(
-      title: 'Absensi App',
+      title: 'PT.Followme',
       debugShowCheckedModeBanner: false,
       navigatorObservers: kIsWeb ? [] : [SentryNavigatorObserver()],
       theme: buildAppTheme(),
       themeAnimationDuration: const Duration(milliseconds: 250),
-      home: const SplashScreen(title: 'Absensi App'),
+      home: const SplashScreen(title: 'PT.Followme'),
 
       // 🧭 Semua route lengkap
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         '/notifications': (context) =>
             NotificationsPage(apiService: apiService),

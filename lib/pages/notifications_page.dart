@@ -2,26 +2,27 @@
 
 import 'package:flutter/material.dart';
 
-// <<< Sesuaikan path import ini >>>
 import '../api/api.service.dart';
 import '../models/notification_model.dart';
-import '../screens/home/absensi_pulang_screen.dart'; // Import screen lembur
+import '../screens/home/absensi_pulang_screen.dart';
 import '../core/constants/app_theme.dart';
 import '../core/constants/demo_preview.dart';
 
-// <<< AKHIR Penyesuaian path import >>>
-
 class NotificationsPage extends StatefulWidget {
   final ApiService apiService;
+  final bool isActive;
 
-  const NotificationsPage({super.key, required this.apiService});
+  const NotificationsPage({
+    super.key,
+    required this.apiService,
+    this.isActive = true,
+  });
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage>
-    with TickerProviderStateMixin {
+class _NotificationsPageState extends State<NotificationsPage> {
   late Future<List<NotificationModel>> _notificationsFuture;
   bool _isRefreshing = false;
 
@@ -34,16 +35,30 @@ class _NotificationsPageState extends State<NotificationsPage>
   @override
   void initState() {
     super.initState();
-    _notificationsFuture = DemoPreview.enabled
-        ? Future<List<NotificationModel>>.value(const [])
-        : widget.apiService.fetchNotifications().then((notifs) {
-            for (var notif in notifs) {
-              if (!notif.isRead) {
-                widget.apiService.markNotificationAsRead(notif.id);
-              }
-            }
-            return notifs;
-          });
+    _notificationsFuture = _emptyOrLoadNotifications();
+  }
+
+  @override
+  void didUpdateWidget(covariant NotificationsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _loadNotifications();
+    }
+  }
+
+  Future<List<NotificationModel>> _emptyOrLoadNotifications() {
+    if (DemoPreview.enabled || !widget.isActive) {
+      return Future<List<NotificationModel>>.value(const []);
+    }
+
+    return widget.apiService.fetchNotifications();
+  }
+
+  void _loadNotifications() {
+    if (DemoPreview.enabled) return;
+    setState(() {
+      _notificationsFuture = widget.apiService.fetchNotifications();
+    });
   }
 
   Future<void> _refreshNotifications() async {
@@ -52,24 +67,27 @@ class _NotificationsPageState extends State<NotificationsPage>
       _isRefreshing = true;
       _notificationsFuture = widget.apiService.fetchNotifications();
     });
-    await Future.delayed(const Duration(milliseconds: 700));
-    setState(() {
-      _isRefreshing = false;
-    });
+    try {
+      await _notificationsFuture;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
   }
 
   void _navigateToTargetPage(NotificationModel notif) {
     final type = notif.type.toLowerCase();
     final targetId = notif.targetId;
 
-    debugPrint('🔍 Debug Navigation:');
-    debugPrint('   - Type: $type');
-    debugPrint('   - Target ID: $targetId');
-    debugPrint('   - Target Page: ${notif.targetPage}');
+    if (type.startsWith('alfa_hrd_call_')) {
+      return;
+    }
 
     // Reminder lembur hari ini → ke absen pulang lembur
     if (type.contains('lembur_reminder') || type == 'lembur') {
-      debugPrint('✅ Navigate to: Absensi Pulang Lembur Screen (lembur: true)');
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -92,13 +110,11 @@ class _NotificationsPageState extends State<NotificationsPage>
       route = notif.targetPage!;
     }
 
-    debugPrint('✅ Navigate to Named Route: $route (with targetId: $targetId)');
-
     // Gunakan try-catch untuk handle route yang tidak terdaftar
     try {
       Navigator.pushNamed(context, route, arguments: targetId);
     } catch (e) {
-      debugPrint('⚠️ Route not found: $route - Fallback to /home');
+      debugPrint('Notification route $route is unavailable: $e');
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -110,11 +126,9 @@ class _NotificationsPageState extends State<NotificationsPage>
 
       // Tandai sebagai dibaca di background
       final result = await widget.apiService.markNotificationAsRead(notif.id);
-      if (result['success']) {
+      if (result['success'] == true) {
         // Refresh list setelah berhasil
-        setState(() {
-          _notificationsFuture = widget.apiService.fetchNotifications();
-        });
+        _loadNotifications();
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +162,9 @@ class _NotificationsPageState extends State<NotificationsPage>
 
   IconData _getNotificationIcon(NotificationModel notif) {
     final title = notif.title.toLowerCase();
-    if (title.contains('pembayaran') || title.contains('gaji')) {
+    if (notif.type.toLowerCase().startsWith('alfa_hrd_call_')) {
+      return Icons.person_search_rounded;
+    } else if (title.contains('pembayaran') || title.contains('gaji')) {
       return Icons.account_balance_wallet_rounded;
     } else if (title.contains('pesanan') || title.contains('order')) {
       return Icons.shopping_cart_rounded;
@@ -166,7 +182,12 @@ class _NotificationsPageState extends State<NotificationsPage>
 
   List<Color> _getNotificationGradient(NotificationModel notif) {
     final title = notif.title.toLowerCase();
-    if (title.contains('pembayaran') || title.contains('gaji')) {
+    if (notif.type.toLowerCase().startsWith('alfa_hrd_call_')) {
+      return [
+        FollowMeTokens.absent,
+        FollowMeTokens.absent.withValues(alpha: 0.8),
+      ];
+    } else if (title.contains('pembayaran') || title.contains('gaji')) {
       return [const Color(0xFF1ABC9C), const Color(0xFF16A085)];
     } else if (title.contains('pesanan') || title.contains('order')) {
       return [const Color(0xFF3498DB), const Color(0xFF2980B9)];

@@ -15,7 +15,8 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     // 1. Request Permissions
@@ -41,10 +42,14 @@ class NotificationService {
 
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initSettings = InitializationSettings(android: androidSettings);
-    
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+    );
+
     await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
 
     await _localNotifications.initialize(
@@ -73,14 +78,17 @@ class NotificationService {
   }
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'high_importance_channel', // id
-      'High Importance Notifications', // title
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'high_importance_channel', // id
+          'High Importance Notifications', // title
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
+    const NotificationDetails platformDetails = NotificationDetails(
+      android: androidDetails,
     );
-    const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
 
     await _localNotifications.show(
       id: message.notification.hashCode,
@@ -91,14 +99,25 @@ class NotificationService {
   }
 
   // Method buat ngetes gampang dari UI
-  Future<void> showTestNotification({required String title, required String body}) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'high_importance_channel',
-      'High Importance Notifications',
-      importance: Importance.max,
-      priority: Priority.high,
+  Future<void> showTestNotification({
+    required String title,
+    required String body,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'high_importance_channel',
+          'High Importance Notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
+    const NotificationDetails platformDetails = NotificationDetails(
+      android: androidDetails,
     );
-    const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
-    await _localNotifications.show(id: 0, title: title, body: body, notificationDetails: platformDetails);
+    await _localNotifications.show(
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: platformDetails,
+    );
   }
 }

@@ -2,44 +2,38 @@
 
 import 'package:universal_io/io.dart';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 
 import '../core/constants/api_constants.dart';
 import '../core/constants/demo_preview.dart';
+import '../core/exceptions/app_exception.dart';
 import '../models/user_model.dart';
 import '../models/absensi_model.dart';
 import '../models/notification_model.dart';
+import '../services/attendance_location_service.dart';
 
 class ApiService {
   final Dio _dio;
   final _storage = const FlutterSecureStorage();
   static const String _authTokenKey = 'auth_token';
 
-  ApiService()
-    : _dio = Dio(
-        BaseOptions(
-          baseUrl: ApiConstants.baseUrl,
-          connectTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 60),
-          sendTimeout: const Duration(seconds: 60),
-          headers: {'Accept': 'application/json'},
-        ),
-      ) {
-    _dio.httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        final client = HttpClient();
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return client;
-      },
-    );
-
+  ApiService({Dio? dio})
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: ApiConstants.baseUrl,
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 60),
+              sendTimeout: const Duration(seconds: 60),
+              headers: {'Accept': 'application/json'},
+            ),
+          ) {
+    _dio.options.headers.putIfAbsent('Accept', () => 'application/json');
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -52,17 +46,20 @@ class ApiService {
             );
           }
           final token = await _storage.read(key: _authTokenKey);
-          if (token != null) {
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
-        onError: (DioException e, handler) {
+        onError: (DioException e, handler) async {
           if (e.response?.statusCode == 401) {
             debugPrint(
               'Unauthorized request. Token might be expired or invalid. Attempting to clear token.',
             );
-            _deleteToken();
+            await _deleteToken();
           }
           return handler.next(e);
         },
@@ -87,46 +84,12 @@ class ApiService {
     required String employmentType,
     required String workLocation,
   }) async {
-    try {
-      final response = await _dio.post(
-        'register',
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-          'id_karyawan': idKaryawan,
-          'departemen': departemen,
-          'employment_type': employmentType,
-          'work_location': workLocation,
-        },
-      );
-      if (response.statusCode == 201) {
-        await _saveToken(response.data['access_token']);
-        final dynamic userData = response.data['user'];
-        if (userData != null && userData is Map<String, dynamic>) {
-          return {
-            'success': true,
-            'user': User.fromJson(userData),
-            'access_token': response.data['access_token'],
-          };
-        }
-        return {
-          'success': true,
-          'message':
-              'Registration successful, but user data not found or invalid.',
-        };
-      } else {
-        return {
-          'success': false,
-          'message': response.data['message'] ?? 'Registration failed.',
-        };
-      }
-    } on DioException catch (e) {
-      return _handleDioError(e, 'Registration failed');
-    } catch (e) {
-      return {'success': false, 'message': e.toString()};
-    }
+    return {
+      'success': false,
+      'statusCode': 404,
+      'message':
+          'Pendaftaran mandiri belum tersedia. Silakan hubungi HRD untuk membuat akun.',
+    };
   }
 
   Future<Map<String, dynamic>> login({
@@ -295,8 +258,8 @@ class ApiService {
 
   Future<User?> getAuthenticatedUser() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      if (!prefs.containsKey(_authTokenKey)) {
+      final token = await _storage.read(key: _authTokenKey);
+      if (token == null || token.isEmpty) {
         return null;
       }
       final response = await _dio.get('user');
@@ -305,22 +268,21 @@ class ApiService {
         if (userData is Map<String, dynamic>) {
           return User.fromJson(userData);
         } else {
-          debugPrint(
-            'Error: response.data is not a Map<String, dynamic> in getAuthenticatedUser. Type: ${response.data.runtimeType}, Data: ${response.data}',
-          );
-          return null;
+          throw const FormatException('Unexpected user response from API.');
         }
       }
-      return null;
+      throw const FormatException('Empty user response from API.');
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         await _deleteToken();
       }
-      _handleDioError(e, 'Failed to fetch authenticated user');
-      return null;
-    } catch (e) {
-      debugPrint('Error fetching authenticated user: $e');
-      return null;
+      final error = _handleDioError(e, 'Gagal memuat data akun.');
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
     }
   }
 
@@ -329,37 +291,19 @@ class ApiService {
   // =========================================================================
 
   Future<Map<String, dynamic>> updateProfile({
-    required String name,
-    required String email,
-    required String idKaryawan,
-    required String departemen,
-    required String employmentType,
-    File? profilePhoto,
+    required File profilePhoto,
+    String? previousProfilePhotoPath,
   }) async {
     try {
-      FormData formData = FormData.fromMap({
-        'name': name,
-        'email': email,
-        'id_karyawan': idKaryawan,
-        'departemen': departemen,
-        'employment_type': employmentType,
+      final String fileName = profilePhoto.path.split('/').last;
+      final String? mimeType = lookupMimeType(profilePhoto.path);
+      final formData = FormData.fromMap({
+        'profile_photo': await MultipartFile.fromFile(
+          profilePhoto.path,
+          filename: fileName,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        ),
       });
-
-      if (profilePhoto != null) {
-        String fileName = profilePhoto.path.split('/').last;
-        String? mimeType = lookupMimeType(profilePhoto.path);
-
-        formData.files.add(
-          MapEntry(
-            'profile_photo',
-            await MultipartFile.fromFile(
-              profilePhoto.path,
-              filename: fileName,
-              contentType: mimeType != null ? MediaType.parse(mimeType) : null,
-            ),
-          ),
-        );
-      }
 
       final response = await _dio.post(
         'user/profile',
@@ -370,17 +314,26 @@ class ApiService {
       if (response.statusCode == 200 && response.data != null) {
         final dynamic userData = response.data['user'] ?? response.data['data'];
         if (userData != null && userData is Map<String, dynamic>) {
+          final updatedUser = User.fromJson(userData);
+          if (updatedUser.profilePhotoPath == null ||
+              updatedUser.profilePhotoPath!.isEmpty ||
+              updatedUser.profilePhotoPath == previousProfilePhotoPath) {
+            return {
+              'success': false,
+              'message':
+                  'Data profil tersimpan, tetapi server belum mengonfirmasi foto baru. Coba pilih foto yang lebih kecil dan simpan kembali.',
+            };
+          }
           return {
             'success': true,
             'message': response.data['message'],
-            'user': User.fromJson(userData),
+            'user': updatedUser,
           };
         }
         return {
-          'success': true,
+          'success': false,
           'message':
-              response.data['message'] ??
-              'Profile updated successfully, but user data not returned.',
+              'Server tidak mengonfirmasi penyimpanan foto profil. Coba lagi.',
         };
       }
       return {
@@ -388,7 +341,20 @@ class ApiService {
         'message': response.data['message'] ?? 'Failed to update profile.',
       };
     } on DioException catch (e) {
-      return _handleDioError(e, 'Gagal mengupdate profil');
+      final error = _handleDioError(e, 'Gagal mengupdate profil');
+      final validationErrors = error['errors'];
+      if (validationErrors is Map &&
+          validationErrors.keys.any(
+            (field) => const {
+              'name',
+              'id_karyawan',
+              'departemen',
+            }.contains(field.toString()),
+          )) {
+        error['message'] =
+            'Waduh, mau ubah-ubah data ya? No-no dulu! Nama, ID karyawan, dan departemen hanya bisa diubah HRD.';
+      }
+      return error;
     } catch (e) {
       return {'success': false, 'message': e.toString()};
     }
@@ -459,7 +425,6 @@ class ApiService {
         'is_mocked': isMocked ? 1 : 0,
         if (tipe != null) 'tipe': tipe,
         if (keterangan != null) 'keterangan_izin_sakit': keterangan,
-        if (keterangan != null) 'keterangan': keterangan,
       });
 
       if (fileBukti != null) {
@@ -693,13 +658,15 @@ class ApiService {
             .map((e) => Absensi.fromJson(e as Map<String, dynamic>))
             .toList();
       }
-      return [];
+      throw const FormatException('Unexpected attendance response from API.');
     } on DioException catch (e) {
-      _handleDioError(e, 'Gagal mengambil riwayat absensi');
-      return [];
-    } catch (e) {
-      debugPrint('Error fetching personal attendance: $e');
-      return [];
+      final error = _handleDioError(e, 'Gagal mengambil riwayat absensi');
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
     }
   }
 
@@ -718,7 +685,6 @@ class ApiService {
           filename: fileName,
         ),
         'keterangan_izin_sakit': catatan,
-        'keterangan': catatan,
         'status': 'sakit',
         if (startDate != null)
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
@@ -764,7 +730,6 @@ class ApiService {
         'keterangan_izin_sakit': catatan, // ✅ fix
         'catatan_admin': catatanPanggilan, // ✅ fix
         'status': 'izin', // ✅ tambah status
-        'submission_type': catatanPanggilan, // ✅ simpan jenis cuti
         if (startDate != null)
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
         if (endDate != null)
@@ -847,11 +812,8 @@ class ApiService {
         'Gagal mengajukan pulang lebih awal.',
         logResponse: false,
       );
-    } catch (_) {
-      return {
-        'success': false,
-        'message': 'Gagal mengajukan pulang lebih awal. Coba lagi.',
-      };
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -893,7 +855,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> resubmitSakit({
     required int absensiId,
-    File? fileBukti,
+    required File fileBukti,
     required String catatan,
     DateTime? startDate,
     DateTime? endDate,
@@ -901,8 +863,6 @@ class ApiService {
     try {
       Map<String, dynamic> mapData = {
         'keterangan_izin_sakit': catatan,
-        'keterangan': catatan,
-        'status': 'pending',
 
         if (startDate != null)
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
@@ -912,15 +872,13 @@ class ApiService {
 
       FormData formData = FormData.fromMap(mapData);
 
-      if (fileBukti != null) {
-        String fileName = fileBukti.path.split('/').last;
-        formData.files.add(
-          MapEntry(
-            'file_bukti',
-            await MultipartFile.fromFile(fileBukti.path, filename: fileName),
-          ),
-        );
-      }
+      String fileName = fileBukti.path.split('/').last;
+      formData.files.add(
+        MapEntry(
+          'file_bukti',
+          await MultipartFile.fromFile(fileBukti.path, filename: fileName),
+        ),
+      );
 
       final response = await _dio.post(
         'absensi/sakit/$absensiId/resubmit',
@@ -943,18 +901,14 @@ class ApiService {
 
   Future<Map<String, dynamic>> resubmitIzin({
     required int absensiId,
-    File? fileBukti,
+    required File fileBukti,
     required String catatan,
-    required String catatanPanggilan,
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     try {
       Map<String, dynamic> mapData = {
-        'catatan': catatan,
-        'catatan_panggilan': catatanPanggilan,
-        'tipe': 'izin',
-        'status': 'pending',
+        'keterangan_izin_sakit': catatan,
 
         if (startDate != null)
           'start_date': DateFormat('yyyy-MM-dd').format(startDate),
@@ -964,15 +918,13 @@ class ApiService {
 
       FormData formData = FormData.fromMap(mapData);
 
-      if (fileBukti != null) {
-        String fileName = fileBukti.path.split('/').last;
-        formData.files.add(
-          MapEntry(
-            'file_bukti',
-            await MultipartFile.fromFile(fileBukti.path, filename: fileName),
-          ),
-        );
-      }
+      String fileName = fileBukti.path.split('/').last;
+      formData.files.add(
+        MapEntry(
+          'file_bukti',
+          await MultipartFile.fromFile(fileBukti.path, filename: fileName),
+        ),
+      );
 
       final response = await _dio.post(
         'absensi/izin/$absensiId/resubmit',
@@ -1012,17 +964,10 @@ class ApiService {
         'istirahat': istirahat ? '1' : '0',
         'keterangan': keterangan,
         'keterangan_goals': goals,
-        'status': 'pending',
       });
 
-      // Upload multiple files
       for (int i = 0; i < hasilKerjaFiles.length && i < 5; i++) {
-        String fieldName = i == 0
-            ? 'foto'
-            : 'foto_${i + 1}'; // Backend usually uses 'foto' for the first one in lembur resubmit or 'foto_bukti'
-        // If it follows submitLembur logic:
-        // i == 0 ? 'foto_bukti' : 'foto_${i+1}'
-        // But the previous resubmitLembur used 'foto'. I'll stick to 'foto' for the first one but add others.
+        final fieldName = i == 0 ? 'foto' : 'foto_${i + 1}';
         String fName = hasilKerjaFiles[i].path.split('/').last;
         formData.files.add(
           MapEntry(
@@ -1070,18 +1015,25 @@ class ApiService {
           response.data['data'] is List) {
         final List notifs = response.data['data'];
         final unread = notifs.where((n) {
-          final isRead = n['is_read'];
-          return isRead == 0 || isRead == '0';
+          final value = n['is_read'];
+          return value != true && value != 1 && value?.toString() != '1';
         }).length;
         return unread;
       }
-      return 0;
+      throw const FormatException(
+        'Unexpected notifications response from API.',
+      );
     } on DioException catch (e) {
-      _handleDioError(e, 'Gagal mengambil jumlah notifikasi belum dibaca');
-      return 0;
-    } catch (e) {
-      debugPrint('Error fetching unread count: $e');
-      return 0;
+      final error = _handleDioError(
+        e,
+        'Gagal mengambil jumlah notifikasi belum dibaca',
+      );
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
     }
   }
 
@@ -1095,13 +1047,17 @@ class ApiService {
             .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
             .toList();
       }
-      return [];
+      throw const FormatException(
+        'Unexpected notifications response from API.',
+      );
     } on DioException catch (e) {
-      _handleDioError(e, 'Gagal mengambil daftar notifikasi');
-      return [];
-    } catch (e) {
-      debugPrint('Error fetching notifications: $e');
-      return [];
+      final error = _handleDioError(e, 'Gagal mengambil daftar notifikasi');
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
     }
   }
 
@@ -1130,6 +1086,173 @@ class ApiService {
   }
 
   // =========================================================================
+  Future<List<Map<String, dynamic>>> fetchPayrollSlips() async {
+    try {
+      final response = await _dio.get('payroll/slips');
+      final dynamic data = response.data?['data'];
+      if (response.statusCode == 200 && data is List) {
+        return data.whereType<Map<String, dynamic>>().toList(growable: false);
+      }
+      throw const FormatException('Unexpected payroll slips response.');
+    } on DioException catch (e) {
+      final error = _handleDioError(e, 'Gagal mengambil slip gaji');
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
+    }
+  }
+
+  Future<AttendanceGeofenceConfig> fetchAttendanceGeofence() async {
+    try {
+      final response = await _dio.get('attendance/geofence');
+      final dynamic data = response.data?['data'];
+      if (response.statusCode == 200 && data is Map<String, dynamic>) {
+        return AttendanceGeofenceConfig.fromJson(data);
+      }
+      throw const FormatException('Unexpected attendance geofence response.');
+    } on DioException catch (e) {
+      final error = _handleDioError(e, 'Gagal mengambil konfigurasi lokasi kerja');
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchEmployeeHrRequests() async {
+    try {
+      final response = await _dio.get('hr-requests');
+      final dynamic data = response.data?['data'];
+      if (response.statusCode == 200 && data is Map<String, dynamic>) {
+        return {'success': true, 'data': data};
+      }
+      return {
+        'success': false,
+        'message': 'Format data pengajuan HR tidak dikenali.',
+      };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Gagal mengambil pengajuan HR');
+    }
+  }
+
+  Future<Map<String, dynamic>> submitReimbursement({
+    required int typeId,
+    required int amount,
+    required String description,
+    required Uint8List receiptBytes,
+    required String receiptName,
+  }) async {
+    try {
+      final extension = receiptName.split('.').last.toLowerCase();
+      final contentType = switch (extension) {
+        'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+        'png' => MediaType('image', 'png'),
+        'pdf' => MediaType('application', 'pdf'),
+        _ => throw const FormatException('Format bukti tidak didukung.'),
+      };
+      final response = await _dio.post(
+        'hr-requests/reimbursements',
+        data: FormData.fromMap({
+          'type_id': typeId,
+          'amount': amount,
+          'description': description,
+          'receipt': MultipartFile.fromBytes(
+            receiptBytes,
+            filename: receiptName,
+            contentType: contentType,
+          ),
+        }),
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final dynamic data = response.data;
+      if (response.statusCode == 201 &&
+          data is Map<String, dynamic> &&
+          data['success'] == true) {
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Pengajuan reimbursement terkirim.',
+        };
+      }
+      return {
+        'success': false,
+        'message': data is Map<String, dynamic>
+            ? data['message'] ?? 'Pengajuan reimbursement gagal.'
+            : 'Pengajuan reimbursement gagal.',
+      };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Pengajuan reimbursement gagal');
+    } on FormatException catch (e) {
+      return {'success': false, 'message': e.message};
+    }
+  }
+
+  Future<Map<String, dynamic>> submitLoanRequest({
+    required int principal,
+    required int tenorMonths,
+    required String purpose,
+  }) async {
+    try {
+      final response = await _dio.post(
+        'hr-requests/loans',
+        data: {
+          'principal': principal,
+          'tenor_months': tenorMonths,
+          'purpose': purpose,
+        },
+      );
+      final dynamic data = response.data;
+      if (response.statusCode == 201 &&
+          data is Map<String, dynamic> &&
+          data['success'] == true) {
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Pengajuan pinjaman terkirim.',
+        };
+      }
+      return {
+        'success': false,
+        'message': data is Map<String, dynamic>
+            ? data['message'] ?? 'Pengajuan pinjaman gagal.'
+            : 'Pengajuan pinjaman gagal.',
+      };
+    } on DioException catch (e) {
+      return _handleDioError(e, 'Pengajuan pinjaman gagal');
+    }
+  }
+
+  Future<Uint8List> downloadPayrollSlip(int itemId) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        'payroll/slips/$itemId/download',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final bytes = response.data;
+      if (response.statusCode == 200 &&
+          bytes != null &&
+          bytes.isNotEmpty &&
+          (response.headers.value(Headers.contentTypeHeader)?.contains(
+                'application/pdf',
+              ) ??
+              false)) {
+        return Uint8List.fromList(bytes);
+      }
+      throw const FormatException('Unexpected payroll slip download response.');
+    } on DioException catch (e) {
+      final error = _handleDioError(e, 'Gagal mengunduh slip gaji');
+      throw AppException(
+        message: error['message'] as String,
+        statusCode: error['statusCode'] as int?,
+        isNetworkError: error['isNetworkError'] == true,
+        errors: error['errors'],
+      );
+    }
+  }
+
   // SECTION TOKEN & ERROR HANDLING
   // =========================================================================
 
@@ -1179,7 +1302,8 @@ class ApiService {
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.connectionError) {
       isNetworkError = true;
-      message = "internet lu bapuk banget boy asli";
+      message =
+          'Tidak dapat terhubung ke server. Periksa koneksi dan alamat API.';
     }
 
     if (e.response != null) {
@@ -1207,14 +1331,15 @@ class ApiService {
             .where((value) => value != null)
             .map((value) => value.toString())
             .toList();
-        if (details.isNotEmpty) {
-          message = '$message ${details.join(' ')}';
+        final missingDetails = details
+            .where((detail) => !message.contains(detail))
+            .toList();
+        if (missingDetails.isNotEmpty) {
+          message = '$message ${missingDetails.join(' ')}';
         }
       }
       if (logResponse) {
-        debugPrint(
-          'Dio error: ${e.response!.statusCode} - ${e.response!.data}',
-        );
+        debugPrint('Dio request failed with status ${e.response!.statusCode}.');
       }
     } else if (!isNetworkError) {
       message = 'Network error: ${e.message}';

@@ -17,72 +17,6 @@ const Color kBackgroundColor = Color(0xFFF5F4F0);
 // MODERN UI COMPONENTS
 // ----------------------------------------------------------------------
 
-class ModernTextField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-  final IconData icon;
-
-  const ModernTextField({
-    super.key,
-    required this.label,
-    required this.controller,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200, width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: TextFormField(
-              controller: controller,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
-              ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                prefixIcon: Icon(icon, color: kPrimaryColor, size: 22),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class NonEditableField extends StatelessWidget {
   final String label;
   final String value;
@@ -220,10 +154,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ApiService _apiService = ApiService();
 
   File? _imageFile;
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _idKaryawanController = TextEditingController();
-  final TextEditingController _departemenController = TextEditingController();
-
   late Future<User?> _userProfileFuture;
   User? _user;
   bool _isSaving = false;
@@ -236,9 +166,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _idKaryawanController.dispose();
-    _departemenController.dispose();
     super.dispose();
   }
 
@@ -254,11 +181,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
 
-    if (_user != null) {
-      _nameController.text = _user!.name;
-      _idKaryawanController.text = _user!.idKaryawan;
-      _departemenController.text = _user!.departemen;
-    }
     return _user;
   }
 
@@ -284,6 +206,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _saveProfile() async {
     if (_user == null) return;
+    if (_imageFile == null) {
+      _showSnackBar('Pilih foto profil terlebih dahulu.', isSuccess: false);
+      return;
+    }
     setState(() => _isSaving = true);
 
     try {
@@ -293,16 +219,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       File? compressedPhoto;
       if (_imageFile != null) {
-        compressedPhoto = await ImageCompressService.compressImage(_imageFile!);
+        compressedPhoto = await ImageCompressService.compressProfilePhoto(
+          _imageFile!,
+        );
       }
 
       final result = await _apiService.updateProfile(
-        name: _nameController.text,
-        email: _user!.email,
-        idKaryawan: _idKaryawanController.text,
-        departemen: _departemenController.text,
-        employmentType: _user!.employmentType,
-        profilePhoto: compressedPhoto,
+        profilePhoto: compressedPhoto!,
+        previousProfilePhotoPath: _user!.profilePhotoPath,
       );
 
       if (!mounted) return;
@@ -608,19 +532,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 32),
 
-                      ModernTextField(
+                      NonEditableField(
                         label: 'Nama Lengkap',
-                        controller: _nameController,
+                        value: _user!.name,
                         icon: Icons.person_rounded,
                       ),
-                      ModernTextField(
+                      NonEditableField(
                         label: 'ID Karyawan',
-                        controller: _idKaryawanController,
+                        value: _user!.idKaryawan ?? '-',
                         icon: Icons.badge_rounded,
                       ),
-                      ModernTextField(
+                      NonEditableField(
                         label: 'Departemen',
-                        controller: _departemenController,
+                        value: _user!.departemen ?? '-',
                         icon: Icons.apartment_rounded,
                       ),
                       NonEditableField(
@@ -661,7 +585,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: _isSaving ? null : _saveProfile,
+                          onPressed: _isSaving || _imageFile == null
+                              ? null
+                              : _saveProfile,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -672,7 +598,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: _isSaving
                               ? const _ModernLoading()
                               : const Text(
-                                  'Simpan Perubahan',
+                                  'Simpan Foto Profil',
                                   style: TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 16,
@@ -889,7 +815,7 @@ class _ProfileHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  user.idKaryawan,
+                  user.idKaryawan ?? '-',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 14,
