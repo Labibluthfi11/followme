@@ -196,18 +196,37 @@ class Absensi {
       }
     }
 
+    String? parseLocation(dynamic rawLocation) {
+      if (rawLocation is Map) {
+        final latitude = rawLocation['lat'];
+        final longitude = rawLocation['long'] ?? rawLocation['lng'];
+        if (latitude == null && longitude == null) return null;
+        return '${latitude ?? ''},${longitude ?? ''}';
+      }
+      return rawLocation?.toString();
+    }
+
+    final id = int.tryParse(json['id'].toString());
+    if (id == null) {
+      throw const FormatException('Absensi response has no valid id.');
+    }
+
     return Absensi(
-      id: int.tryParse(json['id'].toString()) ?? 0,
+      id: id,
       userId: int.tryParse(json['user_id'].toString()) ?? 0,
       status: json['status']?.toString() ?? '',
-      checkInAt: json['check_in_at']?.toString() ??
+      checkInAt:
+          json['check_in_at']?.toString() ??
+          json['jam_masuk']?.toString() ??
           json['start_date']?.toString() ??
           json['tanggal']?.toString(),
-      checkOutAt: json['check_out_at']?.toString() ??
+      checkOutAt:
+          json['check_out_at']?.toString() ??
+          json['jam_keluar']?.toString() ??
           json['end_date']?.toString() ??
           json['tanggal_selesai']?.toString(),
-      lokasiMasuk: json['lokasi_masuk']?.toString(),
-      lokasiPulang: json['lokasi_pulang']?.toString(),
+      lokasiMasuk: parseLocation(json['lokasi_masuk']),
+      lokasiPulang: parseLocation(json['lokasi_pulang']),
       fotoMasuk: json['foto_masuk']?.toString(),
       fotoPulang: json['foto_pulang']?.toString(),
       tipe: json['tipe']?.toString(),
@@ -216,7 +235,8 @@ class Absensi {
       fileBukti: json['file_bukti']?.toString(),
       statusApproval: json['status_approval']?.toString(),
       catatanAdmin: json['catatan_admin']?.toString(),
-      keterangan: json['keterangan']?.toString() ??
+      keterangan:
+          json['keterangan']?.toString() ??
           json['catatan']?.toString() ??
           json['keterangan_izin_sakit']?.toString(),
       lemburStart: json['lembur_start']?.toString(),
@@ -224,7 +244,9 @@ class Absensi {
       lemburRest: json['lembur_rest'] == "1" || json['lembur_rest'] == true,
       lemburKeterangan: json['lembur_keterangan']?.toString(),
       fotoMasukUrl: parseUrl(json['foto_masuk_url']),
-      fotoPulangUrl: parseUrl(json['foto_pulang_url']),
+      fotoPulangUrl: parseUrl(
+        json['foto_pulang_url'] ?? json['foto_keluar_url'],
+      ),
       fileBuktiUrl: parseUrl(
         json['file_bukti_url'] ??
             json['file_url'] ??
@@ -238,8 +260,12 @@ class Absensi {
       rejectedBy: json['rejected_by']?.toString(),
       lateMinutes: json['late_minutes'] != null
           ? int.tryParse(json['late_minutes'].toString()) ?? 0
+          : json['is_late'] == true || json['is_late']?.toString() == '1'
+          ? 1
           : null,
-      lateDurationText: json['late_duration_text']?.toString(),
+      lateDurationText:
+          json['late_duration_text']?.toString() ??
+          json['keterangan_telat']?.toString(),
       // 🆕 Parse field gaji
       roundedLateMinutes: json['rounded_late_minutes'] != null
           ? int.tryParse(json['rounded_late_minutes'].toString())
@@ -274,14 +300,23 @@ class Absensi {
 
   bool get isRejected => statusApproval == "rejected";
 
+  String get statusLabel {
+    if (status.toLowerCase() == 'hadir' && checkOutAt?.isNotEmpty == true) {
+      return 'Selesai';
+    }
+    return status;
+  }
+
   String get approvedBy {
     if (workflowStatus == null) return "-";
-    final approved = workflowStatus!.entries.where((e) => e.value == "approved");
+    final approved = workflowStatus!.entries.where(
+      (e) => e.value == "approved",
+    );
     if (approved.isNotEmpty) {
       return approved.last.key;
     }
     return "-";
   }
 
-  bool get isLate => (lateMinutes ?? 0) > 0 && status.toLowerCase() == 'hadir'; 
+  bool get isLate => (lateMinutes ?? 0) > 0 && status.toLowerCase() == 'hadir';
 }

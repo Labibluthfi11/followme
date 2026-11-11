@@ -620,8 +620,17 @@ class AbsensiProvider with ChangeNotifier {
 
       // ✅ Panggil API resubmit sesuai tipe
       if (tipe == 'sakit') {
-        File? compressedFileBukti;
-        if (fileBukti != null) {
+        if (fileBukti == null) {
+          result = {
+            'success': false,
+            'statusCode': 422,
+            'message': 'Unggah ulang file bukti untuk mengajukan ulang sakit.',
+            'errors': {
+              'file_bukti': ['File bukti wajib diunggah ulang.'],
+            },
+          };
+        } else {
+          File? compressedFileBukti;
           debugPrint('📤 [API] Calling resubmitSakit with new file...');
           compressedFileBukti = await ImageCompressService.compressImage(
             fileBukti,
@@ -631,27 +640,32 @@ class AbsensiProvider with ChangeNotifier {
           debugPrint(
             '⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB',
           );
-        } else {
+
+          final uploadStopwatch = Stopwatch()..start();
+          result = await _apiService.resubmitSakit(
+            absensiId: absensiId,
+            fileBukti: compressedFileBukti,
+            catatan: catatan ?? '',
+            startDate: startDate,
+            endDate: endDate,
+          );
+          uploadStopwatch.stop();
           debugPrint(
-            '📤 [API] Calling resubmitSakit without new file (reusing existing)...',
+            '⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms',
           );
         }
-
-        final uploadStopwatch = Stopwatch()..start();
-        result = await _apiService.resubmitSakit(
-          absensiId: absensiId,
-          fileBukti: compressedFileBukti,
-          catatan: catatan ?? '',
-          startDate: startDate,
-          endDate: endDate,
-        );
-        uploadStopwatch.stop();
-        debugPrint(
-          '⏱️ [Audit] Upload Resubmit Sakit: ${uploadStopwatch.elapsedMilliseconds}ms',
-        );
       } else if (tipe == 'izin') {
-        File? compressedFileBukti;
-        if (fileBukti != null) {
+        if (fileBukti == null) {
+          result = {
+            'success': false,
+            'statusCode': 422,
+            'message': 'Unggah ulang file bukti untuk mengajukan ulang izin.',
+            'errors': {
+              'file_bukti': ['File bukti wajib diunggah ulang.'],
+            },
+          };
+        } else {
+          File? compressedFileBukti;
           debugPrint('📤 [API] Calling resubmitIzin with new file...');
           compressedFileBukti = await ImageCompressService.compressImage(
             fileBukti,
@@ -661,25 +675,20 @@ class AbsensiProvider with ChangeNotifier {
           debugPrint(
             '⏱️ [Audit] Kompresi: ${compressStopwatch.elapsedMilliseconds}ms, Ukuran: ${(fileSize / 1024).toStringAsFixed(2)} KB',
           );
-        } else {
+
+          final uploadStopwatch = Stopwatch()..start();
+          result = await _apiService.resubmitIzin(
+            absensiId: absensiId,
+            fileBukti: compressedFileBukti,
+            catatan: catatan ?? '',
+            startDate: startDate,
+            endDate: endDate,
+          );
+          uploadStopwatch.stop();
           debugPrint(
-            '📤 [API] Calling resubmitIzin without new file (reusing existing)...',
+            '⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms',
           );
         }
-
-        final uploadStopwatch = Stopwatch()..start();
-        result = await _apiService.resubmitIzin(
-          absensiId: absensiId,
-          fileBukti: compressedFileBukti,
-          catatan: catatan ?? '',
-          catatanPanggilan: catatanPanggilan ?? '',
-          startDate: startDate,
-          endDate: endDate,
-        );
-        uploadStopwatch.stop();
-        debugPrint(
-          '⏱️ [Audit] Upload Resubmit Izin: ${uploadStopwatch.elapsedMilliseconds}ms',
-        );
       } else if (tipe == 'lembur') {
         if (hasilKerjaFiles == null || hasilKerjaFiles.isEmpty) {
           result = {

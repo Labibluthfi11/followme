@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../core/constants/app_theme.dart';
+import '../services/attendance_location_service.dart';
 
 class LocationStatusCard extends StatelessWidget {
   final bool isWithinRadius;
   final bool isLoading;
   final String message;
   final VoidCallback? onRetry;
+  final double? radiusMeters;
 
   const LocationStatusCard({
     super.key,
@@ -14,6 +16,7 @@ class LocationStatusCard extends StatelessWidget {
     required this.isLoading,
     required this.message,
     this.onRetry,
+    this.radiusMeters,
   });
 
   @override
@@ -88,7 +91,7 @@ class LocationStatusCard extends StatelessWidget {
               children: [
                 Text(
                   isWithinRadius
-                      ? 'Di area kantor'
+                      ? 'Di area kerja'
                       : isLoading
                       ? 'Memeriksa lokasi'
                       : 'Lokasi belum sesuai',
@@ -100,7 +103,7 @@ class LocationStatusCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   message,
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -109,7 +112,7 @@ class LocationStatusCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Radius absensi 100 m',
+                  'Radius absensi ${(radiusMeters ?? AttendanceLocationService.allowedRadiusMeters).round()} m',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,

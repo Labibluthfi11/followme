@@ -1,4 +1,7 @@
 import java.util.Properties
+import java.security.KeyStore
+import java.security.MessageDigest
+import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
@@ -14,8 +17,27 @@ val releaseSigningProperties = Properties().apply {
     }
 }
 val requiredSigningProperties = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+val expectedReleaseCertificateSha256 =
+    "ab2e0c26fa817a7468c4f11db7d3b1dc62323bab565526c0f12b7b0a2f761edf"
 val releaseSigningConfigured = requiredSigningProperties.all {
     !releaseSigningProperties.getProperty(it).isNullOrBlank()
+}
+
+fun releaseCertificateSha256(): String {
+    val storePassword = releaseSigningProperties.getProperty("storePassword")
+    val keyAlias = releaseSigningProperties.getProperty("keyAlias")
+    val storeFile = rootProject.file(releaseSigningProperties.getProperty("storeFile"))
+    if (!storeFile.isFile) {
+        throw GradleException("Release keystore file was not found: ${storeFile.path}")
+    }
+
+    val keystore = KeyStore.getInstance("JKS")
+    FileInputStream(storeFile).use { keystore.load(it, storePassword.toCharArray()) }
+    val certificate = keystore.getCertificate(keyAlias)
+        ?: throw GradleException("Release certificate alias was not found in the keystore.")
+    return MessageDigest.getInstance("SHA-256")
+        .digest(certificate.encoded)
+        .joinToString("") { "%02x".format(it) }
 }
 
 if (releaseSigningPropertiesFile.exists() && !releaseSigningConfigured) {
@@ -89,6 +111,13 @@ tasks.configureEach {
             if (!releaseSigningConfigured) {
                 throw GradleException(
                     "Release signing is not configured. Create android/key.properties using the documented release keystore settings."
+                )
+            }
+            val actualCertificateSha256 = releaseCertificateSha256()
+            if (actualCertificateSha256 != expectedReleaseCertificateSha256) {
+                throw GradleException(
+                    "Release signing certificate changed. APK updates require the existing release key. " +
+                        "Expected SHA-256 $expectedReleaseCertificateSha256, got $actualCertificateSha256."
                 )
             }
         }

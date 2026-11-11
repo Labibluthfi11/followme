@@ -27,21 +27,9 @@ class GlowBackground extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Positioned(
-              top: -80,
-              left: -60,
-              child: _orb(glows[0], 220),
-            ),
-            Positioned(
-              top: 80,
-              right: -50,
-              child: _orb(glows[1], 260),
-            ),
-            Positioned(
-              bottom: -90,
-              left: -60,
-              child: _orb(glows[2], 300),
-            ),
+            Positioned(top: -80, left: -60, child: _orb(glows[0], 220)),
+            Positioned(top: 80, right: -50, child: _orb(glows[1], 260)),
+            Positioned(bottom: -90, left: -60, child: _orb(glows[2], 300)),
           ],
         ),
       ),

@@ -8,6 +8,7 @@ import 'package:universal_io/io.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import '../../providers/absensi_provider.dart';
+import '../../api/api.service.dart';
 import 'package:intl/intl.dart';
 import '../../services/security_service.dart';
 import '../../services/attendance_location_service.dart';
@@ -102,6 +103,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
 
   String _locationStatus = 'Memuat lokasi...';
   Position? _currentPosition;
+  AttendanceGeofenceConfig? _geofenceConfig;
 
   @override
   void initState() {
@@ -142,9 +144,16 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
     setState(() {
       _locationStatus = 'Memuat lokasi...';
       _currentPosition = null;
+      _geofenceConfig = null;
     });
 
     try {
+      final geofenceConfig = await context
+          .read<ApiService>()
+          .fetchAttendanceGeofence();
+      if (!mounted) return;
+      setState(() => _geofenceConfig = geofenceConfig);
+
       if (!await Geolocator.isLocationServiceEnabled()) {
         if (mounted) {
           setState(() => _locationStatus = 'Layanan lokasi belum menyala.');
@@ -184,15 +193,15 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
       if (mounted) {
         setState(() {
           _currentPosition = position;
-          _locationStatus =
-              !position.accuracy.isFinite ||
-                  position.accuracy <= 0 ||
-                  position.accuracy >
-                      AttendanceLocationService.allowedRadiusMeters
-              ? 'Akurasi GPS belum cukup.'
-              : AttendanceLocationService.isWithinAllowedRadius(position)
-              ? 'Lokasi Jitu 😎'
-              : 'Di luar area lokasi kerja atau akurasi GPS belum cukup.';
+          _locationStatus = AttendanceLocationService.describeMeasurement(
+            distanceMeters: AttendanceLocationService.distanceFromWorkplace(
+              position,
+              config: geofenceConfig,
+            ),
+            accuracyMeters: position.accuracy,
+            radiusMeters: geofenceConfig.radiusMeters,
+            maximumAccuracyMeters: geofenceConfig.maximumAccuracyMeters,
+          );
         });
       }
     } catch (e) {
@@ -284,9 +293,14 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
       );
       return;
     }
-    if (!AttendanceLocationService.isWithinAllowedRadius(position)) {
+    final geofenceConfig = _geofenceConfig;
+    if (geofenceConfig == null ||
+        !AttendanceLocationService.isWithinAllowedRadius(
+          position,
+          config: geofenceConfig,
+        )) {
       _showSnackBar(
-        'Lokasi harus berada dalam radius 100 meter dengan akurasi GPS yang memadai.',
+        'Lokasi harus berada dalam radius ${geofenceConfig?.radiusMeters.round() ?? '-'} meter dengan akurasi GPS yang memadai.',
         isSuccess: false,
       );
       return;
@@ -900,6 +914,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                       isWithinRadius: locationReady,
                       isLoading: _locationStatus == 'Memuat lokasi...',
                       message: _locationStatus,
+                      radiusMeters: _geofenceConfig?.radiusMeters,
                       onRetry: !locationReady && !absensiProvider.isLoading
                           ? _checkLocation
                           : null,

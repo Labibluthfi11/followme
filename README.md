@@ -25,15 +25,61 @@ for Play Store releases.
 Back up the keystore and passwords securely. Losing them can prevent updates to
 an app already published with that signing key.
 
-The app's default API endpoint is the production HTTPS service. Release builds
-require a valid TLS certificate; do not enable certificate bypasses or use a
-local `localhost` API URL for employee devices.
+Every Android release must use the same upload keystore. The release Gradle task
+checks the certificate fingerprint and fails if a different key is configured.
+Keep at least two secure backups of the keystore and its passwords; never replace
+it with a debug keystore. Existing installations signed with a different
+certificate require a one-time uninstall/reinstall migration after their local
+data has synced. Android cannot install an APK update signed by a different key.
+
+The app's default API endpoint is `https://app.followme.id/api/v1/`, and its
+update manifest is `https://app.followme.id/update.json`. Release builds require
+a valid TLS certificate; do not enable certificate bypasses or use a local
+`localhost` API URL for employee devices. Keep the public update manifest's
+version and download URL in sync with each release.
 
 On Windows, `build_apk.bat` builds a signed, obfuscated APK for direct
 distribution. It requires Flutter to be available on `PATH`. For Play Store
 uploads, use the app bundle command above. Ensure `storeFile` in
 `android/key.properties` points to a keystore path valid on the machine doing
 the build.
+
+### Internal APK updates
+
+The Android app checks `https://app.followme.id/update.json`. Keep
+`download_url` set to the stable URL
+`https://app.followme.id/releases/followme-latest.apk`. For each release,
+replace the APK file at that URL and update `build_number` in the manifest to
+match the APK's Android version code. Increase the build number for every APK,
+even when the user-facing `version` stays the same. Android rejects reinstalling
+an APK with the same version code, so increment the build suffix in
+`pubspec.yaml` (for example, `1.0.16+18` to `1.0.16+19`) without changing the
+version name. The updater compares both the version name and build number, so
+the replacement is offered once and no longer appears after that build is
+installed. Publish the APK before publishing the manifest that points to it.
+The download link does not change between releases. Users install an update
+over the existing app; they do not need to uninstall it. Android still requires
+the user to approve APK installation when prompted.
+
+To require a minimum app version, set `minimum_version` to the required release.
+Older versions will show a required-update prompt and cannot dismiss it.
+The admin maintenance switch and mobile maintenance gate are not part of the app.
+The updater shows download progress, stops waiting if progress stalls, and offers
+retry or browser download instead of leaving an endless loading indicator. After
+the system installer opens, finish the installation there and return to Followme.
+
+```json
+{
+  "version": "1.0.16",
+  "build_number": 19,
+  "download_url": "https://app.followme.id/releases/followme-latest.apk",
+  "minimum_version": "1.0.9"
+}
+```
+
+Server/API-only changes do not require a new APK. Changes to mobile code require
+a new signed APK; users update over the existing app and do not need to
+uninstall it.
 
 ## Getting Started
 

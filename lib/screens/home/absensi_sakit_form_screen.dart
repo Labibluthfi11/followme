@@ -905,7 +905,9 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isResubmit ? 'Re-Submit Pengajuan' : 'Form Pengajuan',
+                                isResubmit
+                                    ? 'Re-Submit Pengajuan'
+                                    : 'Form Pengajuan',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 22,
@@ -1032,8 +1034,10 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: (_tipePengajuan == 'cuti' &&
-                                            _jumlahHariDipilih > _maxHariJenisCuti)
+                                    color:
+                                        (_tipePengajuan == 'cuti' &&
+                                            _jumlahHariDipilih >
+                                                _maxHariJenisCuti)
                                         ? Colors.red.shade50
                                         : Colors.blue.shade50,
                                     borderRadius: BorderRadius.circular(12),
@@ -1042,12 +1046,15 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                     children: [
                                       Icon(
                                         (_tipePengajuan == 'cuti' &&
-                                                _jumlahHariDipilih > _maxHariJenisCuti)
+                                                _jumlahHariDipilih >
+                                                    _maxHariJenisCuti)
                                             ? Icons.error_rounded
                                             : Icons.event_available_rounded,
                                         size: 18,
-                                        color: (_tipePengajuan == 'cuti' &&
-                                                _jumlahHariDipilih > _maxHariJenisCuti)
+                                        color:
+                                            (_tipePengajuan == 'cuti' &&
+                                                _jumlahHariDipilih >
+                                                    _maxHariJenisCuti)
                                             ? Colors.red
                                             : Colors.blue.shade700,
                                       ),
@@ -1055,15 +1062,18 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                       Expanded(
                                         child: Text(
                                           (_tipePengajuan == 'cuti' &&
-                                                  _jumlahHariDipilih > _maxHariJenisCuti)
+                                                  _jumlahHariDipilih >
+                                                      _maxHariJenisCuti)
                                               ? 'Total $_jumlahHariDipilih Hari (Melebihi Batas!)'
                                               : 'Total: $_jumlahHariDipilih Hari',
                                           style: TextStyle(
                                             fontFamily: 'Poppins',
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12,
-                                            color: (_tipePengajuan == 'cuti' &&
-                                                    _jumlahHariDipilih > _maxHariJenisCuti)
+                                            color:
+                                                (_tipePengajuan == 'cuti' &&
+                                                    _jumlahHariDipilih >
+                                                        _maxHariJenisCuti)
                                                 ? Colors.red.shade700
                                                 : Colors.blue.shade700,
                                           ),
@@ -1093,7 +1103,10 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.grey.shade200, width: 2),
+                                    border: Border.all(
+                                      color: Colors.grey.shade200,
+                                      width: 2,
+                                    ),
                                   ),
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
@@ -1113,7 +1126,9 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                           .map(
                                             (e) => DropdownMenuItem(
                                               value: e.key,
-                                              child: Text(e.value['label'] as String),
+                                              child: Text(
+                                                e.value['label'] as String,
+                                              ),
                                             ),
                                           )
                                           .toList(),
@@ -1150,7 +1165,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               _potongJatahTahunan
@@ -1181,13 +1197,15 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                             if (_potongJatahTahunan) ...[
                                               const SizedBox(height: 6),
                                               Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 4,
-                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.orange.shade200,
-                                                  borderRadius: BorderRadius.circular(10),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
                                                 ),
                                                 child: Text(
                                                   'Sisa Cuti: $sisaCuti Hari',
@@ -1195,7 +1213,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                                     fontFamily: 'Poppins',
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 11,
-                                                    color: Colors.orange.shade900,
+                                                    color:
+                                                        Colors.orange.shade900,
                                                   ),
                                                 ),
                                               ),
@@ -1220,7 +1239,8 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                               const SizedBox(height: 12),
                               _buildModernTextField(
                                 controller: _catatanController,
-                                hintText: 'Tuliskan rincian alasan dengan jelas...',
+                                hintText:
+                                    'Tuliskan rincian alasan dengan jelas...',
                                 icon: Icons.notes_rounded,
                                 maxLines: 4,
                                 validator: (v) => (v == null || v.isEmpty)
@@ -1241,12 +1261,14 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                 const SizedBox(height: 12),
                                 _buildModernTextField(
                                   controller: _catatanPanggilanController,
-                                  hintText: 'Contoh: Panggilan Sekolah / Dinas terkait',
+                                  hintText:
+                                      'Contoh: Panggilan Sekolah / Dinas terkait',
                                   icon: Icons.school_rounded,
                                   validator: (v) =>
-                                      (_tipePengajuan == 'izin' && (v == null || v.isEmpty))
-                                          ? 'Wajib diisi untuk Izin'
-                                          : null,
+                                      (_tipePengajuan == 'izin' &&
+                                          (v == null || v.isEmpty))
+                                      ? 'Wajib diisi untuk Izin'
+                                      : null,
                                 ),
                               ],
                               const SizedBox(height: 32),
@@ -1307,7 +1329,9 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                       ),
                                       if (_pickedFile != null)
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 6),
+                                          padding: const EdgeInsets.only(
+                                            top: 6,
+                                          ),
                                           child: Text(
                                             _pickedFile!.path.split('/').last,
                                             style: const TextStyle(
@@ -1357,14 +1381,19 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     border: Border.all(
-                                      color: kPrimaryColor.withValues(alpha: 0.3),
+                                      color: kPrimaryColor.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       width: 3,
                                     ),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Image.file(_pickedFile!, fit: BoxFit.cover),
+                                    child: Image.file(
+                                      _pickedFile!,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1376,7 +1405,9 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: kPrimaryColor.withValues(alpha: 0.4),
+                                      color: kPrimaryColor.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       blurRadius: 15,
                                       offset: const Offset(0, 5),
                                     ),
@@ -1394,7 +1425,9 @@ class _SakitFormScreenState extends State<SakitFormScreen> {
                                   child: _isSubmitting
                                       ? const _ModernLoading()
                                       : Text(
-                                          isResubmit ? 'Kirim Ulang' : 'Kirim Pengajuan',
+                                          isResubmit
+                                              ? 'Kirim Ulang'
+                                              : 'Kirim Pengajuan',
                                           style: const TextStyle(
                                             fontFamily: 'Poppins',
                                             fontSize: 16,

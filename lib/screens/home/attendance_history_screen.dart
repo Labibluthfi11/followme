@@ -454,7 +454,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     final bool needsApprovalDisplay =
         isLeaveRecord || absensi.tipe == 'lembur' || absensi.tipe == 'telat';
 
-    String displayedStatusText = status.toUpperCase();
+    String displayedStatusText = absensi.statusLabel.toUpperCase();
     Color displayedStatusColor = statusColor;
 
     if (needsApprovalDisplay) {
@@ -598,6 +598,28 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         const Color(0xFFEF4444),
                       ),
                     ],
+                  ),
+                ],
+                if (['rejected', 'ditolak'].contains(
+                      statusApproval?.toLowerCase(),
+                    ) &&
+                    absensi.catatanAdmin?.trim().isNotEmpty == true) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: Text(
+                      'Catatan HRD: ${absensi.catatanAdmin}',
+                      style: const TextStyle(
+                        color: Color(0xFF991B1B),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
 

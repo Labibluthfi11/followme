@@ -15,7 +15,6 @@ import 'package:absensi_app/providers/absensi_provider.dart';
 
 // === Import screens utama ===
 import 'package:absensi_app/screens/auth/login.screen.dart';
-import 'package:absensi_app/screens/auth/register.screen.dart';
 import 'package:absensi_app/screens/home/home.screen.dart';
 import 'package:absensi_app/screens/splash/splash_screen.dart';
 
@@ -105,7 +104,6 @@ class MyApp extends StatelessWidget {
       // 🧭 Semua route lengkap
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         '/notifications': (context) =>
             NotificationsPage(apiService: apiService),

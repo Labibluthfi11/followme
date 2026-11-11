@@ -73,7 +73,8 @@ class SalaryInfoCard extends StatelessWidget {
           // Potongan Keterlambatan
           if (isLate) ...[
             _buildSalaryRow(
-              label: 'Potongan Telat (${absensi.roundedLateMinutes ?? 0} menit)',
+              label:
+                  'Potongan Telat (${absensi.roundedLateMinutes ?? 0} menit)',
               value: '- ${absensi.formattedLatePenalty ?? "Rp 0"}',
               icon: Icons.remove_circle_outline,
               color: Colors.red.shade600,
@@ -107,8 +108,11 @@ class SalaryInfoCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, 
-                    color: Colors.orange.shade800, size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.orange.shade800,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -164,9 +168,11 @@ class SalaryInfoCard extends StatelessWidget {
           style: TextStyle(
             fontSize: isFinal ? 18 : 15,
             fontWeight: FontWeight.bold,
-            color: isDeduction ? Colors.red.shade700 : 
-                   isFinal ? Colors.blue.shade700 : 
-                   Colors.green.shade700,
+            color: isDeduction
+                ? Colors.red.shade700
+                : isFinal
+                ? Colors.blue.shade700
+                : Colors.green.shade700,
           ),
         ),
       ],

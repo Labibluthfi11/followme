@@ -27,7 +27,9 @@ const _canvas = FollowMeTokens.canvas;
 const _accent = FollowMeTokens.accent;
 
 class HomeDashboardContent extends StatefulWidget {
-  const HomeDashboardContent({super.key});
+  final bool isActive;
+
+  const HomeDashboardContent({super.key, this.isActive = true});
 
   @override
   State<HomeDashboardContent> createState() => _HomeDashboardContentState();
@@ -80,6 +82,14 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   }
 
   @override
+  void didUpdateWidget(covariant HomeDashboardContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive && !DemoPreview.enabled) {
+      _refreshUnreadCount();
+    }
+  }
+
+  @override
   void dispose() {
     _timer.cancel();
     super.dispose();
@@ -125,6 +135,10 @@ class _HomeDashboardContentState extends State<HomeDashboardContent> {
   Future<void> _refreshProfile() async {
     if (DemoPreview.enabled) return;
     await context.read<AuthProvider>().refreshProfile();
+    _refreshUnreadCount();
+  }
+
+  void _refreshUnreadCount() {
     if (mounted) {
       setState(() {
         _unreadCountFuture = context.read<ApiService>().fetchUnreadCount();

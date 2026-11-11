@@ -6,9 +6,7 @@ enum FacePresenceResult { noFace, singleFace, multipleFaces }
 class FacePresenceService {
   static Future<FacePresenceResult> detectFace(File image) async {
     if (!Platform.isAndroid) {
-      throw UnsupportedError(
-        'Validasi wajah hanya tersedia di Android.',
-      );
+      throw UnsupportedError('Validasi wajah hanya tersedia di Android.');
     }
 
     final detector = FaceDetector(

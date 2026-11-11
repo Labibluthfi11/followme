@@ -2,7 +2,7 @@ name: absensi_app
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.1+3
+version: 1.0.16+19
 
 environment:
   sdk: ^3.8.1
