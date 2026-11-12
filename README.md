@@ -62,14 +62,23 @@ The Android app checks `https://sistemabsensi.followme.id/update.json`. Keep
 release, replace the APK file at that URL and update `build_number` in the
 manifest to match the APK's Android version code. Increase the build number for
 every APK, even when the user-facing `version` stays the same. Android rejects
-reinstalling an APK with the same version code, so increment the build suffix
-in `pubspec.yaml` (for example, `1.0.16+18` to `1.0.16+19`) without changing
-the version name. The updater compares both the version name and build number,
+reinstalling an APK with the same version code, so increment the build suffix in
+`pubspec.yaml` for every release (for example, `1.0.17+20` to `1.0.18+21`).
+The updater compares both the version name and build number,
 so the replacement is offered once and no longer appears after that build is
 installed. Publish the APK before publishing the manifest that points to it.
 The download link does not change between releases. Users install an update
 over the existing app; they do not need to uninstall it. Android still
 requires the user to approve APK installation when prompted.
+
+The `Build signed Android release` GitHub Actions workflow creates a signed APK
+artifact without publishing it to production. Before running it, configure the
+repository Actions secrets `ANDROID_KEYSTORE_BASE64`,
+`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`
+with the existing release keystore and its credentials. Never commit the
+keystore or paste secret values into issues, pull requests, or chat. The
+workflow verifies the release certificate and manifest, then stores the APK,
+manifest, and obfuscation symbols as a temporary artifact.
 
 To require a minimum app version, set `minimum_version` to the required release.
 Older versions will show a required-update prompt and cannot dismiss it.
@@ -80,8 +89,8 @@ the system installer opens, finish the installation there and return to Followme
 
 ```json
 {
-  "version": "1.0.17",
-  "build_number": 20,
+  "version": "1.0.18",
+  "build_number": 21,
   "download_url": "https://sistemabsensi.followme.id/releases/followme-latest.apk",
   "minimum_version": "1.0.9"
 }
