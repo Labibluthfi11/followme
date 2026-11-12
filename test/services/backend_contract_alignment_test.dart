@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -145,6 +146,73 @@ void main() {
     ]);
   });
 
+  testWidgets('payroll notification opens the employee payslip screen', (
+    tester,
+  ) async {
+    final notification = {
+      'id': 8,
+      'title': 'Slip gaji tersedia',
+      'message': 'Slip gaji periode Oktober 2026 sudah tersedia di aplikasi.',
+      'type': 'payroll_slip',
+      'target_page': null,
+      'target_id': 42,
+      'is_read': false,
+      'created_at': '2026-11-12T03:04:05.000000Z',
+    };
+    final adapter = _RecordingAdapter(
+      [],
+      responsesByPath: {
+        '/api/v1/notifications': [
+          _MockResponse(200, {
+            'success': true,
+            'data': [notification],
+          }),
+          _MockResponse(200, {
+            'success': true,
+            'data': [
+              {...notification, 'is_read': true},
+            ],
+          }),
+        ],
+        '/api/v1/notifications/8/read': [
+          const _MockResponse(200, {
+            'success': true,
+            'message': 'Notifikasi ditandai sebagai dibaca',
+          }),
+        ],
+        '/api/v1/payroll/slips': [
+          const _MockResponse(200, {'success': true, 'data': []}),
+        ],
+      },
+    );
+    final apiService = ApiService.withDio(_createDio(adapter));
+
+    await tester.pumpWidget(
+      Provider<ApiService>.value(
+        value: apiService,
+        child: MaterialApp(home: NotificationsPage(apiService: apiService)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Slip gaji tersedia'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Slip Gaji'), findsOneWidget);
+    expect(
+      find.text(
+        'Belum ada slip gaji yang tersedia. Slip akan muncul setelah payroll dikonfirmasi dibayar oleh HRD.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      adapter.requests.any(
+        (request) => request.uri.path.endsWith('/payroll/slips'),
+      ),
+      isTrue,
+    );
+  });
+
   test('parses the backend attendance detail resource shape', () {
     final absensi = Absensi.fromJson({
       'id': 12,
@@ -211,9 +279,15 @@ class _MockResponse {
 }
 
 class _RecordingAdapter implements HttpClientAdapter {
-  _RecordingAdapter(this._responses);
+  _RecordingAdapter(
+    this._responses, {
+    Map<String, List<_MockResponse>> responsesByPath = const {},
+  }) : _responsesByPath = responsesByPath.map(
+         (path, responses) => MapEntry(path, List.of(responses)),
+       );
 
   final List<_MockResponse> _responses;
+  final Map<String, List<_MockResponse>> _responsesByPath;
   final List<RequestOptions> requests = [];
 
   @override
@@ -224,7 +298,10 @@ class _RecordingAdapter implements HttpClientAdapter {
   ) async {
     requests.add(options);
     await requestStream?.drain<void>();
-    final response = _responses.removeAt(0);
+    final pathResponses = _responsesByPath[options.uri.path];
+    final response = pathResponses != null && pathResponses.isNotEmpty
+        ? pathResponses.removeAt(0)
+        : _responses.removeAt(0);
     return ResponseBody.fromString(
       jsonEncode(response.body),
       response.statusCode,

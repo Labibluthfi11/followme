@@ -80,7 +80,8 @@ class ReleaseManifest {
 
 class UpdateService {
   // URL JSON versi
-  static const String _updateUrl = 'https://app.followme.id/update.json';
+  static const String _updateUrl =
+      'https://sistemabsensi.followme.id/update.json';
   static Stream<OtaEvent> Function(String url)? downloadStreamOverride;
   static Future<void> Function()? cancelDownloadOverride;
 

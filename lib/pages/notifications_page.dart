@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../api/api.service.dart';
 import '../models/notification_model.dart';
 import '../screens/home/absensi_pulang_screen.dart';
+import '../screens/home/payroll_slips_screen.dart';
 import '../core/constants/app_theme.dart';
 import '../core/constants/demo_preview.dart';
 
@@ -83,6 +84,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final targetId = notif.targetId;
 
     if (type.startsWith('alfa_hrd_call_')) {
+      return;
+    }
+
+    if (type == 'payroll_slip') {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => const PayrollSlipsScreen(),
+        ),
+      );
       return;
     }
 
