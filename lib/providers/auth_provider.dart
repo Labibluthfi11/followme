@@ -1,6 +1,7 @@
 // lib/providers/auth_provider.dart
 
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
@@ -9,6 +10,7 @@ import '../models/user_model.dart';
 import 'dart:convert';
 import '../core/exceptions/app_exception.dart';
 import '../core/constants/demo_preview.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
@@ -18,6 +20,7 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
 
   final ApiService _apiService;
+  final PushTokenProvider _pushTokenProvider;
   final _storage = const FlutterSecureStorage();
 
   late Future<void> initializationFuture; // Tambahkan ini
@@ -25,10 +28,14 @@ class AuthProvider extends ChangeNotifier {
   static const String _authTokenKey = 'auth_token';
   static const String _userDataKey = 'user_data';
 
-  AuthProvider({required ApiService apiService})
-    : _apiService = apiService,
-      super() {
+  AuthProvider({
+    required ApiService apiService,
+    PushTokenProvider? pushTokenProvider,
+  }) : _apiService = apiService,
+       _pushTokenProvider = pushTokenProvider ?? NotificationService(),
+       super() {
     _apiService.onUnauthorized = clearSessionLocally;
+    _pushTokenProvider.setTokenRefreshHandler(_registerRefreshedPushToken);
     if (DemoPreview.enabled) {
       _isDemoPreviewSession = true;
       _token = DemoPreview.token;
@@ -65,6 +72,7 @@ class AuthProvider extends ChangeNotifier {
           _user = User.fromJson(decodedData);
           if (_user != null) {
             notifyListeners();
+            unawaited(_syncPushToken());
           } else {
             await logout();
           }
@@ -105,6 +113,7 @@ class AuthProvider extends ChangeNotifier {
 
         _isLoading = false;
         notifyListeners();
+        unawaited(_syncPushToken());
       } else {
         _errorMessage = result['message'] ?? 'Login gagal.';
         _isLoading = false;
@@ -220,6 +229,7 @@ class AuthProvider extends ChangeNotifier {
       return;
     }
     try {
+      await _unregisterPushToken();
       await _apiService.logout();
     } catch (e) {
       debugPrint('Logout error: $e');
@@ -227,6 +237,63 @@ class AuthProvider extends ChangeNotifier {
       await clearSessionLocally();
     }
   }
+
+  Future<void> _syncPushToken() async {
+    if (kIsWeb || _isDemoPreviewSession || _token == null) return;
+    try {
+      final token = await _pushTokenProvider.requestPermissionAndGetToken();
+      if (token != null) {
+        await _apiService.registerFcmToken(
+          token: token,
+          platform: _pushPlatform,
+        );
+      }
+    } on DioException catch (error) {
+      debugPrint(
+        'Gagal mendaftarkan push notification (HTTP ${error.response?.statusCode ?? 'network'}).',
+      );
+    } catch (error) {
+      debugPrint('Gagal mendaftarkan push notification: $error');
+    }
+  }
+
+  Future<void> _registerRefreshedPushToken(String token) async {
+    if (kIsWeb || _isDemoPreviewSession || _token == null) return;
+    try {
+      await _apiService.registerFcmToken(token: token, platform: _pushPlatform);
+    } on DioException catch (error) {
+      debugPrint(
+        'Gagal memperbarui token push (HTTP ${error.response?.statusCode ?? 'network'}).',
+      );
+    } catch (error) {
+      debugPrint('Gagal memperbarui token push: $error');
+    }
+  }
+
+  Future<void> _unregisterPushToken() async {
+    if (kIsWeb || _token == null) return;
+    try {
+      final token = await _pushTokenProvider.getToken();
+      if (token != null) {
+        await _apiService.unregisterFcmToken(token: token);
+      }
+    } on DioException catch (error) {
+      debugPrint(
+        'Gagal menghapus token push (HTTP ${error.response?.statusCode ?? 'network'}).',
+      );
+    } catch (error) {
+      debugPrint('Gagal menghapus token push: $error');
+    } finally {
+      try {
+        await _pushTokenProvider.deleteToken();
+      } catch (error) {
+        debugPrint('Gagal menghapus token perangkat push: $error');
+      }
+    }
+  }
+
+  String get _pushPlatform =>
+      defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
 
   Future<void> clearSessionLocally() async {
     await _storage.delete(key: _authTokenKey);

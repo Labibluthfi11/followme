@@ -1,15 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Handle background message here
-  debugPrint("Handling a background message: ${message.messageId}");
+  // Notification payloads are displayed by Android when the app is backgrounded.
 }
 
-class NotificationService {
+abstract interface class PushTokenProvider {
+  Future<String?> requestPermissionAndGetToken();
+  Future<String?> getToken();
+  Future<void> deleteToken();
+  void setTokenRefreshHandler(Future<void> Function(String token)? handler);
+}
+
+class NotificationService implements PushTokenProvider {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -17,25 +24,18 @@ class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  bool _initialized = false;
+  String? _pendingRefreshedToken;
+  Future<void> Function(String token)? _tokenRefreshHandler;
+  VoidCallback? _notificationTapHandler;
+  bool _pendingNotificationTap = false;
 
   Future<void> initialize() async {
-    // 1. Request Permissions
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    if (_initialized) return;
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('User granted permission');
-    } else {
-      debugPrint('User declined or has not accepted permission');
-    }
-
-    // 2. Setup Local Notifications
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'high_importance_channel', // id
-      'High Importance Notifications', // title
+      'high_importance_channel',
+      'High Importance Notifications',
       description: 'This channel is used for important notifications.',
       importance: Importance.max,
     );
@@ -54,27 +54,80 @@ class NotificationService {
 
     await _localNotifications.initialize(
       settings: initSettings,
-      onDidReceiveNotificationResponse: (details) {
-        // Handle notification tap
-      },
+      onDidReceiveNotificationResponse: (_) => _dispatchNotificationTap(),
     );
 
-    // 3. Listen for Foreground Messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('Got a message whilst in the foreground!');
-      debugPrint('Message data: ${message.data}');
-
       if (message.notification != null) {
-        _showLocalNotification(message);
+        unawaited(_showLocalNotification(message));
       }
     });
 
-    // 4. Set Background Handler
+    FirebaseMessaging.onMessageOpenedApp.listen((_) {
+      _dispatchNotificationTap();
+    });
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    final initialMessage = await _fcm.getInitialMessage();
+    if (initialMessage != null) {
+      _pendingNotificationTap = true;
+    }
+    _fcm.onTokenRefresh.listen((token) {
+      final handler = _tokenRefreshHandler;
+      if (handler == null) {
+        _pendingRefreshedToken = token;
+      } else {
+        unawaited(handler(token));
+      }
+    });
+    _initialized = true;
+  }
 
-    // 5. Get FCM Token
-    String? token = await _fcm.getToken();
-    debugPrint("FCM Token: $token");
+  @override
+  Future<String?> requestPermissionAndGetToken() async {
+    final settings = await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    if (settings.authorizationStatus != AuthorizationStatus.authorized &&
+        settings.authorizationStatus != AuthorizationStatus.provisional) {
+      return null;
+    }
+
+    return getToken();
+  }
+
+  @override
+  Future<String?> getToken() => _fcm.getToken();
+
+  @override
+  Future<void> deleteToken() => _fcm.deleteToken();
+
+  @override
+  void setTokenRefreshHandler(Future<void> Function(String token)? handler) {
+    _tokenRefreshHandler = handler;
+    final pendingToken = _pendingRefreshedToken;
+    if (handler != null && pendingToken != null) {
+      _pendingRefreshedToken = null;
+      unawaited(handler(pendingToken));
+    }
+  }
+
+  void setNotificationTapHandler(VoidCallback handler) {
+    _notificationTapHandler = handler;
+    if (_pendingNotificationTap) {
+      _pendingNotificationTap = false;
+      handler();
+    }
+  }
+
+  void _dispatchNotificationTap() {
+    final handler = _notificationTapHandler;
+    if (handler == null) {
+      _pendingNotificationTap = true;
+    } else {
+      handler();
+    }
   }
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
@@ -91,10 +144,11 @@ class NotificationService {
     );
 
     await _localNotifications.show(
-      id: message.notification.hashCode,
+      id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch,
       title: message.notification?.title,
       body: message.notification?.body,
       notificationDetails: platformDetails,
+      payload: jsonEncode(message.data),
     );
   }
 

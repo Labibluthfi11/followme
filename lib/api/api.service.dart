@@ -156,6 +156,20 @@ class ApiService {
     }
   }
 
+  Future<void> registerFcmToken({
+    required String token,
+    required String platform,
+  }) async {
+    await _dio.put(
+      'user/fcm-token',
+      data: {'token': token, 'platform': platform},
+    );
+  }
+
+  Future<void> unregisterFcmToken({required String token}) async {
+    await _dio.delete('user/fcm-token', data: {'token': token});
+  }
+
   Future<Map<String, dynamic>> sendOtp({required String email}) async {
     try {
       final response = await _dio.post(

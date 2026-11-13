@@ -9,6 +9,7 @@ import 'package:absensi_app/models/notification_model.dart';
 import 'package:absensi_app/models/user_model.dart';
 import 'package:absensi_app/pages/notifications_page.dart';
 import 'package:absensi_app/providers/auth_provider.dart';
+import 'package:absensi_app/services/notification_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -60,7 +61,10 @@ void main() {
         const _MockResponse(401, {'message': 'Unauthenticated.'}),
       ]);
       final api = ApiService(dio: _createDio(adapter));
-      final authProvider = AuthProvider(apiService: api);
+      final authProvider = AuthProvider(
+        apiService: api,
+        pushTokenProvider: _FakePushTokenProvider(),
+      );
       await authProvider.initializationFuture;
       await authProvider.login(email: 'test@example.com', password: 'password');
 
@@ -95,6 +99,76 @@ void main() {
     expect(result['statusCode'], 404);
     expect(result['message'], contains('hubungi HRD'));
     expect(adapter.requests, isEmpty);
+  });
+
+  test(
+    'registers and removes FCM tokens with authenticated API requests',
+    () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final adapter = _RecordingAdapter([
+        const _MockResponse(200, {
+          'access_token': 'issued-token',
+          'user': {'id': 42, 'name': 'Test User', 'email': 'test@example.com'},
+        }),
+        const _MockResponse(200, {'success': true}),
+        const _MockResponse(200, {'success': true}),
+      ]);
+      final api = ApiService(dio: _createDio(adapter));
+
+      await api.login(email: 'test@example.com', password: 'password');
+      await api.registerFcmToken(
+        token: 'fcm-device-token',
+        platform: 'android',
+      );
+      await api.unregisterFcmToken(token: 'fcm-device-token');
+
+      expect(adapter.requests[1].uri.path, endsWith('/user/fcm-token'));
+      expect(adapter.requests[1].method, 'PUT');
+      expect(adapter.requests[1].data, {
+        'token': 'fcm-device-token',
+        'platform': 'android',
+      });
+      expect(adapter.requests[2].method, 'DELETE');
+      expect(adapter.requests[2].data, {'token': 'fcm-device-token'});
+      expect(
+        adapter.requests[1].headers['Authorization'],
+        'Bearer issued-token',
+      );
+    },
+  );
+
+  test('removes the registered FCM token before logging out', () async {
+    FlutterSecureStorage.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({});
+    final pushTokenProvider = _FakePushTokenProvider(
+      currentToken: 'fcm-device-token',
+    );
+    final adapter = _RecordingAdapter([
+      const _MockResponse(200, {
+        'access_token': 'issued-token',
+        'user': {'id': 42, 'name': 'Test User', 'email': 'test@example.com'},
+      }),
+      const _MockResponse(200, {'success': true}),
+      const _MockResponse(200, {'success': true}),
+    ]);
+    final api = ApiService(dio: _createDio(adapter));
+    final authProvider = AuthProvider(
+      apiService: api,
+      pushTokenProvider: pushTokenProvider,
+    );
+    await authProvider.initializationFuture;
+    await authProvider.login(email: 'test@example.com', password: 'password');
+
+    await authProvider.logout();
+
+    expect(adapter.requests.map((request) => request.method), [
+      'POST',
+      'DELETE',
+      'POST',
+    ]);
+    expect(adapter.requests[1].uri.path, endsWith('/user/fcm-token'));
+    expect(pushTokenProvider.tokenDeleted, isTrue);
+    expect(authProvider.isAuthenticated, isFalse);
   });
 
   test('parses Laravel user and notification field types', () {
@@ -298,6 +372,27 @@ void main() {
       await tempDirectory.delete(recursive: true);
     }
   });
+}
+
+class _FakePushTokenProvider implements PushTokenProvider {
+  _FakePushTokenProvider({this.currentToken});
+
+  final String? currentToken;
+  bool tokenDeleted = false;
+
+  @override
+  Future<String?> requestPermissionAndGetToken() async => null;
+
+  @override
+  Future<String?> getToken() async => currentToken;
+
+  @override
+  Future<void> deleteToken() async {
+    tokenDeleted = true;
+  }
+
+  @override
+  void setTokenRefreshHandler(Future<void> Function(String token)? handler) {}
 }
 
 Dio _createDio(_RecordingAdapter adapter) {
