@@ -57,19 +57,23 @@ the build.
 ### Internal APK updates
 
 The Android app checks `https://sistemabsensi.followme.id/update.json`. Keep
-`download_url` set to the stable URL
-`https://sistemabsensi.followme.id/releases/followme-latest.apk`. For each
-release, replace the APK file at that URL and update `build_number` in the
-manifest to match the APK's Android version code. Increase the build number for
-every APK, even when the user-facing `version` stays the same. Android rejects
-reinstalling an APK with the same version code, so increment the build suffix in
-`pubspec.yaml` for every release (for example, `1.0.17+20` to `1.0.18+21`).
+`download_url` use the stable APK path
+`https://sistemabsensi.followme.id/releases/followme-latest.apk` with a unique
+`release` query value for every build (for example,
+`?release=1.0.19-22`). The CDN caches the stable path, so the unique query
+ensures employees download the newly published APK. Replace the APK file at the
+stable path and update `build_number` in the manifest to match the APK's Android
+version code. Increase the build number for every APK, even when the
+user-facing `version` stays the same. Android rejects reinstalling an APK with
+the same version code, so increment the build suffix in `pubspec.yaml` for
+every release (for example, `1.0.17+20` to `1.0.18+21`).
 The updater compares both the version name and build number,
 so the replacement is offered once and no longer appears after that build is
 installed. Publish the APK before publishing the manifest that points to it.
-The download link does not change between releases. Users install an update
-over the existing app; they do not need to uninstall it. Android still
-requires the user to approve APK installation when prompted.
+The APK path does not change between releases; only its cache-busting query
+does. Users install an update over the existing app; they do not need to
+uninstall it. Android still requires the user to approve APK installation when
+prompted.
 
 The `Build signed Android release` GitHub Actions workflow creates a signed APK
 artifact without publishing it to production. Before running it, configure the

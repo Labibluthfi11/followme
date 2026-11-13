@@ -14,6 +14,18 @@ void main() {
     expect(manifest.minimumVersion, isNull);
   });
 
+  test('accepts a cache-busted HTTPS APK download URL', () {
+    const downloadUrl =
+        'https://app.example.test/releases/app.apk?release=1.0.19-22';
+    final manifest = ReleaseManifest.fromJson({
+      'version': '1.0.19',
+      'build_number': 22,
+      'download_url': downloadUrl,
+    });
+
+    expect(manifest.downloadUrl, downloadUrl);
+  });
+
   test('requires an update only when below the configured minimum version', () {
     final manifest = ReleaseManifest.fromJson({
       'version': '1.0.8',
