@@ -41,7 +41,19 @@ jobs:
           test -n "$ANDROID_KEYSTORE_BASE64"
           test -n "$ANDROID_KEYSTORE_PASSWORD"
           test -n "$ANDROID_KEY_ALIAS"
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.p12
+          chmod 600 android/upload-keystore.p12
+          keytool -importkeystore -noprompt \
+            -srckeystore android/upload-keystore.p12 \
+            -srcstoretype PKCS12 \
+            -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -srcalias "$ANDROID_KEY_ALIAS" \
+            -destkeystore android/upload-keystore.jks \
+            -deststoretype JKS \
+            -deststorepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -destkeypass "$ANDROID_KEYSTORE_PASSWORD" \
+            -destalias "$ANDROID_KEY_ALIAS"
+          rm android/upload-keystore.p12
           chmod 600 android/upload-keystore.jks
           {
             printf 'storeFile=upload-keystore.jks\n'

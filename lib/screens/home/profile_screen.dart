@@ -151,7 +151,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final ApiService _apiService = ApiService();
+  late final ApiService _apiService;
 
   File? _imageFile;
   late Future<User?> _userProfileFuture;
@@ -161,6 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _apiService = context.read<ApiService>();
     _userProfileFuture = _fetchUserProfile();
   }
 

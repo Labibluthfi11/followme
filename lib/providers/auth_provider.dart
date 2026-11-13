@@ -28,6 +28,7 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider({required ApiService apiService})
     : _apiService = apiService,
       super() {
+    _apiService.onUnauthorized = clearSessionLocally;
     if (DemoPreview.enabled) {
       _isDemoPreviewSession = true;
       _token = DemoPreview.token;

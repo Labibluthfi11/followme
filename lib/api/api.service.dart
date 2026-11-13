@@ -20,6 +20,7 @@ class ApiService {
   final Dio _dio;
   final _storage = const FlutterSecureStorage();
   static const String _authTokenKey = 'auth_token';
+  Future<void> Function()? onUnauthorized;
 
   ApiService({Dio? dio})
     : _dio =
@@ -49,17 +50,20 @@ class ApiService {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
           return handler.next(options);
         },
         onError: (DioException e, handler) async {
-          if (e.response?.statusCode == 401) {
+          if (e.response?.statusCode == 401 &&
+              _hasBearerToken(e.requestOptions.headers)) {
             debugPrint(
               'Unauthorized request. Token might be expired or invalid. Attempting to clear token.',
             );
-            await _deleteToken();
+            final unauthorizedHandler = onUnauthorized;
+            if (unauthorizedHandler == null) {
+              await _deleteToken();
+            } else {
+              await unauthorizedHandler();
+            }
           }
           return handler.next(e);
         },
@@ -69,6 +73,18 @@ class ApiService {
 
   @visibleForTesting
   ApiService.withDio(this._dio);
+
+  bool _hasBearerToken(Map<String, dynamic> headers) {
+    for (final entry in headers.entries) {
+      final value = entry.value;
+      if (entry.key.toLowerCase() == 'authorization' &&
+          value is String &&
+          value.toLowerCase().startsWith('bearer ')) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   // =========================================================================
   // SECTION AUTH
@@ -273,9 +289,6 @@ class ApiService {
       }
       throw const FormatException('Empty user response from API.');
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        await _deleteToken();
-      }
       final error = _handleDioError(e, 'Gagal memuat data akun.');
       throw AppException(
         message: error['message'] as String,
@@ -1114,7 +1127,10 @@ class ApiService {
       }
       throw const FormatException('Unexpected attendance geofence response.');
     } on DioException catch (e) {
-      final error = _handleDioError(e, 'Gagal mengambil konfigurasi lokasi kerja');
+      final error = _handleDioError(
+        e,
+        'Gagal mengambil konfigurasi lokasi kerja',
+      );
       throw AppException(
         message: error['message'] as String,
         statusCode: error['statusCode'] as int?,
@@ -1235,9 +1251,9 @@ class ApiService {
       if (response.statusCode == 200 &&
           bytes != null &&
           bytes.isNotEmpty &&
-          (response.headers.value(Headers.contentTypeHeader)?.contains(
-                'application/pdf',
-              ) ??
+          (response.headers
+                  .value(Headers.contentTypeHeader)
+                  ?.contains('application/pdf') ??
               false)) {
         return Uint8List.fromList(bytes);
       }

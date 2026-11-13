@@ -3,15 +3,18 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:absensi_app/api/api.service.dart';
+import 'package:absensi_app/core/exceptions/app_exception.dart';
 import 'package:absensi_app/models/absensi_model.dart';
 import 'package:absensi_app/models/notification_model.dart';
 import 'package:absensi_app/models/user_model.dart';
 import 'package:absensi_app/pages/notifications_page.dart';
+import 'package:absensi_app/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +46,37 @@ void main() {
     );
     expect(adapter.requests.last.headers['Accept'], 'application/json');
   });
+
+  test(
+    'clears the local session when an authenticated request gets 401',
+    () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      SharedPreferences.setMockInitialValues({});
+      final adapter = _RecordingAdapter([
+        const _MockResponse(200, {
+          'access_token': 'issued-token',
+          'user': {'id': 42, 'name': 'Test User', 'email': 'test@example.com'},
+        }),
+        const _MockResponse(401, {'message': 'Unauthenticated.'}),
+      ]);
+      final api = ApiService(dio: _createDio(adapter));
+      final authProvider = AuthProvider(apiService: api);
+      await authProvider.initializationFuture;
+      await authProvider.login(email: 'test@example.com', password: 'password');
+
+      expect(authProvider.isAuthenticated, isTrue);
+      await expectLater(
+        api.getAuthenticatedUser(),
+        throwsA(isA<AppException>()),
+      );
+
+      expect(authProvider.isAuthenticated, isFalse);
+      expect(authProvider.user, isNull);
+      expect(await api.getToken(), isNull);
+      final preferences = await SharedPreferences.getInstance();
+      expect(preferences.containsKey('user_data'), isFalse);
+    },
+  );
 
   test('does not send an unsupported self-registration request', () async {
     final adapter = _RecordingAdapter([]);
