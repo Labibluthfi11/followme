@@ -27,6 +27,7 @@ import 'package:absensi_app/screens/security/device_not_secure_screen.dart';
 import 'package:absensi_app/core/constants/app_theme.dart';
 
 late List<CameraDescription> cameras;
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,8 +93,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = context.read<ApiService>();
+    if (!kIsWeb) {
+      NotificationService().setNotificationTapHandler(() {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _navigatorKey.currentState?.pushNamed('/notifications');
+        });
+      });
+    }
 
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'PT.Followme',
       debugShowCheckedModeBanner: false,
       navigatorObservers: kIsWeb ? [] : [SentryNavigatorObserver()],
