@@ -77,10 +77,10 @@ repository Actions secrets `ANDROID_KEYSTORE_BASE64`,
 `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_ALIAS` with the existing release
 keystore and its credentials. The workflow converts the PKCS12 keystore to JKS
 for Android packaging and uses the store password for both `storePassword` and
-`keyPassword`. Never commit the keystore or paste secret values into issues,
-pull requests, or chat. The workflow verifies the release certificate and
-manifest, then stores the APK, manifest, and obfuscation symbols as a temporary
-artifact.
+`keyPassword`. The workflow applies the same store password to both fields.
+Never commit the keystore or paste secret values into issues, pull requests, or
+chat. The workflow verifies the release certificate and manifest, then stores
+the APK, manifest, and obfuscation symbols as a temporary artifact.
 
 To require a minimum app version, set `minimum_version` to the required release.
 Older versions will show a required-update prompt and cannot dismiss it.
