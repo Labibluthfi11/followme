@@ -91,6 +91,11 @@ jobs:
           assert manifest["build_number"] == int(build), "Manifest build_number does not match pubspec.yaml"
           PY
 
+      - name: Prepare release APK asset
+        run: |
+          cp -- build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/flutter-apk/followme-latest.apk
+
       - name: Publish release artifact
         uses: actions/upload-artifact@v4
         with:
@@ -106,10 +111,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "followme-v1.0.21-24" \
-            build/app/outputs/flutter-apk/app-release.apk#followme-latest.apk \
-            deployment/update.json#update.json \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "Followme 1.0.21 (24)" \
-            --notes "Signed APK and updater manifest for the Sistem Absensi production deployment."
+          set -euo pipefail
+          tag="followme-v1.0.21-24"
+          apk="build/app/outputs/flutter-apk/followme-latest.apk"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" "$apk" deployment/update.json \
+              --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$tag" "$apk" deployment/update.json \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Followme 1.0.21 (24)" \
+              --notes "Signed APK and updater manifest for the Sistem Absensi production deployment."
+          fi
+          assets="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')"
+          if printf '%s\n' "$assets" | grep -Fxq app-release.apk; then
+            gh release delete-asset "$tag" app-release.apk \
+              --repo "$GITHUB_REPOSITORY" --yes
+          fi
