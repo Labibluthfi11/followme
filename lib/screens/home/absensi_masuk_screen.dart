@@ -201,6 +201,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
             accuracyMeters: position.accuracy,
             radiusMeters: geofenceConfig.radiusMeters,
             maximumAccuracyMeters: geofenceConfig.maximumAccuracyMeters,
+            enforceWorkplaceGeofence: geofenceConfig.isEnforced,
           );
         });
       }
@@ -750,7 +751,12 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
   Widget build(BuildContext context) {
     final absensiProvider = Provider.of<AbsensiProvider>(context);
     final bool locationReady =
-        _locationStatus.contains('Jitu') && _currentPosition != null;
+        _currentPosition != null &&
+        _geofenceConfig != null &&
+        AttendanceLocationService.isWithinAllowedRadius(
+          _currentPosition!,
+          config: _geofenceConfig,
+        );
     final bool hasImage = _capturedImageFile != null;
 
     final String buttonLabel = hasImage ? 'KIRIM ABSENSI' : 'BUKA KAMERA';
@@ -915,6 +921,7 @@ class _AbsensiMasukScreenState extends State<AbsensiMasukScreen> {
                       isLoading: _locationStatus == 'Memuat lokasi...',
                       message: _locationStatus,
                       radiusMeters: _geofenceConfig?.radiusMeters,
+                      geofenceEnforced: _geofenceConfig?.isEnforced ?? true,
                       onRetry: !locationReady && !absensiProvider.isLoading
                           ? _checkLocation
                           : null,

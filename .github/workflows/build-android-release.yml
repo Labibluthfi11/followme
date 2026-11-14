@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-release-${{ github.ref }}
@@ -101,3 +101,15 @@ jobs:
             deployment/update.json
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish signed APK release for production deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "followme-v1.0.21-24" \
+            build/app/outputs/flutter-apk/app-release.apk#followme-latest.apk \
+            deployment/update.json#update.json \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Followme 1.0.21 (24)" \
+            --notes "Signed APK and updater manifest for the Sistem Absensi production deployment."

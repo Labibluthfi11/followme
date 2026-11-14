@@ -18,6 +18,7 @@ void main() {
             'longitude': 106.8,
             'radius_meters': 250,
             'maximum_accuracy_meters': 50,
+            'is_enforced': false,
           },
         }),
       ]),
@@ -29,6 +30,7 @@ void main() {
     expect(config.longitude, 106.8);
     expect(config.radiusMeters, 250);
     expect(config.maximumAccuracyMeters, 50);
+    expect(config.isEnforced, isFalse);
   });
 
   test('fetches HR request categories, policies, and personal history', () async {

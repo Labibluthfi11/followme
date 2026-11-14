@@ -9,6 +9,7 @@ class LocationStatusCard extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
   final double? radiusMeters;
+  final bool geofenceEnforced;
 
   const LocationStatusCard({
     super.key,
@@ -17,6 +18,7 @@ class LocationStatusCard extends StatelessWidget {
     required this.message,
     this.onRetry,
     this.radiusMeters,
+    this.geofenceEnforced = true,
   });
 
   @override
@@ -91,7 +93,9 @@ class LocationStatusCard extends StatelessWidget {
               children: [
                 Text(
                   isWithinRadius
-                      ? 'Di area kerja'
+                      ? geofenceEnforced
+                            ? 'Di area kerja'
+                            : 'Lokasi tester siap'
                       : isLoading
                       ? 'Memeriksa lokasi'
                       : 'Lokasi belum sesuai',
@@ -112,7 +116,9 @@ class LocationStatusCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Radius absensi ${(radiusMeters ?? AttendanceLocationService.allowedRadiusMeters).round()} m',
+                  geofenceEnforced
+                      ? 'Radius absensi ${(radiusMeters ?? AttendanceLocationService.allowedRadiusMeters).round()} m'
+                      : 'Validasi titik kerja nonaktif untuk akun tester',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,

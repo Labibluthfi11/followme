@@ -6,18 +6,21 @@ class AttendanceGeofenceConfig {
     required this.longitude,
     required this.radiusMeters,
     required this.maximumAccuracyMeters,
+    required this.isEnforced,
   });
 
   final double latitude;
   final double longitude;
   final double radiusMeters;
   final double maximumAccuracyMeters;
+  final bool isEnforced;
 
   factory AttendanceGeofenceConfig.fromJson(Map<String, dynamic> json) {
     final latitude = double.parse(json['latitude'].toString());
     final longitude = double.parse(json['longitude'].toString());
     final radius = double.parse(json['radius_meters'].toString());
     final accuracy = double.parse(json['maximum_accuracy_meters'].toString());
+    final isEnforced = json['is_enforced'] != false;
     if (!latitude.isFinite ||
         latitude < -90 ||
         latitude > 90 ||
@@ -36,6 +39,7 @@ class AttendanceGeofenceConfig {
       longitude: longitude,
       radiusMeters: radius,
       maximumAccuracyMeters: accuracy,
+      isEnforced: isEnforced,
     );
   }
 }
@@ -72,6 +76,7 @@ class AttendanceLocationService {
     required double accuracyMeters,
     double radiusMeters = allowedRadiusMeters,
     double maximumAccuracyMeters = maximumGpsAccuracyMeters,
+    bool enforceWorkplaceGeofence = true,
   }) {
     if (!accuracyMeters.isFinite || accuracyMeters <= 0) {
       return 'Akurasi GPS tidak terbaca. Periksa izin lokasi presisi.';
@@ -81,6 +86,9 @@ class AttendanceLocationService {
     }
     if (accuracyMeters > maximumAccuracyMeters) {
       return 'Akurasi GPS ±${accuracyMeters.round()} m. Aktifkan lokasi presisi dan coba di area terbuka.';
+    }
+    if (!enforceWorkplaceGeofence) {
+      return 'Lokasi GPS siap; validasi titik kerja nonaktif khusus akun tester.';
     }
     if (isMeasurementWithinAllowedRadius(
       distanceMeters: distanceMeters,
@@ -109,6 +117,13 @@ class AttendanceLocationService {
     Position position, {
     AttendanceGeofenceConfig? config,
   }) {
+    if (config?.isEnforced == false) {
+      return position.accuracy.isFinite &&
+          position.accuracy > 0 &&
+          position.accuracy <=
+              (config?.maximumAccuracyMeters ?? maximumGpsAccuracyMeters);
+    }
+
     return isMeasurementWithinAllowedRadius(
       distanceMeters: distanceFromWorkplace(position, config: config),
       accuracyMeters: position.accuracy,

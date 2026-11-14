@@ -41,6 +41,14 @@ a valid TLS certificate; do not enable certificate bypasses or use a local
 `localhost` API URL for employee devices. Keep the public update manifest's
 version and download URL in sync with each release.
 
+For an explicitly authorized employee test account, the backend can temporarily
+skip only the workplace-radius check by setting
+`ATTENDANCE_GEOFENCE_BYPASS_EMAILS` to a comma-separated list of exact email
+addresses. The authenticated geofence response tells the app whether to enforce
+the radius. GPS coordinates, coordinate ranges, GPS accuracy, and mock-location
+checks remain active. Clear the variable after testing; do not add employee
+addresses to source control.
+
 Point `sistemabsensi.followme.id` to the production server, configure the
 reverse proxy to route this hostname to the Laravel app, and provision HTTPS
 before switching clients to this domain. Set the production `APP_URL` to
@@ -76,7 +84,8 @@ uninstall it. Android still requires the user to approve APK installation when
 prompted.
 
 The `Build signed Android release` GitHub Actions workflow creates a signed APK
-artifact without publishing it to production. Before running it, configure the
+artifact and a versioned GitHub release for the production deployment workflow.
+It does not publish to the employee updater. Before running it, configure the
 repository Actions secrets `ANDROID_KEYSTORE_BASE64`,
 `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_ALIAS` with the existing release
 keystore and its credentials. The workflow converts the PKCS12 keystore to JKS

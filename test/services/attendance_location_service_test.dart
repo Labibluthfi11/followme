@@ -1,5 +1,6 @@
 import 'package:absensi_app/services/attendance_location_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() {
   group('AttendanceLocationService', () {
@@ -83,6 +84,61 @@ void main() {
         );
       },
     );
+
+    test('bypasses only the workplace radius for the authorized account', () {
+      final position = Position(
+        longitude: 106.8,
+        latitude: -6.2,
+        timestamp: DateTime.utc(2026, 1, 1),
+        accuracy: 10,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+      final config = AttendanceGeofenceConfig.fromJson({
+        'latitude': -6.3,
+        'longitude': 106.9,
+        'radius_meters': 150,
+        'maximum_accuracy_meters': 25,
+        'is_enforced': false,
+      });
+
+      expect(config.isEnforced, isFalse);
+      expect(
+        AttendanceLocationService.isWithinAllowedRadius(
+          position,
+          config: config,
+        ),
+        isTrue,
+      );
+      expect(
+        AttendanceLocationService.isWithinAllowedRadius(
+          position,
+          config: AttendanceGeofenceConfig.fromJson({
+            'latitude': -6.3,
+            'longitude': 106.9,
+            'radius_meters': 150,
+            'maximum_accuracy_meters': 25,
+            'is_enforced': true,
+          }),
+        ),
+        isFalse,
+      );
+    });
+
+    test('describes the account-scoped testing bypass clearly', () {
+      expect(
+        AttendanceLocationService.describeMeasurement(
+          distanceMeters: 5000,
+          accuracyMeters: 10,
+          enforceWorkplaceGeofence: false,
+        ),
+        'Lokasi GPS siap; validasi titik kerja nonaktif khusus akun tester.',
+      );
+    });
 
     test('uses the server-provided radius and maximum accuracy', () {
       final config = AttendanceGeofenceConfig.fromJson({

@@ -212,6 +212,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
             accuracyMeters: position.accuracy,
             radiusMeters: geofenceConfig.radiusMeters,
             maximumAccuracyMeters: geofenceConfig.maximumAccuracyMeters,
+            enforceWorkplaceGeofence: geofenceConfig.isEnforced,
           );
         });
       }
@@ -705,7 +706,12 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
   Widget build(BuildContext context) {
     final absensiProvider = Provider.of<AbsensiProvider>(context);
     final bool locationReady =
-        _locationStatus.contains('Jitu') && _currentPosition != null;
+        _currentPosition != null &&
+        _geofenceConfig != null &&
+        AttendanceLocationService.isWithinAllowedRadius(
+          _currentPosition!,
+          config: _geofenceConfig,
+        );
     const Color headerColor = kErrorColor;
 
     final bool canSubmit = _isPhotoTaken && locationReady;
@@ -866,6 +872,7 @@ class _AbsensiPulangScreenState extends State<AbsensiPulangScreen> {
                       isLoading: _locationStatus == 'Memuat lokasi...',
                       message: _locationStatus,
                       radiusMeters: _geofenceConfig?.radiusMeters,
+                      geofenceEnforced: _geofenceConfig?.isEnforced ?? true,
                       onRetry: !locationReady && !absensiProvider.isLoading
                           ? _checkLocation
                           : null,
